@@ -10,6 +10,12 @@ There are plenty of great video tools out there, but we saw a gap — a unified 
 Can't wait? Head over to our [Getting Started](/guide/getting-started) page and jump right into it!
 :::
 
+::: tip
+
+Check out these cool screen recordings of the dashboard app! Click <a target="_blank" href="/superstreamer/guide/dashboard">here</a> to view them. The link will open in a new tab, so you won't lose your place.
+
+:::
+
 ## Developer Experience
 
 - **Simplified workflow**
