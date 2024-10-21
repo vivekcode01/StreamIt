@@ -47,11 +47,11 @@ export default defineConfig({
         text: "Features",
         items: [
           {
-            text: "Video Processing",
+            text: "Video processing",
             link: "/guide/video-processing",
           },
           {
-            text: "Playlist Manipulation",
+            text: "Playlist manipulation",
             link: "/guide/playlist-manipulation",
           },
           {
@@ -70,9 +70,13 @@ export default defineConfig({
           {
             text: "Contribute",
             link: "/guide/contribute"
-          }
-        ]
-      }
+          },
+          {
+            text: "Credits",
+            link: "/guide/credits"
+          },
+        ],
+      },
     ],
     socialLinks: [
       { icon: "github", link: "https://github.com/matvp91/superstreamer" },

@@ -96,7 +96,7 @@ Start the necessary services with [Docker Compose](https://docs.docker.com/compo
 
 ::: code-group
 
-```sh [shell]
+```sh [Terminal]
 $ docker compose up -d
 ```
 
@@ -124,7 +124,7 @@ First, we're going to install a couple of dependencies. Run the following comman
 
 ::: code-group
 
-```sh [shell]
+```sh [Terminal]
 # Install node dependencies
 $ pnpm install
 # Install binary dependencies, such as ffmpeg
@@ -142,7 +142,7 @@ Before we build, we're going to configure a few environment variables first.
 
 ::: code-group
 
-```sh [shell]
+```sh [Terminal]
 $ cp config.env.example config.env
 # Edit config.env with your own variables
 ```
@@ -155,7 +155,7 @@ Next up, we're going to build the different packages into their single Javascrip
 
 ::: code-group
 
-```sh [shell]
+```sh [Terminal]
 $ pnpm build
 ```
 
@@ -167,7 +167,7 @@ Now that we have each package build, let's run them locally.
 
 ::: code-group
 
-```sh [shell]
+```sh [Terminal]
 # Run the api, default port is 52001
 $ bun packages/api/dist/index.js
 
@@ -184,7 +184,7 @@ If you'd like to interact with the API, or with Stitcher, run the app. It's a si
 
 ::: code-group
 
-```sh [shell]
+```sh [Terminal]
 $ pnpm --filter="@superstreamer/app" dev
 ```
 
@@ -198,7 +198,7 @@ We’ve already covered how to build Superstreamer locally, and we’ve also mad
 
 ::: code-group
 
-```sh [shell]
+```sh [Terminal]
 $ pnpm dev
 ```
 

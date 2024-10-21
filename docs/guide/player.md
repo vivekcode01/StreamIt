@@ -25,7 +25,7 @@ If you're only interested in the React bindings and components, you can skip the
 
 What's a player page without a live demo! Have a play with it, you'll love our controls. We've hosted a sample on StackBlitz, which means you can look at the implementation code and make adjustments as you like.
 
-<iframe class="iframe" style="aspect-ratio: 13.55 / 9;" src="https://stackblitz.com/edit/mixwave-player-demo?embed=1&file=src%2FPlayer.tsx&view=preview"></iframe>
+<iframe class="iframe" style="aspect-ratio: 13.55 / 9;" src="https://stackblitz.com/edit/superstreamer-player-demo?embed=1&file=src%2FPlayer.tsx&view=preview"></iframe>
 
 ## Installation
 
@@ -87,12 +87,12 @@ hls.loadSource("https://domain.com/master.m3u8");
 
 ## React
 
-Beautiful React player controls.
+Using React to define your UI declaratively is far more enjoyable than taking an imperative approach. Since the UI serves as a visual representation of the state, creating controls in React is a pleasant experience. However, there are some considerations to keep in mind. Extracting state from the facade and storing it in memory solely to inform React of changes can be resource-intensive. That's why we've dedicated significant effort to ensuring that state updates are as lightweight as possible.
 
 ### Tailwind
 
 The components are styled with [Tailwind](https://tailwindcss.com/), make sure you have it setup properly. Open your `tailwind.config.js` file and include the player build.
-
+ 
 ::: code-group
 
 ```ts [tailwind.config.js]
@@ -198,5 +198,11 @@ export function Player() {
   )
 }
 ```
+
+:::
+
+::: tip
+
+If you're looking for examples of the useSelector hook, our controls are packed with them. Visit https://github.com/matvp91/superstreamer/tree/main/packages/player/src/react/controls/components for many examples.
 
 :::
