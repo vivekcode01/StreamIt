@@ -2,10 +2,24 @@
   --vp-c-brand-1: #ff7400;
   --vp-c-brand-2: #ff7400;
   --vp-c-brand-3: #ff7400;
+
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #ff4d00 30%, #ff9a00);
+
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, rgba(255, 77, 0, .2) 40%, rgba(255, 154, 0, .2) 40%);
+  --vp-home-hero-image-filter: blur(44px);
 }
 
-.logo {
-  width: 120px;
+@media (min-width: 640px) {
+  :root {
+    --vp-home-hero-image-filter: blur(56px);
+  }
+}
+
+@media (min-width: 960px) {
+  :root {
+    --vp-home-hero-image-filter: blur(68px);
+  }
 }
 
 .hidden {
@@ -15,4 +29,8 @@
 .iframe {
   width: 100%;
   border: none;
+}
+
+.VPHomeHero .VPImage {
+  max-width: 160px;
 }
