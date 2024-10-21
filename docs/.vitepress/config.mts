@@ -21,63 +21,20 @@ export default defineConfig({
     search: {
       provider: "local",
     },
-    sidebar: [
-      {
-        text: "Introduction",
-        items: [
-          {
-            text: "What is Superstreamer?",
-            link: "/guide/what-is-superstreamer"
-          },
-          {
-            text: "Getting Started",
-            link: "/guide/getting-started"
-          },
-          {
-            text: "Packages",
-            link: "/guide/packages"
-          },
-          {
-            text: "Learning",
-            link: "/guide/learning"
-          }
-        ]
-      },
-      {
-        text: "Features",
-        items: [
-          {
-            text: "Video processing",
-            link: "/guide/video-processing",
-          },
-          {
-            text: "Playlist manipulation",
-            link: "/guide/playlist-manipulation",
-          },
-          {
-            text: "Player",
-            link: "/guide/player",
-          },
-          {
-            text: "Dashboard",
-            link: "/guide/dashboard"
-          }
-        ]
-      },
-      {
-        text: "Miscellaneous",
-        items: [
-          {
-            text: "Contribute",
-            link: "/guide/contribute"
-          },
-          {
-            text: "Credits",
-            link: "/guide/credits"
-          },
-        ],
-      },
+    nav: [
+      { text: 'Guide', link: '/guide/what-is-superstreamer' },
+      { text: 'Reference', link: '/reference/player' },
     ],
+    sidebar: {
+      '/guide/': { 
+        base: '/guide/', 
+        items: sidebarGuide() 
+      },
+      '/reference/': { 
+        base: '/reference/',
+         items: sidebarReference() 
+      },
+    },
     socialLinks: [
       { icon: "github", link: "https://github.com/matvp91/superstreamer" },
     ],
@@ -90,3 +47,77 @@ export default defineConfig({
     clearScreen: false,
   },
 });
+
+function sidebarGuide() {
+  return [
+    {
+      text: "Introduction",
+      items: [
+        {
+          text: "What is Superstreamer?",
+          link: "/what-is-superstreamer"
+        },
+        {
+          text: "Getting Started",
+          link: "/getting-started"
+        },
+        {
+          text: "Packages",
+          link: "/packages"
+        },
+        {
+          text: "Learning",
+          link: "/learning"
+        }
+      ]
+    },
+    {
+      text: "Features",
+      items: [
+        {
+          text: "Video processing",
+          link: "/video-processing",
+        },
+        {
+          text: "Playlist manipulation",
+          link: "/playlist-manipulation",
+        },
+        {
+          text: "Player",
+          link: "/player",
+        },
+        {
+          text: "Dashboard",
+          link: "/dashboard"
+        }
+      ]
+    },
+    {
+      text: "Miscellaneous",
+      items: [
+        {
+          text: "Contribute",
+          link: "/contribute"
+        },
+        {
+          text: "Credits",
+          link: "/credits"
+        },
+      ],
+    },
+  ]
+}
+
+function sidebarReference() {
+  return [
+    {
+      text: "Reference",
+      items: [
+        {
+          text: "Player",
+          link: "/player"
+        },
+      ]
+    }
+  ]
+}

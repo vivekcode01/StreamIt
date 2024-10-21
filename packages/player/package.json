@@ -1,6 +1,6 @@
 {
   "name": "@superstreamer/player",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Video player controls (React, Tailwind) and an HLS.js facade",
   "author": "Superstreamer",
   "homepage": "https://github.com/matvp91/superstreamer/tree/main/packages/player",
