@@ -43,7 +43,7 @@ async function runJob(
 
   const outDir = await tmpDir.create();
 
-  const inputFile = await prepareInput(job, tmpDir, params.input);
+  const inputFile = await getInput(job, tmpDir, params.input);
 
   job.log(`Input is ${inputFile.path}`);
 
@@ -216,7 +216,7 @@ function getMaxHeight(info: FFprobeResult) {
   }, 0);
 }
 
-async function prepareInput(job: Job, tmpDir: TmpDir, input: Input) {
+async function getInput(job: Job, tmpDir: TmpDir, input: Input) {
   const filePath = parseFilePath(input.path);
 
   // If the input is on S3, download the file locally.
