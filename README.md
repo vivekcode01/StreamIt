@@ -49,4 +49,4 @@ Dive into the [Documentation](https://matvp91.github.io/superstreamer) and do no
 
 ## Support
 
-I've lost count of the weekends I’ve sacrificed to this project. If you think I’m adding value to your company—or just want to help me remember what sunlight looks like — consider sponsoring! You can also pitch in by writing code, docs, or just spreading the word. Any help is hugely appreciated! 🥰
+We've lost count of the weekends I’ve sacrificed to this project. If you think we've adding value to your company — or just want to help me remember what sunlight looks like — consider sponsoring! You can also pitch in by writing code, docs, or just spreading the word. Any help is hugely appreciated! 🥰
