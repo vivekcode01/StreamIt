@@ -7,6 +7,11 @@ export default defineConfig({
     "An open, scalable, online streaming setup. All-in-one toolkit from ingest to adaptive video playback.",
   lang: "en-US",
   head: [
+    ['link', { rel: 'icon', type: 'image/png', href: '/logo-mascotte.png' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:locale', content: 'en' }],
+    ['meta', { property: 'og:title', content: 'Superstreamer | All-in-one toolkit from ingest to adaptive video playback' }],
+    ['meta', { property: 'og:site_name', content: 'Superstreamer' }],
     [
       "script",
       {},
@@ -18,6 +23,10 @@ export default defineConfig({
     ],
   ],
   themeConfig: {
+    logo: {
+      src: "/logo-mascotte.png",
+      height: 21,
+    },
     search: {
       provider: "local",
     },
