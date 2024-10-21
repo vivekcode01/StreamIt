@@ -1,4 +1,5 @@
 import type { HlsAssetPlayer, Level, MediaPlaylist } from "hls.js";
+import type { HlsFacade } from "./facade";
 
 /**
  * A custom type for each `ASSET`.
@@ -126,3 +127,9 @@ export type HlsFacadeListeners = {
   ) => void;
   [Events.AUTO_QUALITY_CHANGE]: (data: AutoQualityChangeEventData) => void;
 };
+
+/**
+ * A plugin is a function that receives a facade instance, and expects
+ * a destroy function as return value.
+ */
+export type HlsFacadePluginFn = (facade: HlsFacade) => () => void;

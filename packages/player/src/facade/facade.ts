@@ -16,6 +16,7 @@ import type {
   HlsFacadeListeners,
   Interstitial,
   PlayheadChangeEventData,
+  HlsFacadePluginFn,
 } from "./types";
 
 export type HlsFacadeOptions = {
@@ -39,6 +40,8 @@ export class HlsFacade {
   private interstitial_: Interstitial | null = null;
 
   private mediaManager_: MediaManager | null = null;
+
+  private plugins_ = new Set<HlsFacadePlugin>();
 
   constructor(
     public hls: Hls,
@@ -80,6 +83,15 @@ export class HlsFacade {
       // Wait once until we can grab the media.
       hls.once(Hls.Events.MEDIA_ATTACHED, this.onMediaAttached_, this);
     }
+  }
+
+  /**
+   * Register a plugin. It'll be called when an asset is ready,
+   * and the return value when the asset should be resetted.
+   * @param fn
+   */
+  use(fn: HlsFacadePluginFn) {
+    this.plugins_.add({ fn });
   }
 
   on<E extends keyof HlsFacadeListeners>(
@@ -309,6 +321,13 @@ export class HlsFacade {
     this.state_ = null;
     this.interstitial_ = null;
 
+    this.plugins_.forEach((plugin) => {
+      plugin.reset?.();
+      // Delete the reset func. We'll grab a new one once we call
+      // the plugin constructor again.
+      plugin.reset = undefined;
+    });
+
     // In case anyone is listening, reset your state.
     this.emitter_.emit(Events.RESET);
 
@@ -317,6 +336,12 @@ export class HlsFacade {
 
   private onManifestLoaded_() {
     this.state_ = {};
+
+    this.plugins_.forEach((plugin) => {
+      // Call each plugin with a manifest loaded.
+      plugin.reset = plugin.fn(this);
+    });
+
     this.emitter_.emit(Events.READY);
   }
 
@@ -427,4 +452,9 @@ export class HlsFacade {
 type DominantState = {
   started?: boolean;
   playRequested?: boolean;
+};
+
+type HlsFacadePlugin = {
+  fn: HlsFacadePluginFn;
+  reset?: () => void;
 };
