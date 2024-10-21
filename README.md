@@ -5,9 +5,9 @@
   <h4>From video processing to playback in a matter of minutes.</h4>
   
   <p align="center">
-    <img src="https://img.shields.io/github/license/matvp91/superstreamer">
-    <img src="https://img.shields.io/github/last-commit/matvp91/superstreamer">
-    <img src="https://img.shields.io/github/stars/matvp91/superstreamer" alt="stars">
+    <img src="https://img.shields.io/github/license/matvp91/superstreamer?v=1">
+    <img src="https://img.shields.io/github/last-commit/matvp91/superstreamer?v=1">
+    <img src="https://img.shields.io/github/stars/matvp91/superstreamer?v=1" alt="stars">
     <img src="https://img.shields.io/badge/PR's-welcome-0437F2" alt="pr">
     <a href="https://discord.gg/4hXgz9EsF4">
       <img src="https://img.shields.io/discord/1290252589522223166?v=1" alt="discord">
@@ -46,3 +46,7 @@ docker compose up -d
 ```
 
 Dive into the [Documentation](https://matvp91.github.io/superstreamer) and do not hesitate to ask questions on [Discord](https://discord.gg/4hXgz9EsF4).
+
+## Support
+
+I've lost count of the weekends I’ve sacrificed to this project. If you think I’m adding value to your company—or just want to help me remember what sunlight looks like — consider sponsoring! You can also pitch in by writing code, docs, or just spreading the word. Any help is hugely appreciated! 🥰
