@@ -100,7 +100,7 @@ async function formatJobNode(node: JobNode): Promise<Job> {
   const failedReason = state === "failed" ? job.failedReason : undefined;
 
   const findParentSortKey = (job: BullMQJob): number => {
-    const value = job.data?.metadata?.parentSortKey;
+    const value = job.data?.parentSortIndex;
     return typeof value === "number" ? value : 0;
   };
   (children ?? []).sort(

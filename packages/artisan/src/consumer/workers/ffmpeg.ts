@@ -1,46 +1,36 @@
-import parseFilePath from "parse-filepath";
 import { FFmpeggy } from "ffmpeggy";
-import { downloadFile, uploadFile } from "../s3";
+import { uploadFile } from "../s3";
 import { TmpDir } from "../tmp-dir";
 import { getBinaryPath } from "../helpers";
-import { JOB_SKIPPED } from "./helpers";
-import type { FFprobeResult } from "ffmpeggy";
+import { getInput } from "./get-input";
 import type { Job } from "bullmq";
 import type { Stream, Input } from "../../types";
-import type { SkippableJobResult } from "./helpers";
 
 const ffmpegBin = await getBinaryPath("ffmpeg");
-const ffprobeBin = await getBinaryPath("ffprobe");
 
 FFmpeggy.DefaultConfig = {
   ...FFmpeggy.DefaultConfig,
   ffmpegBin,
-  ffprobeBin,
 };
 
 export type FfmpegData = {
-  params: {
-    input: Input;
-    stream: Stream;
-    segmentSize: number;
-    assetId: string;
-  };
-  metadata: {
-    parentSortKey: number;
-  };
+  input: Input;
+  stream: Stream;
+  segmentSize: number;
+  assetId: string;
+  parentSortIndex: number;
 };
 
-export type FfmpegResult = SkippableJobResult<{
+export type FfmpegResult = {
   name: string;
   stream: Stream;
-}>;
+};
 
 async function runJob(
   job: Job<FfmpegData, FfmpegResult>,
   tmpDir: TmpDir,
 ): Promise<FfmpegResult> {
-  const { params } = job.data;
-
+  const params = job.data;
   const outDir = await tmpDir.create();
 
   const inputFile = await getInput(job, tmpDir, params.input);
@@ -57,18 +47,6 @@ async function runJob(
   const outputOptions: string[] = [];
 
   if (params.stream.type === "video") {
-    const inputInfo = await FFmpeggy.probe(inputFile.path);
-    job.log(`Probed info (${JSON.stringify(inputInfo)})`);
-
-    const maxHeight = getMaxHeight(inputInfo);
-
-    if (maxHeight > 0 && params.stream.height > maxHeight) {
-      job.log(
-        `Skip upscale, requested ${params.stream.height} is larger than input ${maxHeight}`,
-      );
-      return JOB_SKIPPED;
-    }
-
     name = `video_${params.stream.height}_${params.stream.bitrate}_${params.stream.codec}.m4v`;
     outputOptions.push(
       ...getVideoOutputOptions(params.stream, params.segmentSize),
@@ -205,36 +183,4 @@ function getAudioOutputOptions(
 function getTextOutputOptions() {
   const args: string[] = ["-f webvtt"];
   return args;
-}
-
-function getMaxHeight(info: FFprobeResult) {
-  return info.streams.reduce<number>((acc, stream) => {
-    if (!stream.height) {
-      return acc;
-    }
-    return acc > stream.height ? acc : stream.height;
-  }, 0);
-}
-
-async function getInput(job: Job, tmpDir: TmpDir, input: Input) {
-  const filePath = parseFilePath(input.path);
-
-  // If the input is on S3, download the file locally.
-  if (filePath.dir.startsWith("s3://")) {
-    const inDir = await tmpDir.create();
-
-    job.log(`Download "${filePath.path}" to "${inDir}"`);
-    await downloadFile(inDir, filePath.path.replace("s3://", ""));
-
-    return parseFilePath(`${inDir}/${filePath.basename}`);
-  }
-
-  if (
-    filePath.dir.startsWith("http://") ||
-    filePath.dir.startsWith("https://")
-  ) {
-    return filePath;
-  }
-
-  throw new Error("Failed to resolve input path");
 }

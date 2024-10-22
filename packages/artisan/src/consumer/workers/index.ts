@@ -3,11 +3,13 @@ import { connection } from "../env";
 import transcodeFn from "./transcode";
 import packageFn from "./package";
 import ffmpegFn from "./ffmpeg";
+import ffprobeFn from "./ffprobe";
 
 const workers = [
   new Worker("transcode", transcodeFn, { connection, autorun: false }),
   new Worker("package", packageFn, { connection, autorun: false }),
   new Worker("ffmpeg", ffmpegFn, { connection, autorun: false }),
+  new Worker("ffprobe", ffprobeFn, { connection, autorun: false }),
 ];
 
 async function gracefulShutdown() {

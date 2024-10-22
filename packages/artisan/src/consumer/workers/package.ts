@@ -11,14 +11,10 @@ import type { Stream } from "../../types";
 const packagerBin = await getBinaryPath("packager");
 
 export type PackageData = {
-  params: {
-    assetId: string;
-    segmentSize?: number;
-    name: string;
-  };
-  metadata: {
-    tag?: string;
-  };
+  assetId: string;
+  segmentSize?: number;
+  name: string;
+  tag?: string;
 };
 
 export type PackageResult = {
@@ -29,7 +25,7 @@ async function runJob(
   job: Job<PackageData, PackageResult>,
   tmpDir: TmpDir,
 ): Promise<PackageResult> {
-  const { params } = job.data;
+  const params = job.data;
 
   const inDir = await tmpDir.create();
   await downloadFolder(`transcode/${params.assetId}`, inDir);

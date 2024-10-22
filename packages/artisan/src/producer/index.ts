@@ -1,11 +1,12 @@
-import { Queue, FlowProducer, Job } from "bullmq";
+import { Queue, FlowProducer } from "bullmq";
 import { randomUUID } from "crypto";
 import { connection } from "./env";
-import type { FlowChildJob } from "bullmq";
+import { TranscodeStep } from "../consumer/workers/transcode";
 import type { Input, Stream } from "../types";
 import type { TranscodeData } from "../consumer/workers/transcode";
 import type { PackageData } from "../consumer/workers/package";
 import type { FfmpegData } from "../consumer/workers/ffmpeg";
+import type { FfprobeData } from "../consumer/workers/ffprobe";
 
 export const flowProducer = new FlowProducer({
   connection,
@@ -19,7 +20,11 @@ const packageQueue = new Queue<PackageData>("package", {
   connection,
 });
 
-const ffmpegQueue = new Queue<FfmpegData>("ffmpeg", {
+export const ffmpegQueue = new Queue<FfmpegData>("ffmpeg", {
+  connection,
+});
+
+export const ffprobeQueue = new Queue<FfprobeData>("ffprobe", {
   connection,
 });
 
@@ -27,7 +32,12 @@ const ffmpegQueue = new Queue<FfmpegData>("ffmpeg", {
  * Export all available queues so we can read them elsewhere, such as in api
  * where we can build job stats for each queue.
  */
-export const allQueus = [transcodeQueue, packageQueue, ffmpegQueue];
+export const allQueus = [
+  transcodeQueue,
+  packageQueue,
+  ffmpegQueue,
+  ffprobeQueue,
+];
 
 type AddTranscodeJobData = {
   assetId?: string;
@@ -51,78 +61,21 @@ export async function addTranscodeJob({
   packageAfter = false,
   tag,
 }: AddTranscodeJobData) {
-  const jobId = `transcode_${assetId}`;
-
-  const pendingJob = await Job.fromId(transcodeQueue, jobId);
-  if (pendingJob) {
-    return pendingJob;
-  }
-
-  let childJobIndex = 0;
-  const childJobs: FlowChildJob[] = [];
-
-  for (const stream of streams) {
-    let input: Input | undefined;
-
-    if (stream.type === "video") {
-      input = inputs.find((input) => input.type === "video");
-    }
-
-    if (stream.type === "audio") {
-      input = inputs.find(
-        (input) => input.type === "audio" && input.language === stream.language,
-      );
-    }
-
-    if (stream.type === "text") {
-      input = inputs.find(
-        (input) => input.type === "text" && input.language === stream.language,
-      );
-    }
-
-    if (input) {
-      childJobs.push({
-        name: getFfmpegJobName(stream),
-        data: {
-          params: {
-            input,
-            stream,
-            segmentSize,
-            assetId,
-          },
-          metadata: {
-            parentSortKey: ++childJobIndex,
-          },
-        } satisfies FfmpegData,
-        queueName: "ffmpeg",
-        opts: {
-          jobId: `ffmpeg_${randomUUID()}`,
-          failParentOnFailure: true,
-        },
-      });
-    }
-  }
-
-  const { job } = await flowProducer.add({
-    name: "transcode",
-    queueName: "transcode",
-    data: {
-      params: {
-        assetId,
-        segmentSize,
-        packageAfter,
-      },
-      metadata: {
-        tag,
-      },
-    } satisfies TranscodeData,
-    children: childJobs,
-    opts: {
-      jobId,
+  return await transcodeQueue.add(
+    "transcode",
+    {
+      step: TranscodeStep.Initial,
+      assetId,
+      inputs,
+      streams,
+      segmentSize,
+      packageAfter,
+      tag,
     },
-  });
-
-  return job;
+    {
+      jobId: `transcode_${assetId}`,
+    },
+  );
 }
 
 type AddPackageJobData = {
@@ -144,30 +97,13 @@ export async function addPackageJob({
   return await packageQueue.add(
     "package",
     {
-      params: {
-        assetId,
-        segmentSize,
-        name,
-      },
-      metadata: {
-        tag,
-      },
+      assetId,
+      segmentSize,
+      name,
+      tag,
     },
     {
-      jobId: `package_${randomUUID()}`,
+      jobId: `package_${assetId}_${name}`,
     },
   );
-}
-
-function getFfmpegJobName(stream: Stream) {
-  const params: string[] = [stream.type];
-
-  if (stream.type === "video") {
-    params.push(stream.height.toString());
-  }
-  if ((stream.type === "audio" || stream.type === "text") && stream.language) {
-    params.push(stream.language);
-  }
-
-  return `ffmpeg(${params.join(",")})`;
 }
