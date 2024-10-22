@@ -56,7 +56,8 @@ This is a body payload for the `BigBuckBunny.mp4` file we've uploaded to our S3 
     {
       "path": "s3://source/BigBuckBunny.mp4",
       "type": "audio",
-      "language": "eng"
+      "language": "eng",
+      "channels": 2
     },
     // Describe text input
     {
