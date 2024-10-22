@@ -81,16 +81,8 @@ export async function addTranscodeJob({
     }
 
     if (input) {
-      const params: string[] = [stream.type];
-      if (stream.type === "video") {
-        params.push(stream.height.toString());
-      }
-      if (stream.type === "audio" || stream.type === "text") {
-        params.push(stream.language);
-      }
-
       childJobs.push({
-        name: `ffmpeg(${params.join(",")})`,
+        name: getFfmpegJobName(stream),
         data: {
           params: {
             input,
@@ -165,4 +157,17 @@ export async function addPackageJob({
       jobId: `package_${randomUUID()}`,
     },
   );
+}
+
+function getFfmpegJobName(stream: Stream) {
+  const params: string[] = [stream.type];
+
+  if (stream.type === "video") {
+    params.push(stream.height.toString());
+  }
+  if ((stream.type === "audio" || stream.type === "text") && stream.language) {
+    params.push(stream.language);
+  }
+
+  return `ffmpeg(${params.join(",")})`;
 }
