@@ -10,13 +10,14 @@ import type {
   InterstitialAssetPlayerCreatedData,
   InterstitialAssetStartedData,
   HlsAssetPlayer,
+  InterstitialsUpdatedData,
 } from "hls.js";
 import type { StateObserverEmit } from "./state-observer";
 import type {
   HlsFacadeListeners,
   Interstitial,
   PlayheadChangeEventData,
-  HlsFacadePluginFn,
+  InterstitialChangeEventData,
 } from "./types";
 
 export type HlsFacadeOptions = {
@@ -41,7 +42,7 @@ export class HlsFacade {
 
   private mediaManager_: MediaManager | null = null;
 
-  private plugins_ = new Set<HlsFacadePlugin>();
+  cuePoints: number[] = [];
 
   constructor(
     public hls: Hls,
@@ -55,6 +56,11 @@ export class HlsFacade {
 
     hls.on(Hls.Events.BUFFER_RESET, this.onBufferReset_, this);
     hls.on(Hls.Events.MANIFEST_LOADED, this.onManifestLoaded_, this);
+    hls.on(
+      Hls.Events.INTERSTITIALS_UPDATED,
+      this.onInterstitialsUpdated_,
+      this,
+    );
     hls.on(
       Hls.Events.INTERSTITIAL_ASSET_PLAYER_CREATED,
       this.onInterstitialAssetPlayerCreated_,
@@ -85,15 +91,6 @@ export class HlsFacade {
     }
   }
 
-  /**
-   * Register a plugin. It'll be called when an asset is ready,
-   * and the return value when the asset should be resetted.
-   * @param fn
-   */
-  use(fn: HlsFacadePluginFn) {
-    this.plugins_.add({ fn });
-  }
-
   on<E extends keyof HlsFacadeListeners>(
     event: E,
     listener: HlsFacadeListeners[E],
@@ -114,6 +111,11 @@ export class HlsFacade {
   destroy() {
     this.hls.off(Hls.Events.BUFFER_RESET, this.onBufferReset_, this);
     this.hls.off(Hls.Events.MANIFEST_LOADED, this.onManifestLoaded_, this);
+    this.hls.off(
+      Hls.Events.INTERSTITIALS_UPDATED,
+      this.onInterstitialsUpdated_,
+      this,
+    );
     this.hls.off(
       Hls.Events.INTERSTITIAL_ASSET_PLAYER_CREATED,
       this.onInterstitialAssetPlayerCreated_,
@@ -225,23 +227,6 @@ export class HlsFacade {
   }
 
   /**
-   * A list of ad cue points, can be used to plot on a seekbar.
-   */
-  get cuePoints() {
-    const manager = this.hls.interstitialsManager;
-    if (!manager) {
-      return [];
-    }
-    return manager.schedule.reduce<number[]>((acc, item) => {
-      const types = getTypes(item);
-      if (types?.ad && !acc.includes(item.start)) {
-        acc.push(item.start);
-      }
-      return acc;
-    }, []);
-  }
-
-  /**
    * When currently playing an interstitial, this holds all the info
    * from that interstitial, such as time / duration, ...
    */
@@ -321,13 +306,6 @@ export class HlsFacade {
     this.state_ = null;
     this.interstitial_ = null;
 
-    this.plugins_.forEach((plugin) => {
-      plugin.reset?.();
-      // Delete the reset func. We'll grab a new one once we call
-      // the plugin constructor again.
-      plugin.reset = undefined;
-    });
-
     // In case anyone is listening, reset your state.
     this.emitter_.emit(Events.RESET);
 
@@ -337,12 +315,17 @@ export class HlsFacade {
   private onManifestLoaded_() {
     this.state_ = {};
 
-    this.plugins_.forEach((plugin) => {
-      // Call each plugin with a manifest loaded.
-      plugin.reset = plugin.fn(this);
-    });
-
     this.emitter_.emit(Events.READY);
+  }
+
+  private onInterstitialsUpdated_(_: string, data: InterstitialsUpdatedData) {
+    this.cuePoints = data.schedule.reduce<number[]>((acc, item) => {
+      const types = getTypes(item);
+      if (types?.ad && !acc.includes(item.start)) {
+        acc.push(item.start);
+      }
+      return acc;
+    }, []);
   }
 
   private onInterstitialAssetPlayerCreated_(
@@ -374,8 +357,13 @@ export class HlsFacade {
         return pipeState("duration", asset);
       },
       player: data.player,
+      asset: data.asset,
       type: assetListItem.type,
     };
+
+    this.emitter_.emit(Events.INTERSTITIAL_CHANGE, {
+      interstitial: this.interstitial_,
+    } satisfies InterstitialChangeEventData);
   }
 
   private onInterstitialAssetEnded_(
@@ -384,6 +372,10 @@ export class HlsFacade {
   ) {
     this.interstitialAssets_.delete(data.player);
     this.interstitial_ = null;
+
+    this.emitter_.emit(Events.INTERSTITIAL_CHANGE, {
+      interstitial: null,
+    } satisfies InterstitialChangeEventData);
   }
 
   private onMediaAttached_() {
@@ -452,9 +444,4 @@ export class HlsFacade {
 type DominantState = {
   started?: boolean;
   playRequested?: boolean;
-};
-
-type HlsFacadePlugin = {
-  fn: HlsFacadePluginFn;
-  reset?: () => void;
 };

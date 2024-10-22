@@ -1,4 +1,5 @@
 import { defineConfig } from "vitepress";
+import pkg from '../package.json';
 
 export default defineConfig({
   base: "/superstreamer/",
@@ -31,8 +32,29 @@ export default defineConfig({
       provider: "local",
     },
     nav: [
-      { text: 'Guide', link: '/guide/what-is-superstreamer' },
-      { text: 'Reference', link: '/reference/player' },
+      { 
+        text: 'Guide', 
+        link: '/guide/what-is-superstreamer', 
+        activeMatch: '/guide/',
+      },
+      { 
+        text: 'Reference', 
+        link: '/reference/player',
+        activeMatch: '/reference/',
+      },
+      {
+        text: pkg.version,
+        items: [
+          {
+            text: 'Contributing',
+            link: 'https://github.com/matvp91/superstreamer/blob/main/CONTRIBUTING.md'
+          },
+          {
+            text: 'Code of Conduct',
+            link: 'https://github.com/matvp91/superstreamer/blob/main/CODE_OF_CONDUCT.md'
+          }
+        ]
+      }
     ],
     sidebar: {
       '/guide/': { 
@@ -47,6 +69,10 @@ export default defineConfig({
     socialLinks: [
       { icon: "github", link: "https://github.com/matvp91/superstreamer" },
     ],
+    editLink: {
+      pattern: 'https://github.com/matvp91/superstreamer/edit/main/docs/:path',
+      text: 'Edit this page on GitHub'
+    },
     footer: {
       message: "Released under the MPL-2.0 License.",
       copyright: "Copyright © 2024-present Matthias Van Parijs",
@@ -64,53 +90,53 @@ function sidebarGuide() {
       items: [
         {
           text: "What is Superstreamer?",
-          link: "/what-is-superstreamer"
+          link: "what-is-superstreamer",
         },
         {
           text: "Getting Started",
-          link: "/getting-started"
+          link: "getting-started",
         },
         {
           text: "Packages",
-          link: "/packages"
+          link: "packages",
         },
         {
           text: "Learning",
-          link: "/learning"
-        }
-      ]
+          link: "learning",
+        },
+      ],
     },
     {
       text: "Features",
       items: [
         {
           text: "Video processing",
-          link: "/video-processing",
+          link: "video-processing",
         },
         {
           text: "Playlist manipulation",
-          link: "/playlist-manipulation",
+          link: "playlist-manipulation",
         },
         {
           text: "Player",
-          link: "/player",
+          link: "player",
         },
         {
           text: "Dashboard",
-          link: "/dashboard"
-        }
-      ]
+          link: "dashboard",
+        },
+      ],
     },
     {
       text: "Miscellaneous",
       items: [
         {
           text: "Contribute",
-          link: "/contribute"
+          link: "contribute",
         },
         {
           text: "Credits",
-          link: "/credits"
+          link: "credits",
         },
       ],
     },
