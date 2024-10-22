@@ -1,5 +1,9 @@
-import type { HlsAssetPlayer, Level, MediaPlaylist } from "hls.js";
-import type { HlsFacade } from "./facade";
+import type {
+  HlsAssetPlayer,
+  InterstitialAssetItem,
+  Level,
+  MediaPlaylist,
+} from "hls.js";
 
 /**
  * A custom type for each `ASSET`.
@@ -47,6 +51,7 @@ export type Interstitial = {
   time: number;
   duration: number;
   player: HlsAssetPlayer;
+  asset: InterstitialAssetItem;
   type?: CustomInterstitialType;
 };
 
@@ -78,6 +83,7 @@ export enum Events {
   AUDIO_TRACKS_CHANGE = "audioTracksChange",
   SUBTITLE_TRACKS_CHANGE = "subtitleTracksChange",
   AUTO_QUALITY_CHANGE = "autoQualityChange",
+  INTERSTITIAL_CHANGE = "interstitialChange",
 }
 
 export type PlayheadChangeEventData = {
@@ -110,6 +116,10 @@ export type AutoQualityChangeEventData = {
   autoQuality: boolean;
 };
 
+export type InterstitialChangeEventData = {
+  interstitial: Interstitial | null;
+};
+
 /**
  * List of events with their respective event handlers.
  */
@@ -126,10 +136,5 @@ export type HlsFacadeListeners = {
     data: SubtitleTracksChangeEventData,
   ) => void;
   [Events.AUTO_QUALITY_CHANGE]: (data: AutoQualityChangeEventData) => void;
+  [Events.INTERSTITIAL_CHANGE]: (data: InterstitialChangeEventData) => void;
 };
-
-/**
- * A plugin is a function that receives a facade instance, and expects
- * a destroy function as return value.
- */
-export type HlsFacadePluginFn = (facade: HlsFacade) => () => void;
