@@ -1,9 +1,7 @@
 import { FFmpeggy } from "ffmpeggy";
 import { uploadFile } from "../s3";
-import { TmpDir } from "../tmp-dir";
-import { getBinaryPath } from "../helpers";
-import { getInput } from "./get-input";
-import type { Job } from "bullmq";
+import { getBinaryPath, getInput } from "../helpers";
+import type { WorkerCallback } from "../lib/worker-processor";
 import type { Stream, Input } from "../../types";
 
 const ffmpegBin = await getBinaryPath("ffmpeg");
@@ -26,14 +24,13 @@ export type FfmpegResult = {
   stream: Stream;
 };
 
-async function runJob(
-  job: Job<FfmpegData, FfmpegResult>,
-  tmpDir: TmpDir,
-): Promise<FfmpegResult> {
-  const params = job.data;
+export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
+  job,
+  tmpDir,
+}) => {
   const outDir = await tmpDir.create();
 
-  const inputFile = await getInput(job, tmpDir, params.input);
+  const inputFile = await getInput(tmpDir, job.data.input);
 
   job.log(`Input is ${inputFile.path}`);
 
@@ -43,25 +40,22 @@ async function runJob(
   });
 
   let name: string | undefined;
-
   const outputOptions: string[] = [];
 
-  if (params.stream.type === "video") {
-    name = `video_${params.stream.height}_${params.stream.bitrate}_${params.stream.codec}.m4v`;
-    outputOptions.push(
-      ...getVideoOutputOptions(params.stream, params.segmentSize),
-    );
+  const { stream } = job.data;
+
+  if (stream.type === "video") {
+    name = `video_${stream.height}_${stream.bitrate}_${stream.codec}.m4v`;
+    outputOptions.push(...getVideoOutputOptions(stream, job.data.segmentSize));
   }
 
-  if (params.stream.type === "audio") {
-    name = `audio_${params.stream.language}_${params.stream.bitrate}_${params.stream.codec}.m4a`;
-    outputOptions.push(
-      ...getAudioOutputOptions(params.stream, params.segmentSize),
-    );
+  if (stream.type === "audio") {
+    name = `audio_${stream.language}_${stream.bitrate}_${stream.codec}.m4a`;
+    outputOptions.push(...getAudioOutputOptions(stream, job.data.segmentSize));
   }
 
-  if (params.stream.type === "text") {
-    name = `text_${params.stream.language}.vtt`;
+  if (stream.type === "text") {
+    name = `text_${stream.language}.vtt`;
     outputOptions.push(...getTextOutputOptions());
   }
 
@@ -90,24 +84,20 @@ async function runJob(
 
   job.updateProgress(100);
 
-  job.log(`Uploading ${outDir}/${name} to transcode/${params.assetId}/${name}`);
+  job.log(
+    `Uploading ${outDir}/${name} to transcode/${job.data.assetId}/${name}`,
+  );
 
-  await uploadFile(`transcode/${params.assetId}/${name}`, `${outDir}/${name}`);
+  await uploadFile(
+    `transcode/${job.data.assetId}/${name}`,
+    `${outDir}/${name}`,
+  );
 
   return {
     name,
-    stream: params.stream,
+    stream: job.data.stream,
   };
-}
-
-export default async function (job: Job<FfmpegData, FfmpegResult>) {
-  const tmpDir = new TmpDir();
-  try {
-    return await runJob(job, tmpDir);
-  } finally {
-    await tmpDir.deleteAll();
-  }
-}
+};
 
 function getVideoOutputOptions(
   stream: Extract<Stream, { type: "video" }>,

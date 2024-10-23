@@ -58,7 +58,6 @@ function scheduleForPackage(adMedia: AdMedia) {
     tag: "ad",
     assetId: adMedia.assetId,
     packageAfter: true,
-    segmentSize: 4,
     inputs: [
       {
         path: adMedia.fileUrl,
@@ -75,22 +74,16 @@ function scheduleForPackage(adMedia: AdMedia) {
         type: "video",
         codec: "h264",
         height: 720,
-        bitrate: 4000000,
-        framerate: 24,
       },
       {
         type: "video",
         codec: "h264",
         height: 480,
-        bitrate: 1500000,
-        framerate: 24,
       },
       {
         type: "audio",
         codec: "aac",
-        bitrate: 128000,
         language: "eng",
-        channels: 2, // TODO: Make optional and derive channels from input
       },
     ],
   });

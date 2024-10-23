@@ -36,10 +36,3 @@ AudioCodecSchema.description = "Supported audio codecs.";
 AudioCodecSchema.$id = "#/components/schemas/AudioCodec";
 
 export type AudioCodec = Static<typeof AudioCodecSchema>;
-
-export function getLangCode(value?: string) {
-  if (value && value in by639_2T) {
-    return value as LangCode;
-  }
-  return null;
-}

@@ -1,8 +1,8 @@
 import { Queue, FlowProducer } from "bullmq";
 import { randomUUID } from "crypto";
 import { connection } from "./env";
-import { TranscodeStep } from "../consumer/workers/transcode";
-import type { Input, Stream } from "../types";
+import { DEFAULT_SEGMENT_SIZE } from "../defaults";
+import type { PartialInput, PartialStream } from "../types";
 import type { TranscodeData } from "../consumer/workers/transcode";
 import type { PackageData } from "../consumer/workers/package";
 import type { FfmpegData } from "../consumer/workers/ffmpeg";
@@ -41,8 +41,8 @@ export const allQueus = [
 
 type AddTranscodeJobData = {
   assetId?: string;
-  inputs: Input[];
-  streams: Stream[];
+  inputs: PartialInput[];
+  streams: PartialStream[];
   segmentSize?: number;
   packageAfter?: boolean;
   tag?: string;
@@ -57,14 +57,13 @@ export async function addTranscodeJob({
   assetId = randomUUID(),
   inputs,
   streams,
-  segmentSize = 4,
+  segmentSize = DEFAULT_SEGMENT_SIZE,
   packageAfter = false,
   tag,
 }: AddTranscodeJobData) {
   return await transcodeQueue.add(
     "transcode",
     {
-      step: TranscodeStep.Initial,
       assetId,
       inputs,
       streams,

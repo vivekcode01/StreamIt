@@ -1,11 +1,8 @@
 import { FFmpeggy } from "ffmpeggy";
-import { getBinaryPath } from "../helpers";
-import { TmpDir } from "../tmp-dir";
-import { getInput } from "./get-input";
-import { getLangCode } from "shared/typebox";
-import type { Job } from "bullmq";
-import type { Input } from "../../types";
-import type { LangCode } from "shared/typebox";
+import { getBinaryPath, getInput } from "../helpers";
+import type { FFprobeResult } from "ffmpeggy";
+import type { PartialInput } from "../../types";
+import type { WorkerCallback } from "../lib/worker-processor";
 
 const ffprobeBin = await getBinaryPath("ffprobe");
 
@@ -14,65 +11,79 @@ FFmpeggy.DefaultConfig = {
   ffprobeBin,
 };
 
+type VideoInfo = {
+  height?: number;
+  framerate?: number;
+};
+
+type AudioInfo = {
+  language?: string;
+  channels?: number;
+};
+
 export type FfprobeData = {
-  inputs: Input[];
+  inputs: PartialInput[];
   parentSortIndex: number;
 };
 
 export type FfprobeResult = {
-  video: Record<
-    string,
-    {
-      width?: number;
-      height?: number;
-    }
-  >;
-  audio: Record<string, { language?: LangCode; channels?: number }>;
+  video: Record<string, VideoInfo>;
+  audio: Record<string, AudioInfo>;
 };
 
-async function runJob(
-  job: Job<FfprobeData, FfprobeResult>,
-  tmpDir: TmpDir,
-): Promise<FfprobeResult> {
+export const ffprobeCallback: WorkerCallback<
+  FfprobeData,
+  FfprobeResult
+> = async ({ job, tmpDir }) => {
   const result: FfprobeResult = {
     video: {},
     audio: {},
   };
 
   for (const input of job.data.inputs) {
-    const inputFile = await getInput(job, tmpDir, input);
-    const inputInfo = await FFmpeggy.probe(inputFile.path);
+    const file = await getInput(tmpDir, input);
+    const info = await FFmpeggy.probe(file.path);
 
-    job.log(`${input.path}: ${JSON.stringify(inputInfo)}`);
+    setResultForInput(input, info, result);
 
-    if (input.type === "video") {
-      const stream = inputInfo.streams.find(
-        (stream) => stream.codec_type === "video",
-      );
-      result.video[input.path] = {
-        width: stream?.width,
-        height: stream?.height,
-      };
-    }
-    if (input.type === "audio") {
-      const stream = inputInfo.streams.find(
-        (stream) => stream.codec_type === "audio",
-      );
-      result.audio[input.path] = {
-        language: getLangCode(stream?.tags.language) ?? undefined,
-        channels: stream?.channels,
-      };
-    }
+    job.log(`${input.path}: ${JSON.stringify(info)}`);
   }
 
   return result;
-}
+};
 
-export default async function (job: Job) {
-  const tmpDir = new TmpDir();
-  try {
-    return await runJob(job, tmpDir);
-  } finally {
-    await tmpDir.deleteAll();
+function setResultForInput(
+  input: PartialInput,
+  info: FFprobeResult,
+  result: FfprobeResult,
+) {
+  if (input.type === "video") {
+    const stream = info.streams.find((stream) => stream.codec_type === "video");
+
+    let framerate: number | undefined;
+    if (stream?.avg_frame_rate) {
+      const fraction = stream.avg_frame_rate.split("/");
+      if (fraction[1]?.endsWith("|")) {
+        fraction[1] = fraction[1].substring(0, fraction[1].length - 1);
+      }
+      if (fraction.length === 1) {
+        framerate = +fraction[0];
+      } else {
+        framerate = +fraction[0] / +fraction[1];
+      }
+    }
+
+    result.video[input.path] = {
+      height: stream?.height,
+      framerate,
+    };
+  }
+
+  if (input.type === "audio") {
+    const stream = info.streams.find((stream) => stream.codec_type === "audio");
+    result.audio[input.path] = {
+      language: stream?.tags.language,
+      channels: stream?.channels,
+    };
   }
 }
