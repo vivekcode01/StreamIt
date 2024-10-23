@@ -6,8 +6,7 @@
     [
       "@superstreamer/api",
       "@superstreamer/artisan",
-      "@superstreamer/dashboard",
-      "@superstreamer/shared",
+      "@superstreamer/app",
       "@superstreamer/stitcher",
       "docs"
     ]
