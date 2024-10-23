@@ -1,6 +1,6 @@
 import parseFilepath from "parse-filepath";
 import { downloadFile } from "./s3";
-import type { TmpDir } from "./lib/tmp-dir";
+import { Dir } from "./lib/dir";
 import type { PartialInput } from "../types";
 
 export async function getBinaryPath(name: string) {
@@ -22,12 +22,12 @@ export async function getBinaryPath(name: string) {
   );
 }
 
-export async function getInput(tmpDir: TmpDir, input: PartialInput) {
+export async function getInputPath(input: PartialInput, dir: Dir | string) {
   const filePath = parseFilepath(input.path);
 
   // If the input is on S3, download the file locally.
   if (filePath.dir.startsWith("s3://")) {
-    const inDir = await tmpDir.create();
+    const inDir = dir instanceof Dir ? await dir.createTempDir() : dir;
     await downloadFile(inDir, filePath.path.replace("s3://", ""));
     return parseFilepath(`${inDir}/${filePath.basename}`);
   }

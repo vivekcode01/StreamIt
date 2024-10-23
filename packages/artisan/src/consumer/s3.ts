@@ -53,6 +53,13 @@ export async function downloadFolder(key: string, path: string) {
  * @param key S3 key
  */
 export async function downloadFile(path: string, key: string) {
+  const name = `${path}/${basename(key)}`;
+
+  if (await Bun.file(name).exists()) {
+    // If the file already exists, we have nothing to do.
+    return;
+  }
+
   const response = await client.send(
     new GetObjectCommand({
       Bucket: env.S3_BUCKET,
@@ -60,7 +67,7 @@ export async function downloadFile(path: string, key: string) {
     }),
   );
 
-  await writeFile(`${path}/${basename(key)}`, response.Body as Readable);
+  await writeFile(name, response.Body as Readable);
 }
 
 /**

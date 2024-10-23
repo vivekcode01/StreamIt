@@ -1,5 +1,5 @@
 import { FFmpeggy } from "ffmpeggy";
-import { getBinaryPath, getInput } from "../helpers";
+import { getBinaryPath, getInputPath } from "../helpers";
 import type { FFprobeResult } from "ffmpeggy";
 import type { PartialInput } from "../../types";
 import type { WorkerCallback } from "../lib/worker-processor";
@@ -34,14 +34,16 @@ export type FfprobeResult = {
 export const ffprobeCallback: WorkerCallback<
   FfprobeData,
   FfprobeResult
-> = async ({ job, tmpDir }) => {
+> = async ({ job, dir }) => {
   const result: FfprobeResult = {
     video: {},
     audio: {},
   };
 
+  const tempDir = await dir.createTempDir();
+
   for (const input of job.data.inputs) {
-    const file = await getInput(tmpDir, input);
+    const file = await getInputPath(input, tempDir);
     const info = await FFmpeggy.probe(file.path);
 
     setResultForInput(input, info, result);

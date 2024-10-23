@@ -73,6 +73,13 @@ export async function addTranscodeJob({
     },
     {
       jobId: `transcode_${assetId}`,
+      removeOnComplete: {
+        age: 3600 * 24 * 3,
+        count: 200,
+      },
+      removeOnFail: {
+        age: 3600 * 24 * 7,
+      },
     },
   );
 }
@@ -103,6 +110,13 @@ export async function addPackageJob({
     },
     {
       jobId: `package_${assetId}_${name}`,
+      removeOnComplete: {
+        age: 3600 * 24 * 3,
+        count: 200,
+      },
+      removeOnFail: {
+        age: 3600 * 24 * 7,
+      },
     },
   );
 }

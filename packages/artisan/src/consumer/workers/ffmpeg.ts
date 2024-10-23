@@ -1,6 +1,6 @@
 import { FFmpeggy } from "ffmpeggy";
 import { uploadFile } from "../s3";
-import { getBinaryPath, getInput } from "../helpers";
+import { getBinaryPath, getInputPath } from "../helpers";
 import type { WorkerCallback } from "../lib/worker-processor";
 import type { Stream, Input } from "../../types";
 
@@ -26,11 +26,11 @@ export type FfmpegResult = {
 
 export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
   job,
-  tmpDir,
+  dir,
 }) => {
-  const outDir = await tmpDir.create();
+  const outDir = await dir.createTempDir();
 
-  const inputFile = await getInput(tmpDir, job.data.input);
+  const inputFile = await getInputPath(job.data.input, dir);
 
   job.log(`Input is ${inputFile.path}`);
 

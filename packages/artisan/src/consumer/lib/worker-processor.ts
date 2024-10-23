@@ -1,20 +1,20 @@
-import { TmpDir } from "./tmp-dir";
+import { Dir } from "./dir";
 import type { Job } from "bullmq";
 
 export type WorkerCallback<T, R> = (params: {
   job: Job<T, R>;
   token?: string | undefined;
-  tmpDir: TmpDir;
+  dir: Dir;
 }) => Promise<R>;
 
 export function createWorkerProcessor<T, R>(callback: WorkerCallback<T, R>) {
-  const tmpDir = new TmpDir();
+  const dir = new Dir();
 
   return async (job: Job<T, R>, token?: string) => {
     try {
-      return await callback({ job, token, tmpDir });
+      return await callback({ job, token, dir });
     } finally {
-      await tmpDir.deleteAll();
+      await dir.deleteAll();
     }
   };
 }

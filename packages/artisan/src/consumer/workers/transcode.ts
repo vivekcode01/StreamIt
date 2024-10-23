@@ -117,6 +117,10 @@ async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
       return;
     }
 
+    job.log(
+      `Match found for "${JSON.stringify(partial)}": ${JSON.stringify(match.input)}`,
+    );
+
     assert(job.id);
     ffmpegQueue.add(
       getFfmpegJobName(match.stream),
@@ -203,10 +207,10 @@ function mergeInput(partial: PartialInput, probeResult: FfprobeResult): Input {
       assert(info);
 
       const height = partial.height ?? info.height;
-      assert(height);
+      assert(height, "Failed to retrieve height");
 
       const framerate = partial.framerate ?? info.framerate;
-      assert(framerate);
+      assert(framerate, "Failed to retrieve framerate");
 
       return {
         type: "video",
@@ -221,7 +225,7 @@ function mergeInput(partial: PartialInput, probeResult: FfprobeResult): Input {
       assert(info);
 
       const language = partial.language ?? getLangCode(info.language);
-      assert(language);
+      assert(language, "Failed to retrieve language");
 
       // Assume when no channel metadata is found, we'll fallback to 2.
       const channels = partial.channels ?? info.channels ?? 2;
