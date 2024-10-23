@@ -5,6 +5,7 @@ import { ffprobeQueue, ffmpegQueue } from "../../producer";
 import { uploadJson } from "../s3";
 import { assert } from "../../assert";
 import { getDefaultAudioBitrate, getDefaultVideoBitrate } from "../../defaults";
+import { addPackageJob } from "../../producer";
 import type { Input, PartialInput, Stream, PartialStream } from "../../types";
 import type { Job } from "bullmq";
 import type { FfprobeResult } from "./ffprobe";
@@ -62,6 +63,14 @@ export const transcodeCallback: WorkerCallback<
 
       case Step.Meta: {
         await handleStepMeta(job, token);
+
+        if (job.data.packageAfter) {
+          await addPackageJob({
+            assetId: job.data.assetId,
+            tag: job.data.tag,
+          });
+        }
+
         await job.updateData({
           ...job.data,
           step: Step.Finish,

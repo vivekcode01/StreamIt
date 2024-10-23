@@ -15,7 +15,6 @@ export type AdMedia = {
 
 export async function getAdMediasFromVast(adBreak: VmapAdBreak) {
   const adMedias = await getAdMedias(adBreak);
-
   const result: AdMedia[] = [];
 
   for (const adMedia of adMedias) {
