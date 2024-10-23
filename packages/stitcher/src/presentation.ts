@@ -90,6 +90,8 @@ export class Presentation {
 
   async getDuration() {
     const master = await this.getMaster();
+
+    assert(master.variants[0], "No variants in master playlist");
     const media = await this.getMedia_(master.variants[0].uri);
 
     return media.segments.reduce((acc, segment) => {

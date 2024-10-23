@@ -23,8 +23,9 @@ export type PackageResult = {
 export const packageCallback: WorkerCallback<
   PackageData,
   PackageResult
-> = async ({ job, tmpDir }) => {
-  const inDir = await tmpDir.create();
+> = async ({ job, dir }) => {
+  const inDir = await dir.createTempDir();
+
   await downloadFolder(`transcode/${job.data.assetId}`, inDir);
 
   job.log(`Synced folder in ${inDir}`);
@@ -36,12 +37,12 @@ export const packageCallback: WorkerCallback<
   // If we do not specify the segmentSize, grab it from the meta file.
   const segmentSize = job.data.segmentSize ?? meta.segmentSize;
 
-  const outDir = await tmpDir.create();
+  const outDir = await dir.createTempDir();
 
   const packagerParams: string[][] = [];
 
-  for (const key of Object.keys(meta.streams)) {
-    const stream = meta.streams[key];
+  const entries = Object.entries(meta.streams);
+  entries.forEach(([key, stream]) => {
     const file = parseFilePath(key);
 
     if (stream.type === "video") {
@@ -79,7 +80,7 @@ export const packageCallback: WorkerCallback<
         `language=${stream.language}`,
       ]);
     }
-  }
+  });
 
   const packagerArgs = packagerParams.map((it) => `${it.join(",")}`);
 

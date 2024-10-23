@@ -24,11 +24,7 @@ const DEFAULT_AUDIO_BITRATE: {
 };
 
 export function getDefaultAudioBitrate(channels: number, codec: AudioCodec) {
-  const bitrate = DEFAULT_AUDIO_BITRATE[channels]?.[codec];
-  if (!bitrate) {
-    throw new Error("No default bitrate configured");
-  }
-  return bitrate;
+  return DEFAULT_AUDIO_BITRATE[channels]?.[codec];
 }
 
 const DEFAULT_VIDEO_BITRATE: {
@@ -79,9 +75,5 @@ const DEFAULT_VIDEO_BITRATE: {
 };
 
 export function getDefaultVideoBitrate(height: number, codec: VideoCodec) {
-  const bitrate = DEFAULT_VIDEO_BITRATE[height]?.[codec];
-  if (!bitrate) {
-    throw new Error("No default bitrate configured");
-  }
-  return bitrate;
+  return DEFAULT_VIDEO_BITRATE[height]?.[codec];
 }

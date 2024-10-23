@@ -12,6 +12,10 @@ function getResolutionFilter(
   resolution: string,
 ): [number, (a: number, b: number) => boolean] {
   const [operator, value] = resolution.split(" ");
+  if (!value) {
+    throw new Error(`Failed to parse operator / value pair "${value}"`);
+  }
+
   const height = parseInt(value, 10);
 
   const fn =

@@ -13,6 +13,9 @@ function findQueueByName(name: string): Queue {
 
 function formatIdPair(id: string): [Queue, string] {
   const queueName = id.split("_", 1)[0];
+  if (!queueName) {
+    throw new Error("Missing queueName as prefix when formatting id pair");
+  }
   return [findQueueByName(queueName), id];
 }
 

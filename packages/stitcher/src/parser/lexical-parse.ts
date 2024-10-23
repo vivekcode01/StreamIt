@@ -93,6 +93,7 @@ function parseLine(line: string): Tag | null {
     case "EXTINF": {
       assert(param, "EXTINF: no param");
       const chunks = param.split(",");
+      assert(chunks[0], "EXTINF: no duration in param");
       return [
         name,
         {
@@ -114,6 +115,8 @@ function parseLine(line: string): Tag | null {
 
           case "RESOLUTION": {
             const chunks = value.split("x");
+            assert(chunks[0], "EXT-X-STREAM-INF DURATION: no width");
+            assert(chunks[1], "EXT-X-STREAM-INF DURATION: no height");
             attrs.resolution = {
               width: parseFloat(chunks[0]),
               height: parseFloat(chunks[1]),

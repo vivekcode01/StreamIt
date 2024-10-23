@@ -253,21 +253,28 @@ type MatchResult = MatchItem<"video"> | MatchItem<"audio"> | MatchItem<"text">;
 
 function mergeStream(partial: PartialStream, input: Input): MatchResult | null {
   if (partial.type === "video" && input.type === "video") {
+    const bitrate =
+      partial.bitrate ?? getDefaultVideoBitrate(partial.height, partial.codec);
+
+    assert(bitrate);
+
     const stream: Extract<Stream, { type: "video" }> = {
       ...partial,
-      bitrate:
-        partial.bitrate ??
-        getDefaultVideoBitrate(partial.height, partial.codec),
+      bitrate,
       framerate: partial.framerate ?? input.framerate,
     };
     return { type: "video", stream, input };
   }
   if (partial.type === "audio" && input.type === "audio") {
     const channels = partial.channels ?? input.channels;
+    const bitrate =
+      partial.bitrate ?? getDefaultAudioBitrate(channels, partial.codec);
+
+    assert(bitrate);
+
     const stream: Extract<Stream, { type: "audio" }> = {
       ...partial,
-      bitrate:
-        partial.bitrate ?? getDefaultAudioBitrate(channels, partial.codec),
+      bitrate,
       language: partial.language ?? input.language,
       channels,
     };

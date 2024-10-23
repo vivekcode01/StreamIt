@@ -1,6 +1,5 @@
 import { FFmpeggy } from "ffmpeggy";
 import { getBinaryPath, getInputPath } from "../helpers";
-import type { FFprobeResult } from "ffmpeggy";
 import type { PartialInput } from "../../types";
 import type { WorkerCallback } from "../lib/worker-processor";
 
@@ -46,7 +45,30 @@ export const ffprobeCallback: WorkerCallback<
     const file = await getInputPath(input, tempDir);
     const info = await FFmpeggy.probe(file.path);
 
-    setResultForInput(input, info, result);
+    if (input.type === "video") {
+      const stream = info.streams.find(
+        (stream) => stream.codec_type === "video",
+      );
+
+      const framerate = stream?.avg_frame_rate
+        ? parseFrameRate(stream.avg_frame_rate)
+        : undefined;
+
+      result.video[input.path] = {
+        height: stream?.height,
+        framerate,
+      };
+    }
+
+    if (input.type === "audio") {
+      const stream = info.streams.find(
+        (stream) => stream.codec_type === "audio",
+      );
+      result.audio[input.path] = {
+        language: stream?.tags.language,
+        channels: stream?.channels,
+      };
+    }
 
     job.log(`${input.path}: ${JSON.stringify(info)}`);
   }
@@ -54,38 +76,18 @@ export const ffprobeCallback: WorkerCallback<
   return result;
 };
 
-function setResultForInput(
-  input: PartialInput,
-  info: FFprobeResult,
-  result: FfprobeResult,
-) {
-  if (input.type === "video") {
-    const stream = info.streams.find((stream) => stream.codec_type === "video");
+function parseFrameRate(avg: string) {
+  const fraction = avg.split("/");
 
-    let framerate: number | undefined;
-    if (stream?.avg_frame_rate) {
-      const fraction = stream.avg_frame_rate.split("/");
-      if (fraction[1]?.endsWith("|")) {
-        fraction[1] = fraction[1].substring(0, fraction[1].length - 1);
-      }
-      if (fraction.length === 1) {
-        framerate = +fraction[0];
-      } else {
-        framerate = +fraction[0] / +fraction[1];
-      }
-    }
-
-    result.video[input.path] = {
-      height: stream?.height,
-      framerate,
-    };
+  if (fraction[1]?.endsWith("|")) {
+    fraction[1] = fraction[1].substring(0, fraction[1].length - 1);
   }
 
-  if (input.type === "audio") {
-    const stream = info.streams.find((stream) => stream.codec_type === "audio");
-    result.audio[input.path] = {
-      language: stream?.tags.language,
-      channels: stream?.channels,
-    };
+  if (fraction[0] && fraction[1]) {
+    return +fraction[0] / +fraction[1];
+  }
+
+  if (fraction[0]) {
+    return +fraction[0];
   }
 }
