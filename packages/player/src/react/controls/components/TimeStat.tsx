@@ -5,8 +5,13 @@ import { useFakeTime } from "../hooks/useFakeTime";
 export function TimeStat() {
   const fakeTime = useFakeTime();
   const duration = useSelector((facade) => facade.duration);
+  const ended = useSelector((facade) => facade.playhead === "ended");
 
-  const remaining = Math.ceil(duration - fakeTime);
+  let remaining = Math.ceil(duration - fakeTime);
+  if (ended) {
+    remaining = 0;
+  }
+
   const hms = toHMS(remaining);
 
   return (

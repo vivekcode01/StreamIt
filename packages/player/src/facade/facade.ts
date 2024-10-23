@@ -260,6 +260,11 @@ export class HlsFacade {
    */
   seekTo(targetTime: number) {
     if (this.hls.interstitialsManager) {
+      if (!targetTime) {
+        targetTime = 0.001;
+      } else if (targetTime > this.duration - 0.1) {
+        targetTime = this.duration - 0.1;
+      }
       this.hls.interstitialsManager.primary.seekTo(targetTime);
     } else if (this.primaryAsset_?.media) {
       this.primaryAsset_.media.currentTime = targetTime;
