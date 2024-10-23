@@ -118,7 +118,7 @@ async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
     }
 
     job.log(
-      `Match found for "${JSON.stringify(partial)}": ${JSON.stringify(match.input)}`,
+      `Match found for "${JSON.stringify(match.stream)}": ${JSON.stringify(match.input)}`,
     );
 
     assert(job.id);
