@@ -2,53 +2,47 @@ import { execa } from "execa";
 import { lookup } from "mime-types";
 import parseFilePath from "parse-filepath";
 import { downloadFolder, uploadFolder } from "../s3";
-import { TmpDir } from "../tmp-dir";
 import { getMeta } from "../meta";
 import { getBinaryPath } from "../helpers";
-import type { Job } from "bullmq";
+import type { WorkerCallback } from "../lib/worker-processor";
 import type { Stream } from "../../types";
 
 const packagerBin = await getBinaryPath("packager");
 
 export type PackageData = {
-  params: {
-    assetId: string;
-    segmentSize?: number;
-    name: string;
-  };
-  metadata: {
-    tag?: string;
-  };
+  assetId: string;
+  segmentSize?: number;
+  name: string;
+  tag?: string;
 };
 
 export type PackageResult = {
   assetId: string;
 };
 
-async function runJob(
-  job: Job<PackageData, PackageResult>,
-  tmpDir: TmpDir,
-): Promise<PackageResult> {
-  const { params } = job.data;
+export const packageCallback: WorkerCallback<
+  PackageData,
+  PackageResult
+> = async ({ job, dir }) => {
+  const inDir = await dir.createTempDir();
 
-  const inDir = await tmpDir.create();
-  await downloadFolder(`transcode/${params.assetId}`, inDir);
+  await downloadFolder(`transcode/${job.data.assetId}`, inDir);
 
   job.log(`Synced folder in ${inDir}`);
 
-  const metaFile = await getMeta(inDir);
+  const meta = await getMeta(inDir);
 
-  job.log(`Got meta file: "${JSON.stringify(metaFile)}"`);
+  job.log(`Got meta: "${JSON.stringify(meta)}"`);
 
   // If we do not specify the segmentSize, grab it from the meta file.
-  const segmentSize = params.segmentSize ?? metaFile.segmentSize;
+  const segmentSize = job.data.segmentSize ?? meta.segmentSize;
 
-  const outDir = await tmpDir.create();
+  const outDir = await dir.createTempDir();
 
   const packagerParams: string[][] = [];
 
-  for (const key of Object.keys(metaFile.streams)) {
-    const stream = metaFile.streams[key];
+  const entries = Object.entries(meta.streams);
+  entries.forEach(([key, stream]) => {
     const file = parseFilePath(key);
 
     if (stream.type === "video") {
@@ -86,7 +80,7 @@ async function runJob(
         `language=${stream.language}`,
       ]);
     }
-  }
+  });
 
   const packagerArgs = packagerParams.map((it) => `${it.join(",")}`);
 
@@ -107,7 +101,7 @@ async function runJob(
     detached: false,
   });
 
-  const s3Dir = `package/${params.assetId}/${params.name}`;
+  const s3Dir = `package/${job.data.assetId}/${job.data.name}`;
   job.log(`Uploading to ${s3Dir}`);
 
   await uploadFolder(outDir, s3Dir, {
@@ -121,9 +115,9 @@ async function runJob(
   job.updateProgress(100);
 
   return {
-    assetId: params.assetId,
+    assetId: job.data.assetId,
   };
-}
+};
 
 function getGroupId(
   stream:
@@ -152,14 +146,5 @@ function getName(
   }
   if (stream.type === "text") {
     return `${stream.language}`;
-  }
-}
-
-export default async function (job: Job<PackageData, PackageResult>) {
-  const tmpDir = new TmpDir();
-  try {
-    return await runJob(job, tmpDir);
-  } finally {
-    await tmpDir.deleteAll();
   }
 }

@@ -43,7 +43,9 @@ export function JobsPage() {
           {filteredJobs.length ? (
             <JobsList jobs={filteredJobs} />
           ) : (
-            <p className="text-center">No jobs found...</p>
+            <p className="text-center py-16 text-muted-foreground">
+              Nothing here but tumbleweeds... and they're not clickable.
+            </p>
           )}
         </div>
       </div>

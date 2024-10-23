@@ -11,7 +11,7 @@ export function getMasterUrl(uri: string) {
   }
 
   const potentialUuid = uri.split("@", 2)[0];
-  if (uuidRegex.test(potentialUuid)) {
+  if (potentialUuid && uuidRegex.test(potentialUuid)) {
     uri = `${ASSET_PROTOCOL}//${uri}`;
   }
 

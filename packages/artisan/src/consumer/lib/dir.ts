@@ -5,14 +5,14 @@ import * as os from "node:os";
 /**
  * Manager for temporary directories on file system.
  */
-export class TmpDir {
+export class Dir {
   private dirs_ = new Set<string>();
 
   /**
    * Create a new temporary directory.
    * @returns
    */
-  async create() {
+  async createTempDir() {
     const dir = await fs.mkdtemp(
       path.join(os.tmpdir(), `superstreamer-${crypto.randomUUID()}`),
     );

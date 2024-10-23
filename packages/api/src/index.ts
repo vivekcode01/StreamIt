@@ -67,6 +67,7 @@ const app = new Elysia()
                 description:
                   "The source path, starting with http(s):// or s3://",
               }),
+              height: t.Optional(t.Number()),
             }),
             t.Object({
               type: t.Literal("audio"),
@@ -74,7 +75,8 @@ const app = new Elysia()
                 description:
                   "The source path, starting with http(s):// or s3://",
               }),
-              language: LangCodeSchema,
+              language: t.Optional(LangCodeSchema),
+              channels: t.Optional(t.Number()),
             }),
             t.Object({
               type: t.Literal("text"),
@@ -97,15 +99,17 @@ const app = new Elysia()
               type: t.Literal("video"),
               codec: VideoCodecSchema,
               height: t.Number(),
-              bitrate: t.Number({ description: "Bitrate in bps" }),
-              framerate: t.Number({ description: "Frames per second" }),
+              bitrate: t.Optional(t.Number({ description: "Bitrate in bps" })),
+              framerate: t.Optional(
+                t.Number({ description: "Frames per second" }),
+              ),
             }),
             t.Object({
               type: t.Literal("audio"),
               codec: AudioCodecSchema,
-              bitrate: t.Number({ description: "Bitrate in bps" }),
-              language: LangCodeSchema,
-              channels: t.Number(),
+              bitrate: t.Optional(t.Number({ description: "Bitrate in bps" })),
+              language: t.Optional(LangCodeSchema),
+              channels: t.Optional(t.Number()),
             }),
             t.Object({
               type: t.Literal("text"),

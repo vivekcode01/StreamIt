@@ -36,7 +36,7 @@ export async function formatMediaPlaylist(sessionId: string, path: string) {
 
   const { mediaType, media } = await presentation.getMedia(path);
 
-  if (mediaType === "video" && media.endlist) {
+  if (mediaType === "video" && media.endlist && media.segments[0]) {
     // When we have an endlist, the playlist is static. We can check whether we need
     // to add dateRanges.
     media.segments[0].programDateTime = getStaticPDT(session);

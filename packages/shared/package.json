@@ -6,7 +6,8 @@
   "exports": {
     "./env": "./src/env.ts",
     "./scalar": "./src/scalar.ts",
-    "./typebox": "./src/typebox.ts"
+    "./typebox": "./src/typebox.ts",
+    "./lang": "./src/lang.ts"
   },
   "scripts": {
     "lint": "eslint"

@@ -1,26 +1,7 @@
-import { Job, Queue } from "bullmq";
-import { connection } from "./env";
-
-/**
- * Gets the full job. This is particularly handy when you need
- * children values from child jobs.
- * @param job Full job
- * @returns
- */
-export async function getFakeJob<T>(job: Job) {
-  if (!job.id) {
-    throw new Error("Missing job id");
-  }
-
-  const queue = new Queue(job.queueName, { connection });
-  const fakeJob = await Job.fromId<T>(queue, job.id);
-
-  if (!fakeJob) {
-    throw new Error("Failed to fetch fake job");
-  }
-
-  return fakeJob;
-}
+import parseFilepath from "parse-filepath";
+import { downloadFile } from "./s3";
+import { Dir } from "./lib/dir";
+import type { PartialInput } from "../types";
 
 export async function getBinaryPath(name: string) {
   const direct = `${process.cwd()}/bin/${name}`;
@@ -39,4 +20,24 @@ export async function getBinaryPath(name: string) {
   throw new Error(
     `Failed to get bin dep "${name}", run scripts/bin-deps.sh to install binary dependencies.`,
   );
+}
+
+export async function getInputPath(input: PartialInput, dir: Dir | string) {
+  const filePath = parseFilepath(input.path);
+
+  // If the input is on S3, download the file locally.
+  if (filePath.dir.startsWith("s3://")) {
+    const inDir = dir instanceof Dir ? await dir.createTempDir() : dir;
+    await downloadFile(inDir, filePath.path.replace("s3://", ""));
+    return parseFilepath(`${inDir}/${filePath.basename}`);
+  }
+
+  if (
+    filePath.dir.startsWith("http://") ||
+    filePath.dir.startsWith("https://")
+  ) {
+    return filePath;
+  }
+
+  throw new Error("Failed to resolve input path");
 }

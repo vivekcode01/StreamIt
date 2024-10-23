@@ -1,3 +1,4 @@
+import { assert } from "../assert";
 import { Lines } from "./lines";
 import type {
   Rendition,
@@ -41,6 +42,7 @@ function buildVariant(lines: Lines, variant: Variant) {
   }
 
   if (variant.audio.length) {
+    assert(variant.audio[0]);
     attrs.push(`AUDIO="${variant.audio[0].groupId}"`);
     for (const rendition of variant.audio) {
       buildRendition(lines, rendition);
@@ -48,6 +50,7 @@ function buildVariant(lines: Lines, variant: Variant) {
   }
 
   if (variant.subtitles.length) {
+    assert(variant.subtitles[0]);
     attrs.push(`SUBTITLES="${variant.subtitles[0].groupId}"`);
     for (const rendition of variant.subtitles) {
       buildRendition(lines, rendition);

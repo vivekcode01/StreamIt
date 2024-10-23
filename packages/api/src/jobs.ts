@@ -13,6 +13,9 @@ function findQueueByName(name: string): Queue {
 
 function formatIdPair(id: string): [Queue, string] {
   const queueName = id.split("_", 1)[0];
+  if (!queueName) {
+    throw new Error("Missing queueName as prefix when formatting id pair");
+  }
   return [findQueueByName(queueName), id];
 }
 
@@ -95,16 +98,16 @@ async function formatJobNode(node: JobNode): Promise<Job> {
     progress = job.progress;
   }
 
-  const state = mapJobState(await job.getState(), job.returnvalue);
+  const state = mapJobState(await job.getState());
 
   const failedReason = state === "failed" ? job.failedReason : undefined;
 
-  const findParentSortKey = (job: BullMQJob): number => {
-    const value = job.data?.metadata?.parentSortKey;
+  const findParentSortIndex = (job: BullMQJob): number => {
+    const value = job.data?.parentSortIndex;
     return typeof value === "number" ? value : 0;
   };
   (children ?? []).sort(
-    (a, b) => findParentSortKey(a.job) - findParentSortKey(b.job),
+    (a, b) => findParentSortIndex(a.job) - findParentSortIndex(b.job),
   );
 
   const jobChildren = await Promise.all((children ?? []).map(formatJobNode));
@@ -150,20 +153,7 @@ async function formatJobNode(node: JobNode): Promise<Job> {
   };
 }
 
-// Keep these in sync with ocnsumer/workers/helpers.ts in artisan,
-// we can treat the result as a string literal to indicate non standard
-// job states such as "skipped".
-type JobReturnValueStatus = "__JOB_SKIPPED__";
-
-function mapJobState(
-  jobState: JobState | "unknown",
-  maybeReturnValue?: JobReturnValueStatus,
-): Job["state"] {
-  // We pass maybeReturnValue as "any" from the input, it's not typed. But we
-  // can check whether it is a defined return value for non standard job states.
-  if (maybeReturnValue === "__JOB_SKIPPED__") {
-    return "skipped";
-  }
+function mapJobState(jobState: JobState | "unknown"): Job["state"] {
   if (jobState === "active" || jobState === "waiting-children") {
     return "running";
   }

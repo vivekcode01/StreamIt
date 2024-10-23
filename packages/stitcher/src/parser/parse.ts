@@ -58,7 +58,7 @@ function formatMediaPlaylist(tags: Tag[]): MediaPlaylist {
     let segmentStart = index;
     const segmentEnd = index + 1;
     for (let i = index; i > 0; i--) {
-      if (tags[i][0] === "LITERAL") {
+      if (tags[i]?.[0] === "LITERAL") {
         segmentStart = i + 1;
         break;
       }
@@ -188,7 +188,11 @@ function nextLiteral(tags: Tag[], index: number) {
   if (!tags[index + 1]) {
     throw new Error("Expecting next tag to be found");
   }
-  const [name, value] = tags[index + 1];
+  const tag = tags[index + 1];
+  if (!tag) {
+    throw new Error(`Expected valid tag on ${index + 1}`);
+  }
+  const [name, value] = tag;
   if (name !== "LITERAL") {
     throw new Error("Expecting next tag to be a literal");
   }
