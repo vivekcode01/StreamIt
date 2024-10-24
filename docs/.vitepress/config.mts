@@ -1,5 +1,5 @@
 import { defineConfig } from "vitepress";
-import pkg from '../package.json';
+import pkg from "../package.json";
 
 export default defineConfig({
   base: "/superstreamer/",
@@ -8,11 +8,18 @@ export default defineConfig({
     "An open, scalable, online streaming setup. All-in-one toolkit from ingest to adaptive video playback.",
   lang: "en-US",
   head: [
-    ['link', { rel: 'icon', type: 'image/png', href: '/logo-mascotte.png' }],
-    ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:locale', content: 'en' }],
-    ['meta', { property: 'og:title', content: 'Superstreamer | All-in-one toolkit from ingest to adaptive video playback' }],
-    ['meta', { property: 'og:site_name', content: 'Superstreamer' }],
+    ["link", { rel: "icon", type: "image/png", href: "/logo-mascotte.png" }],
+    ["meta", { property: "og:type", content: "website" }],
+    ["meta", { property: "og:locale", content: "en" }],
+    [
+      "meta",
+      {
+        property: "og:title",
+        content:
+          "Superstreamer | All-in-one toolkit from ingest to adaptive video playback",
+      },
+    ],
+    ["meta", { property: "og:site_name", content: "Superstreamer" }],
     [
       "script",
       {},
@@ -29,49 +36,54 @@ export default defineConfig({
       height: 21,
     },
     search: {
-      provider: "local",
+      provider: "algolia",
+      options: {
+        appId: "4JIX5YPW7R",
+        apiKey: "004a506c5ecd75d2a16d12feefc7af58",
+        indexName: "matvp91io",
+      },
     },
     nav: [
-      { 
-        text: 'Guide', 
-        link: '/guide/what-is-superstreamer', 
-        activeMatch: '/guide/',
+      {
+        text: "Guide",
+        link: "/guide/what-is-superstreamer",
+        activeMatch: "/guide/",
       },
-      { 
-        text: 'Reference', 
-        link: '/reference/player',
-        activeMatch: '/reference/',
+      {
+        text: "Reference",
+        link: "/reference/player",
+        activeMatch: "/reference/",
       },
       {
         text: pkg.version,
         items: [
           {
-            text: 'Contributing',
-            link: 'https://github.com/matvp91/superstreamer/blob/main/CONTRIBUTING.md'
+            text: "Contributing",
+            link: "https://github.com/matvp91/superstreamer/blob/main/CONTRIBUTING.md",
           },
           {
-            text: 'Code of Conduct',
-            link: 'https://github.com/matvp91/superstreamer/blob/main/CODE_OF_CONDUCT.md'
-          }
-        ]
-      }
+            text: "Code of Conduct",
+            link: "https://github.com/matvp91/superstreamer/blob/main/CODE_OF_CONDUCT.md",
+          },
+        ],
+      },
     ],
     sidebar: {
-      '/guide/': { 
-        base: '/guide/', 
-        items: sidebarGuide() 
+      "/guide/": {
+        base: "/guide/",
+        items: sidebarGuide(),
       },
-      '/reference/': { 
-        base: '/reference/',
-         items: sidebarReference() 
+      "/reference/": {
+        base: "/reference/",
+        items: sidebarReference(),
       },
     },
     socialLinks: [
       { icon: "github", link: "https://github.com/matvp91/superstreamer" },
     ],
     editLink: {
-      pattern: 'https://github.com/matvp91/superstreamer/edit/main/docs/:path',
-      text: 'Edit this page on GitHub'
+      pattern: "https://github.com/matvp91/superstreamer/edit/main/docs/:path",
+      text: "Edit this page on GitHub",
     },
     footer: {
       message: "Released under the MPL-2.0 License.",
@@ -140,7 +152,7 @@ function sidebarGuide() {
         },
       ],
     },
-  ]
+  ];
 }
 
 function sidebarReference() {
@@ -150,9 +162,9 @@ function sidebarReference() {
       items: [
         {
           text: "Player",
-          link: "/player"
+          link: "/player",
         },
-      ]
-    }
-  ]
+      ],
+    },
+  ];
 }
