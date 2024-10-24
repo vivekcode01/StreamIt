@@ -26,7 +26,7 @@ export async function getInputPath(input: PartialInput, dir: Dir | string) {
   const filePath = parseFilepath(input.path);
 
   // If the input is on S3, download the file locally.
-  if (filePath.dir.startsWith("s3://")) {
+  if (filePath.path.startsWith("s3://")) {
     const inDir = dir instanceof Dir ? await dir.createTempDir() : dir;
     await downloadFile(inDir, filePath.path.replace("s3://", ""));
     return parseFilepath(`${inDir}/${filePath.basename}`);

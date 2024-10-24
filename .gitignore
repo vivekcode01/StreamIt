@@ -30,3 +30,6 @@ config.env
 
 vite.config.ts.timestamp*
 *.tsbuildinfo
+
+config.env*
+!config.env.example
