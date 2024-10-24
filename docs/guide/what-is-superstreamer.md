@@ -12,7 +12,7 @@ Can't wait? Head over to our [Getting Started](/guide/getting-started) page and 
 
 ::: tip
 
-Check out these cool screen recordings of the dashboard app! Click <a target="_blank" href="/superstreamer/guide/dashboard">here</a> to view them. The link will open in a new tab, so you won't lose your place.
+Check out these cool screen recordings of the dashboard app! Click <a target="_blank" href="/guide/dashboard">here</a> to view them. The link will open in a new tab, so you won't lose your place.
 
 :::
 

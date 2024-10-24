@@ -2,7 +2,7 @@ import { defineConfig } from "vitepress";
 import pkg from "../package.json";
 
 export default defineConfig({
-  base: "/superstreamer/",
+  base: "/",
   title: "Superstreamer",
   description:
     "An open, scalable, online streaming setup. All-in-one toolkit from ingest to adaptive video playback.",
