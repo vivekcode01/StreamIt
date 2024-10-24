@@ -15,8 +15,8 @@
   </p>
 
   <p align="center">
-    <a href="https://matvp91.github.io/superstreamer">Documentation</a> · 
-    <a href="https://matvp91.github.io/superstreamer/getting-started.html">Getting Started</a>
+    <a href="https://superstreamer.xyz">Documentation</a> · 
+    <a href="https://superstreamer.xyz/guide/getting-started.html">Getting Started</a>
   </p>
 
 [<img src="./public/button-buy-me-a-coffee.png" width="150" alt="Buy me a coffee button"/>](https://www.buymeacoffee.com/matvp91)
@@ -45,7 +45,7 @@ cp config.env.example config.env
 docker compose up -d
 ```
 
-Dive into the [Documentation](https://matvp91.github.io/superstreamer) and do not hesitate to ask questions on [Discord](https://discord.gg/4hXgz9EsF4).
+Dive into the [Documentation](https://superstreamer.xyz) and do not hesitate to ask questions on [Discord](https://discord.gg/4hXgz9EsF4).
 
 ## Support
 
