@@ -4,16 +4,16 @@ outline: [2,3]
 
 # Player
 
-The team behind [HLS.js](https://github.com/video-dev/hls.js/), an open-source HLS streaming library in JavaScript, does an outstanding job maintaining it. While it's an excellent resource for streaming, HLS.js is designed primarily as a streaming library, which is great if you're already familiar with HLS. However, there’s a bit of a learning curve if you're looking to build your project on top of it.
+The team behind [HLS.js](https://github.com/video-dev/hls.js/), an open-source HLS streaming library in JavaScript, does an outstanding job maintaining it. While it's an excellent resource for streaming, HLS.js is designed primarily as a streaming library, which is great if you're already familiar with HLS. However, there's a bit of a learning curve if you're looking to build your project on top of it.
 
-The goal of our player wrapper is to offer a simplified API alongside HLS.js, tailored for developers building a player UI, while preserving access to the powerful features that HLS.js provides. The wrapper, which we’ll refer to as _facade_ from here on, focuses on the following goals:
+The goal of our player wrapper is to offer a simplified API alongside HLS.js, tailored for developers building a player UI, while preserving access to the powerful features that HLS.js provides. The wrapper, which we'll refer to as _facade_ from here on, focuses on the following goals:
 
 - Offer intuitive data structures, events, and methods tailored for developers building a player UI.
 - Implement a robust state machine.
 - Provide simplified player-centric methods like `playOrPause`, `setVolume`, and more.
 - Support spec-compliant plugins, including features like ad signaling.
 
-Beyond the facade, we’ve also provided useful React hooks for consuming state within components. More details will follow, but the key insight is that building a React UI on top of rapidly changing state can impact performance. Our hooks allow you to efficiently consume player state by creating small, memoized subsets of the specific state needed for each component, ensuring optimal performance.
+Beyond the facade, we've also provided useful React hooks for consuming state within components. More details will follow, but the key insight is that building a React UI on top of rapidly changing state can impact performance. Our hooks allow you to efficiently consume player state by creating small, memoized subsets of the specific state needed for each component, ensuring optimal performance.
 
 ::: tip
 

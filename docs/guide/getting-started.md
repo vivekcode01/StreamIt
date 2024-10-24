@@ -194,7 +194,7 @@ If you'd like to host the app elsewhere, all files can be found in `packages/app
 
 ### Development
 
-We’ve already covered how to build Superstreamer locally, and we’ve also made it easy to start developing on the project. Just run `pnpm dev` from the root of the project, and it will launch all the services, including the app. Head over to `http://localhost:52000`, and you’ll be welcomed by the app!
+We've already covered how to build Superstreamer locally, and we've also made it easy to start developing on the project. Just run `pnpm dev` from the root of the project, and it will launch all the services, including the app. Head over to `http://localhost:52000`, and you'll be welcomed by the app!
 
 ::: code-group
 

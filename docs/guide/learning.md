@@ -1,6 +1,6 @@
 # Learning
 
-Here, we delve into the essential concepts and techniques behind transcoding, media pipelines, and all things related to video delivery. Let’s explore the fascinating world of video technology together!
+Here, we delve into the essential concepts and techniques behind transcoding, media pipelines, and all things related to video delivery. Let's explore the fascinating world of video technology together!
 
 The people at Mux did a great job creating a site about video engineering, read through [howvideo.works](https://howvideo.works/), they cover every aspect starting from transcode all the way to playback.
 
@@ -22,7 +22,7 @@ We'll quickly go over the terminology commonly found in the documentation to hel
 
   Insert other content into an HLS stream by dynamically updating the playlist during video playback.
 
-You might be wondering how these terms connect to the various packages in Superstreamer. Here’s an overview to clarify:
+You might be wondering how these terms connect to the various packages in Superstreamer. Here's an overview to clarify:
 
 - **Artisan**
 
