@@ -20,21 +20,16 @@ Check out these cool screen recordings of the dashboard app! Click <a target="_b
 
 Everyone loves schemas, and we’re no exception. Let’s break down how Superstreamer works and how all the packages are interconnected.
 
-### Transcode 
+You’ve got an epic video file named <Badge type="info" text="Frames_Of_Thrones.mp4" />. It’s hefty, and you want to deliver it to your audience with a seamless viewing experience, complete with subtitle options in various languages. Your goal is to provide the best possible experience for your viewers.
 
-You're building <span style="color: #e50915; font-weight: bold;">NotFlix</span>, the most awesome video platform ever, and you've got this epic video file called <Badge type="info" text="Frames_Of_Thrones.mp4" />. You upload it _somewhere_ and it's available on your website.
-
-<div style="font-size: 0.85rem; margin-top: -1rem;">
-<a style="pointer-events: none;" href="https://notflix.com/assets/Frames_Of_Thrones.mp4">https://notflix.com/assets/Frames_Of_Thrones.mp4</a>
-</div>
-
+### Step 1. Transcode 
 
 <img class="schema" src="/schema-transcode.png" />
 
 <details class="details custom-block minimal">
   <summary>Explain this to me</summary>
 
-  1. You send a transcode request to the API using your file URL as the input, along with a few output stream definitions.
+  1. You send a transcode request to the API using your file or s3 URL as the input, along with a few output stream definitions.
   2. The API will push a transcode job to Redis.
   3. One, or multiple (if you're into scale), Artisan instances will grab jobs from Redis, and produce outputs streams locally.
   4. Each Artisan instance will push their output stream to S3.
@@ -43,7 +38,7 @@ You're building <span style="color: #e50915; font-weight: bold;">NotFlix</span>,
 
 ### Package
 
-So, we've taken our original video, sliced it up into different qualities, bitrates—maybe even threw in some subtitles and a surround sound track for good measure. Awesome, right? Well... now we’ve got a bunch of separate files hanging out on S3. We need to bundle these up so the video player can actually make sense of the mess.
+So, we've taken our original video, sliced it up into different qualities, bitrates — event threw in some subtitles and a surround sound track for good measure. Awesome, right? Well... now we’ve got a bunch of separate files hanging out on S3. We need to bundle these up so the video player can actually make sense of the mess.
 
 <img class="schema" src="/schema-package.png" />
 
@@ -58,7 +53,7 @@ So, we've taken our original video, sliced it up into different qualities, bitra
 
 ### Playback
 
-Alright, we’ve got our HLS playlist sitting in the S3 bucket. You could hit play and call it a day, sure, but where’s the fun in that? Like, we've got this epic NotFlix bumper — _tuduuuum_ — and we want to slap it right in front of our `Frames of Thrones` masterpiece. So, what do we do? We transcode and package that bumper, then tell our stitcher to whip up a new playlist on the fly, combining our bumper with the main content. Boom — playlist magic! 🪄
+Alright, we’ve got our HLS playlist sitting in the S3 bucket. You could hit play and call it a day, sure, but where’s the fun in that? Like, we've got this NotFlix bumper — _tuduuuum_ — and we want to slap it right in front of our Frames of Thrones masterpiece. So, what do we do? We transcode and package that bumper, then tell our stitcher to whip up a new playlist on the fly, combining our bumper with the main content. Boom — playlist magic! 🪄
 
 <img class="schema schema-stitcher" src="/schema-stitcher.png" />
 
