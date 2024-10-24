@@ -69,11 +69,11 @@ Alright, we've got our HLS playlist sitting in the S3 bucket. You could hit play
 
 ### Monitor
 
-<img class="schema schema-dashboard" src="/schema-dashboard.png" />
-
 We'd like to keep an eye on what Superstreamer is up to behind the scenes. Don't worry, we've got a handy little app we call the dashboard. It's like a reality show for your jobs — complete with a list that shows all the action, including status updates and how long everything takes.
 
 And if you're feeling ambitious and want to integrate Superstreamer into your own project (which, let's face it, if you're in the video biz, you absolutely should try), interacting with the API from your backend is a walk in the park.
+
+<img class="schema schema-dashboard" src="/schema-dashboard.png" />
 
 ## Developer Experience
 
