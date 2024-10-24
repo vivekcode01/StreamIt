@@ -70,6 +70,8 @@ export function Editor({
               enabled: false,
             },
             tabSize: 2,
+            overviewRulerBorder: false,
+            scrollBeyondLastLine: false,
           }}
         />
       </div>
