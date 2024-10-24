@@ -6,7 +6,8 @@
     "dev": "bun --watch ./src/index.ts",
     "build": "tsc -b && bun build ./src/index.ts --target=bun --outdir=./dist",
     "test": "bun test",
-    "lint": "eslint"
+    "lint": "eslint",
+    "deploy:wrangler": "wrangler deploy --minify src/serverless/wrangler.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -17,13 +18,13 @@
     "@types/uuid": "^10.0.0",
     "config": "workspace:*",
     "eslint": "^9.13.0",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "wrangler": "^3.83.0"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.1.1",
     "@elysiajs/swagger": "^1.1.5",
     "@superstreamer/artisan": "workspace:*",
-    "shared": "workspace:*",
     "@xmldom/xmldom": "^0.8.10",
     "dom-parser": "^1.1.5",
     "elysia": "^1.1.20",
@@ -31,6 +32,7 @@
     "lru-cache": "^11.0.1",
     "luxon": "^3.5.0",
     "redis": "^4.7.0",
+    "shared": "workspace:*",
     "uuid": "^10.0.0",
     "vast-client": "workspace:*"
   }

@@ -1,0 +1,12 @@
+name = "superstreamer-stitcher"
+compatibility_flags = [ "nodejs_compat" ]
+compatibility_date = "2024-09-23"
+send_metrics = false
+
+[vars]
+PORT = "0"
+HOST = "0.0.0.0"
+REDIS_HOST = "redis"
+REDIS_PORT = "0000"
+PUBLIC_S3_ENDPOINT = "https://cdn.superstreamer.xyz"
+PUBLIC_STITCHER_ENDPOINT = "https://stitcher.superstreamer.xyz"
