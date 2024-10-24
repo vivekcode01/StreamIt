@@ -1,0 +1,134 @@
+// Bun Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`merge input should add probe results to input 1`] = `
+{
+  "framerate": 24,
+  "height": 720,
+  "path": "http://mock.com/asset.mp4",
+  "type": "video",
+}
+`;
+
+exports[`merge input should prioritize user defined defaults 1`] = `
+{
+  "framerate": 1,
+  "height": 1,
+  "path": "http://mock.com/asset.mp4",
+  "type": "video",
+}
+`;
+
+exports[`merge stream should match the same type 1`] = `
+{
+  "bitrate": 4000000,
+  "codec": "h264",
+  "framerate": 25,
+  "height": 1080,
+  "type": "video",
+}
+`;
+
+exports[`merge stream should prioritize user defined stream properties and default where available 1`] = `
+{
+  "bitrate": 1000000,
+  "codec": "h264",
+  "framerate": 25,
+  "height": 480,
+  "type": "video",
+}
+`;
+
+exports[`merge stream should default audio bitrate 1`] = `
+{
+  "bitrate": 128000,
+  "channels": 2,
+  "codec": "aac",
+  "language": "nld",
+  "type": "audio",
+}
+`;
+
+exports[`get list of matches should match 1`] = `
+[
+  [
+    "video",
+    {
+      "bitrate": 2000000,
+      "codec": "hevc",
+      "framerate": 25,
+      "height": 1080,
+      "type": "video",
+    },
+    {
+      "framerate": 25,
+      "height": 1080,
+      "path": "http://mock.com/asset.mp4",
+      "type": "video",
+    },
+  ],
+  [
+    "video",
+    {
+      "bitrate": 2000000,
+      "codec": "h264",
+      "framerate": 25,
+      "height": 720,
+      "type": "video",
+    },
+    {
+      "framerate": 25,
+      "height": 1080,
+      "path": "http://mock.com/asset.mp4",
+      "type": "video",
+    },
+  ],
+  [
+    "audio",
+    {
+      "bitrate": 384000,
+      "channels": 6,
+      "codec": "ac3",
+      "language": "eng",
+      "type": "audio",
+    },
+    {
+      "channels": 6,
+      "language": "eng",
+      "path": "http://mock.com/asset.mp4",
+      "type": "audio",
+    },
+  ],
+  [
+    "audio",
+    {
+      "bitrate": 128000,
+      "channels": 2,
+      "codec": "aac",
+      "language": "eng",
+      "type": "audio",
+    },
+    {
+      "channels": 6,
+      "language": "eng",
+      "path": "http://mock.com/asset.mp4",
+      "type": "audio",
+    },
+  ],
+  [
+    "audio",
+    {
+      "bitrate": 128000,
+      "channels": 2,
+      "codec": "aac",
+      "language": "nld",
+      "type": "audio",
+    },
+    {
+      "channels": 2,
+      "language": "nld",
+      "path": "http://mock.com/asset/audio-nld.mp4",
+      "type": "audio",
+    },
+  ],
+]
+`;

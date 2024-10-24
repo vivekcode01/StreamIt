@@ -115,30 +115,25 @@ async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
   const [probeResult] = await getChildren<FfprobeResult>(job, "ffprobe");
   assert(probeResult);
 
-  const inputs = job.data.inputs.map((partial) =>
-    mergeInput(partial, probeResult),
-  );
+  const inputs = mergeInputs(job.data.inputs, probeResult);
 
-  let idx = 1;
-  job.data.streams.forEach((partial) => {
-    const match = matchInputForStream(partial, inputs);
-    if (!match) {
-      return;
-    }
+  const matches = getMatches(job.data.streams, inputs);
 
+  matches.forEach(([type, stream, input], index) => {
     job.log(
-      `Match found for "${JSON.stringify(match.stream)}": ${JSON.stringify(match.input)}`,
+      `Matched ${type}: ${JSON.stringify(stream)} / ${JSON.stringify(input)}`,
     );
 
     assert(job.id);
     ffmpegQueue.add(
-      getFfmpegJobName(match.stream),
+      getFfmpegJobName(stream),
       {
-        input: match.input,
-        stream: match.stream,
+        input,
+        stream,
         segmentSize: job.data.segmentSize,
         assetId: job.data.assetId,
-        parentSortIndex: idx,
+        // Start from 1, ffprobe job is always the first sort index.
+        parentSortIndex: index + 1,
       },
       {
         jobId: `ffmpeg_${randomUUID()}`,
@@ -149,9 +144,114 @@ async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
         },
       },
     );
-
-    idx++;
   });
+}
+
+type MixedMatch<
+  S extends { type: Stream["type"] },
+  I extends { type: S["type"] },
+  T extends S["type"] = "video" | "audio" | "text",
+> = T extends S["type"]
+  ? [T, Extract<S, { type: T }>, Extract<I, { type: T }>]
+  : never;
+
+type Match = MixedMatch<Stream, Input>;
+
+export function mergeStream(
+  partial: PartialStream,
+  input: Input,
+): Stream | null {
+  if (partial.type === "video" && input.type === "video") {
+    const framerate = partial.framerate ?? input.framerate;
+
+    const bitrate =
+      partial.bitrate ?? getDefaultVideoBitrate(partial.height, partial.codec);
+
+    assert(bitrate, defaultReason("video", "bitrate"));
+
+    return {
+      ...partial,
+      bitrate,
+      framerate,
+    };
+  }
+
+  if (partial.type === "audio" && input.type === "audio") {
+    const channels = partial.channels ?? input.channels;
+
+    const bitrate =
+      partial.bitrate ?? getDefaultAudioBitrate(channels, partial.codec);
+
+    const language = partial.language ?? input.language;
+
+    assert(bitrate, defaultReason("audio", "bitrate"));
+
+    return {
+      ...partial,
+      language,
+      bitrate,
+      channels,
+    };
+  }
+
+  if (partial.type === "text" && input.type === "text") {
+    return { ...partial };
+  }
+
+  return null;
+}
+
+export function getMatches(
+  partials: PartialStream[],
+  inputs: Input[],
+): Match[] {
+  return partials.reduce<Match[]>((acc, partial) => {
+    inputs.forEach((input) => {
+      const stream = mergeStream(partial, input);
+      if (!stream) {
+        return;
+      }
+
+      // We'll only have merge stream when types match, thus we know
+      // for sure stream and input are aligned here.
+      const match = [stream.type, stream, input] as Match;
+
+      if (shouldSkipMatch(match)) {
+        return;
+      }
+
+      acc.push(match);
+    });
+
+    return acc;
+  }, []);
+}
+
+function shouldSkipMatch(match: Match) {
+  const [type, stream, input] = match;
+  if (type === "video") {
+    if (stream.height > input.height) {
+      return true;
+    }
+  }
+
+  if (type === "audio") {
+    if (stream.language !== input.language) {
+      return true;
+    }
+
+    if (stream.channels > input.channels) {
+      return true;
+    }
+  }
+
+  if (type === "text") {
+    if (stream.language !== input.language) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 async function handleStepMeta(job: Job<TranscodeData>, token?: string) {
@@ -209,132 +309,66 @@ function getFfmpegJobName(stream: Stream) {
   return `ffmpeg(${params.join(",")})`;
 }
 
-function mergeInput(partial: PartialInput, probeResult: FfprobeResult): Input {
-  switch (partial.type) {
-    case "video": {
-      const info = probeResult.video[partial.path];
-      assert(info);
-
-      const height = partial.height ?? info.height;
-      assert(height, "Failed to retrieve height");
-
-      const framerate = partial.framerate ?? info.framerate;
-      assert(framerate, "Failed to retrieve framerate");
-
-      return {
-        type: "video",
-        path: partial.path,
-        height,
-        framerate,
-      };
-    }
-
-    case "audio": {
-      const info = probeResult.audio[partial.path];
-      assert(info);
-
-      const language = partial.language ?? getLangCode(info.language);
-      assert(language, "Failed to retrieve language");
-
-      // Assume when no channel metadata is found, we'll fallback to 2.
-      const channels = partial.channels ?? info.channels ?? 2;
-
-      return {
-        type: "audio",
-        path: partial.path,
-        language,
-        channels,
-      };
-    }
-
-    case "text":
-      return partial;
-  }
+function mergeInputs(
+  partials: PartialInput[],
+  probeResult: FfprobeResult,
+): Input[] {
+  return partials.map((partial) => mergeInput(partial, probeResult));
 }
 
-type MatchItem<T extends Stream["type"]> = {
-  type: T;
-  stream: Extract<Stream, { type: T }>;
-  input: Extract<Input, { type: T }>;
-};
+export function mergeInput(
+  partial: PartialInput,
+  probeResult: FfprobeResult,
+): Input {
+  if (partial.type === "video") {
+    const info = probeResult.video[partial.path];
+    assert(info);
 
-type MatchResult = MatchItem<"video"> | MatchItem<"audio"> | MatchItem<"text">;
+    const height = partial.height ?? info.height;
+    assert(height, defaultReason("video", "height"));
 
-function mergeStream(partial: PartialStream, input: Input): MatchResult | null {
-  if (partial.type === "video" && input.type === "video") {
-    const bitrate =
-      partial.bitrate ?? getDefaultVideoBitrate(partial.height, partial.codec);
+    const framerate = partial.framerate ?? info.framerate;
+    assert(framerate, defaultReason("video", "framerate"));
 
-    assert(bitrate);
-
-    const stream: Extract<Stream, { type: "video" }> = {
-      ...partial,
-      bitrate,
-      framerate: partial.framerate ?? input.framerate,
+    return {
+      type: "video",
+      path: partial.path,
+      height,
+      framerate,
     };
-    return { type: "video", stream, input };
   }
-  if (partial.type === "audio" && input.type === "audio") {
-    const channels = partial.channels ?? input.channels;
-    const bitrate =
-      partial.bitrate ?? getDefaultAudioBitrate(channels, partial.codec);
 
-    assert(bitrate);
+  if (partial.type === "audio") {
+    const info = probeResult.audio[partial.path];
+    assert(info);
 
-    const stream: Extract<Stream, { type: "audio" }> = {
-      ...partial,
-      bitrate,
-      language: partial.language ?? input.language,
+    const language = partial.language ?? getLangCode(info.language);
+    assert(language, defaultReason("audio", "language"));
+
+    // Assume when no channel metadata is found, we'll fallback to 2.
+    const channels = partial.channels ?? info.channels ?? 2;
+
+    return {
+      type: "audio",
+      path: partial.path,
+      language,
       channels,
     };
-    return { type: "audio", stream, input };
   }
-  if (partial.type === "text" && input.type === "text") {
-    const stream: Extract<Stream, { type: "text" }> = {
-      ...partial,
-    };
-    return { type: "text", stream, input };
+
+  if (partial.type === "text") {
+    return partial;
   }
-  return null;
+
+  throw new Error("Cannot merge input, invalid type.");
 }
 
-function matchInputForStream(
-  partial: PartialStream,
-  inputs: Input[],
-): MatchResult | null {
-  const mergedStreams = inputs.map((input) => mergeStream(partial, input));
-
-  for (const mergedStream of mergedStreams) {
-    if (!mergedStream) {
-      continue;
-    }
-
-    const { type, stream, input } = mergedStream;
-
-    if (type === "video") {
-      if (stream.height > input.height) {
-        continue;
-      }
-    }
-
-    if (type === "audio") {
-      if (stream.language !== input.language) {
-        continue;
-      }
-
-      if (stream.channels > input.channels) {
-        continue;
-      }
-    }
-
-    if (type === "text") {
-      if (stream.language !== input.language) {
-        continue;
-      }
-    }
-
-    return mergedStream;
-  }
-
-  return null;
+function defaultReason<T extends Stream["type"]>(
+  type: T,
+  prop: keyof Extract<Stream, { type: T }>,
+) {
+  return (
+    `Could not extract a default value for "${type}" "${prop.toString()}", ` +
+    "You will have to provide it in the input instead."
+  );
 }
