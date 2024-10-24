@@ -1,5 +1,4 @@
 process.env = {
-  TZ: "UTC",
   S3_ENDPOINT: "s3-endpoint",
   S3_REGION: "s3-region",
   S3_ACCESS_KEY: "s3-access-key",
