@@ -1,13 +1,12 @@
-import { getSchemaValidator } from "elysia";
-import type { Static, TSchema } from "elysia";
-
-export function validateWithSchema<T extends TSchema>(
-  schema: T,
-  value: unknown,
-): Static<T> {
-  const validator = getSchemaValidator(schema);
-  if ("parse" in validator && typeof validator.parse === "function") {
-    return validator.parse(value);
+export function verifySig(obj: object, secret: string, sig?: string) {
+  if (!sig) {
+    return false;
   }
-  throw new Error("Failed to parse schema, parse method missing");
+
+  const hasher = new Bun.CryptoHasher("shake128");
+  hasher.update(secret);
+  hasher.update(JSON.stringify(obj));
+  const digest = hasher.digest("base64");
+
+  return sig === digest;
 }

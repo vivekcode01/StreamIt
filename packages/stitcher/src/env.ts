@@ -12,4 +12,5 @@ export const env = parseEnv((t) => ({
   REDIS_PORT: t.Number(),
   PUBLIC_S3_ENDPOINT: t.String(),
   PUBLIC_STITCHER_ENDPOINT: t.String(),
+  STITCHER_SIGNATURE_SECRET: t.String(),
 }));

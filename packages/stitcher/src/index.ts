@@ -12,10 +12,10 @@ import {
   formatMediaPlaylist,
   formatAssetList,
 } from "./playlist";
-import { validateWithSchema } from "./helpers";
+import { verifySig } from "./helpers";
 import type { Static } from "elysia";
 
-const schema = t.Object({
+const sessionBodySchema = t.Object({
   uri: t.String({
     description:
       'Reference to a master playlist, you can point to an asset with "asset://{uuid}" or as http(s).',
@@ -58,9 +58,8 @@ const schema = t.Object({
     ),
   ),
 });
-type Schema = Static<typeof schema>;
 
-async function newSession(body: Schema) {
+async function newSession(body: Static<typeof sessionBodySchema>) {
   // This'll fail when uri is invalid.
   getMasterUrl(body.uri);
 
@@ -100,10 +99,14 @@ export const app = new Elysia({
     }),
   )
   .get(
-    "/session",
-    async ({ query, redirect }) => {
-      const body = validateWithSchema(schema, query.payload);
-      const { url } = await newSession(body);
+    "/session/master.m3u8",
+    async ({ query, redirect, set }) => {
+      const secret = env.STITCHER_SIGNATURE_SECRET;
+      if (secret && !verifySig(query.data, secret, query.sig)) {
+        set.status = "Unauthorized";
+        return { code: "INVALID_SIG" };
+      }
+      const { url } = await newSession(query.data.body);
       return redirect(url);
     },
     {
@@ -111,7 +114,12 @@ export const app = new Elysia({
         summary: "Create a session with payload in query",
       },
       query: t.Object({
-        payload: Base64Object,
+        data: Base64Object(
+          t.Object({
+            body: sessionBodySchema,
+          }),
+        ),
+        sig: t.Optional(t.String()),
       }),
     },
   )
@@ -124,7 +132,7 @@ export const app = new Elysia({
       detail: {
         summary: "Create a session",
       },
-      body: schema,
+      body: sessionBodySchema,
     },
   )
   .get(
