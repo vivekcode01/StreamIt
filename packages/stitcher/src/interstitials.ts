@@ -17,15 +17,15 @@ type InterstitialAsset = {
 };
 
 export function getStaticPDT(session: Session) {
-  return session.dt;
+  return session.initialTime;
 }
 
 export function getStaticDateRanges(session: Session) {
   const group: Record<string, SessionInterstitialType[]> = {};
 
-  if (session.vmapResponse) {
-    for (const adBreak of session.vmapResponse.adBreaks) {
-      groupTimeOffset(group, session.dt, adBreak.timeOffset, "ad");
+  if (session.vmap) {
+    for (const adBreak of session.vmap.adBreaks) {
+      groupTimeOffset(group, session.initialTime, adBreak.timeOffset, "ad");
     }
   }
 
@@ -33,7 +33,7 @@ export function getStaticDateRanges(session: Session) {
     for (const interstitial of session.interstitials) {
       groupTimeOffset(
         group,
-        session.dt,
+        session.initialTime,
         interstitial.timeOffset,
         interstitial.type,
       );
@@ -83,15 +83,15 @@ function groupTimeOffset(
 export async function getAssets(session: Session, lookupDate: DateTime) {
   const assets: InterstitialAsset[] = [];
 
-  if (session.vmapResponse) {
-    await formatAdBreaks(assets, session.vmapResponse, session.dt, lookupDate);
+  if (session.vmap) {
+    await formatAdBreaks(assets, session.vmap, session.initialTime, lookupDate);
   }
 
   if (session.interstitials) {
     await formatInterstitials(
       assets,
       session.interstitials,
-      session.dt,
+      session.initialTime,
       lookupDate,
     );
   }

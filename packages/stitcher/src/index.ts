@@ -3,7 +3,12 @@ import { cors } from "@elysiajs/cors";
 import { swagger } from "@elysiajs/swagger";
 import { customCss } from "shared/scalar";
 import { env } from "./env";
-import { createSession } from "./session";
+import {
+  createStarter,
+  getSession,
+  getStarter,
+  swapStarterForSession,
+} from "./session";
 import { validateFilter } from "./filters";
 import { getMasterUrl } from "./url";
 import {
@@ -46,10 +51,9 @@ export const app = new Elysia({
         validateFilter(body.filter);
       }
 
-      const session = await createSession(body);
-
+      const id = await createStarter(body);
       return {
-        url: `${env.PUBLIC_STITCHER_ENDPOINT}/session/${session.id}/master.m3u8`,
+        url: `${env.PUBLIC_STITCHER_ENDPOINT}/session/${id}/master.m3u8`,
       };
     },
     {
@@ -98,10 +102,10 @@ export const app = new Elysia({
             },
           ),
         ),
-        ttl: t.Optional(
+        expiry: t.Optional(
           t.Number({
             description:
-              "The amount of seconds a session should be accessible.",
+              "In seconds, the session will no longer be available after this time.",
             default: 3600,
           }),
         ),
@@ -111,8 +115,17 @@ export const app = new Elysia({
   .get(
     "/session/:sessionId/master.m3u8",
     async ({ set, params }) => {
-      const playlist = await formatMasterPlaylist(params.sessionId);
+      let session = await getSession(params.sessionId);
+
+      if (!session) {
+        const starter = await getStarter(params.sessionId);
+        session = await swapStarterForSession(params.sessionId, starter);
+      }
+
+      const playlist = await formatMasterPlaylist(session);
+
       set.headers["content-type"] = "application/x-mpegURL";
+
       return playlist;
     },
     {
@@ -127,7 +140,12 @@ export const app = new Elysia({
   .get(
     "/session/:sessionId/*",
     async ({ set, params }) => {
-      const playlist = await formatMediaPlaylist(params.sessionId, params["*"]);
+      const session = await getSession(params.sessionId);
+      if (!session) {
+        throw new Error(`Invalid session for "${params.sessionId}"`);
+      }
+
+      const playlist = await formatMediaPlaylist(session, params["*"]);
       set.headers["content-type"] = "application/x-mpegURL";
       return playlist;
     },
@@ -144,7 +162,12 @@ export const app = new Elysia({
   .get(
     "/session/:sessionId/asset-list.json",
     async ({ params, query }) => {
-      return await formatAssetList(params.sessionId, query.startDate);
+      const session = await getSession(params.sessionId);
+      if (!session) {
+        throw new Error(`Invalid session for "${params.sessionId}"`);
+      }
+
+      return await formatAssetList(session, query.startDate);
     },
     {
       detail: {

@@ -1,20 +1,22 @@
 import { randomUUID } from "crypto";
 import { DateTime } from "luxon";
 import { kv } from "./kv";
+import { fetchVmap } from "./vmap";
 import type { VmapResponse } from "./vmap";
 
-const DEFAULT_SESSION_EXPIRY = 3600;
-
-export type Session = {
-  id: string;
+export type Starter = {
   uri: string;
-  dt: DateTime;
   interstitials?: SessionInterstitial[];
   filter?: SessionFilter;
   vmap?: SessionVmap;
-  vmapResponse?: VmapResponse;
-  expiry: number;
+  expiry?: number;
 };
+
+export type Session = {
+  id: string;
+  initialTime: DateTime;
+  vmap?: VmapResponse;
+} & Pick<Starter, "uri" | "interstitials" | "filter">;
 
 export type SessionInterstitialType = "ad" | "bumper";
 
@@ -32,54 +34,73 @@ export type SessionVmap = {
   url: string;
 };
 
-export async function createSession(data: {
+export async function createStarter(data: {
   uri: string;
   interstitials?: SessionInterstitial[];
   filter?: SessionFilter;
   vmap?: SessionVmap;
   expiry?: number;
 }) {
-  const sessionId = randomUUID();
+  const id = randomUUID();
 
-  const session: Session = {
-    id: sessionId,
+  const starter: Starter = {
     uri: data.uri,
     filter: data.filter,
     interstitials: data.interstitials,
     vmap: data.vmap,
-    dt: DateTime.now(),
-    expiry: data.expiry ?? DEFAULT_SESSION_EXPIRY,
+    expiry: data.expiry,
   };
 
-  await kv.set(`sessions:${sessionId}`, toSerializable(session), 60 * 15);
+  await kv.set(`starter:${id}`, JSON.stringify(starter), 60 * 15);
+
+  return id;
+}
+
+export async function getStarter(id: string): Promise<Starter> {
+  const data = await kv.get(`starter:${id}`);
+  if (!data) {
+    throw new Error(`Invalid starter for id "${id}"`);
+  }
+  return JSON.parse(data);
+}
+
+export async function swapStarterForSession(id: string, starter: Starter) {
+  const session: Session = {
+    id,
+    initialTime: DateTime.now(),
+    uri: starter.uri,
+    interstitials: starter.interstitials,
+    filter: starter.filter,
+  };
+
+  if (starter.vmap) {
+    session.vmap = await fetchVmap(starter.vmap.url);
+  }
+
+  const serializableSession = {
+    ...session,
+    id: undefined,
+    initialTime: session.initialTime.toISO(),
+  };
+
+  const ttl = starter.expiry ?? 3600;
+  console.log("set a ttl", ttl);
+  await kv.set(`session:${id}`, JSON.stringify(serializableSession), ttl);
 
   return session;
 }
 
-export async function getSession(sessionId: string) {
-  const data = await kv.get(`sessions:${sessionId}`);
+export async function getSession(id: string) {
+  const data = await kv.get(`session:${id}`);
   if (!data) {
-    throw new Error(`No session found with id "${sessionId}".`);
+    return null;
   }
-  return parseFromJson(data);
-}
 
-export async function updateSession(session: Session) {
-  const ttl = 60 * 60 * 6; // 6 hours
-  await kv.set(`session:${session.id}`, toSerializable(session), ttl);
-}
+  const fields = JSON.parse(data);
 
-function toSerializable(session: Session) {
-  return JSON.stringify({
-    ...session,
-    dt: session.dt.toISO(),
-  });
-}
-
-function parseFromJson(text: string): Session {
-  const obj = JSON.parse(text);
   return {
-    ...obj,
-    dt: DateTime.fromISO(obj.dt),
-  };
+    ...fields,
+    id,
+    initialTime: DateTime.fromISO(fields.initialTime),
+  } as Session;
 }
