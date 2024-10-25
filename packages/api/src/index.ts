@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@elysiajs/swagger";
+import { jwt } from "@elysiajs/jwt";
 import {
   addTranscodeJob,
   addPackageJob,
@@ -14,6 +15,7 @@ import { customCss } from "shared/scalar";
 import { env } from "./env";
 import { getJob, getJobs, getJobLogs } from "./jobs";
 import { getStorageFolder, getStorageFile } from "./s3";
+import { getUserIdCredentials } from "./user";
 import { StorageFolderSchema, StorageFileSchema, JobSchema } from "./types";
 
 export type App = typeof app;
@@ -35,6 +37,12 @@ const app = new Elysia()
         hideDownloadButton: true,
         customCss,
       },
+    }),
+  )
+  .use(
+    jwt({
+      name: "jwt",
+      secret: env.JWT_SECRET,
     }),
   )
   .model({
@@ -283,6 +291,28 @@ const app = new Elysia()
       response: {
         200: t.Ref(StorageFileSchema),
       },
+    },
+  )
+  .post(
+    "/sign",
+    async ({ jwt, body, set }) => {
+      const id = await getUserIdCredentials(body.username, body.password);
+      if (id === null) {
+        set.status = 400;
+        return "Unauthorized";
+      }
+      return {
+        token: await jwt.sign({
+          iss: "Superstreamer API",
+          sub: id.toString(),
+        }),
+      };
+    },
+    {
+      body: t.Object({
+        username: t.String(),
+        password: t.String(),
+      }),
     },
   );
 
