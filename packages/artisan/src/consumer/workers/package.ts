@@ -4,6 +4,7 @@ import parseFilePath from "parse-filepath";
 import { downloadFolder, uploadFolder } from "../s3";
 import { getMeta } from "../meta";
 import { getBinaryPath } from "../helpers";
+import type { LangCode } from "shared/typebox";
 import type { WorkerCallback } from "../lib/worker-processor";
 import type { Stream } from "../../types";
 
@@ -11,6 +12,8 @@ const packagerBin = await getBinaryPath("packager");
 
 export type PackageData = {
   assetId: string;
+  defaultLanguage?: LangCode;
+  defaultTextLanguage?: LangCode;
   segmentSize?: number;
   name: string;
   tag?: string;
@@ -83,6 +86,13 @@ export const packageCallback: WorkerCallback<
   });
 
   const packagerArgs = packagerParams.map((it) => `${it.join(",")}`);
+
+  if (job.data.defaultLanguage) {
+    packagerArgs.push("--default_language", job.data.defaultLanguage);
+  }
+  if (job.data.defaultTextLanguage) {
+    packagerArgs.push("--default_text_language", job.data.defaultTextLanguage);
+  }
 
   packagerArgs.push(
     "--segment_duration",

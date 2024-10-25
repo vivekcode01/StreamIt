@@ -167,6 +167,8 @@ const app = new Elysia()
       },
       body: t.Object({
         assetId: t.String(),
+        defaultLanguage: t.Optional(LangCodeSchema),
+        defaultTextLanguage: t.Optional(LangCodeSchema),
         segmentSize: t.Optional(
           t.Number({
             description:

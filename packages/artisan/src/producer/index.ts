@@ -2,6 +2,7 @@ import { Queue, FlowProducer } from "bullmq";
 import { randomUUID } from "crypto";
 import { connection } from "./env";
 import { DEFAULT_SEGMENT_SIZE } from "../defaults";
+import type { LangCode } from "shared/typebox";
 import type { PartialInput, PartialStream } from "../types";
 import type { TranscodeData } from "../consumer/workers/transcode";
 import type { PackageData } from "../consumer/workers/package";
@@ -86,6 +87,8 @@ export async function addTranscodeJob({
 
 type AddPackageJobData = {
   assetId: string;
+  defaultLanguage?: LangCode;
+  defaultTextLanguage?: LangCode;
   segmentSize?: number;
   name?: string;
   tag?: string;
@@ -96,6 +99,8 @@ type AddPackageJobData = {
  */
 export async function addPackageJob({
   assetId,
+  defaultLanguage,
+  defaultTextLanguage,
   segmentSize,
   name = "hls",
   tag,
@@ -104,6 +109,8 @@ export async function addPackageJob({
     "package",
     {
       assetId,
+      defaultLanguage,
+      defaultTextLanguage,
       segmentSize,
       name,
       tag,
