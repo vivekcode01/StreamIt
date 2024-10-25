@@ -38,6 +38,11 @@ AudioCodecSchema.$id = "#/components/schemas/AudioCodec";
 
 export type AudioCodec = Static<typeof AudioCodecSchema>;
 
+export const Base64Object = t
+  .Transform(t.String({ format: "byte" }))
+  .Decode((value) => JSON.parse(atob(value)))
+  .Encode((value) => btoa(JSON.stringify(value)));
+
 export function formatFails(error: AssertError) {
   return Array.from(error.Errors()).map((fail) => {
     return `${fail.path.substring(1)}: ${fail.value} (${fail.message})`;
