@@ -2,6 +2,7 @@ import { VASTClient } from "vast-client";
 import { DOMParser } from "@xmldom/xmldom";
 import * as uuid from "uuid";
 import { getMasterUrl, isUrlAvailable } from "./url";
+import { api } from "./api";
 import type { VastResponse, VastCreativeLinear, VastAd } from "vast-client";
 import type { VmapAdBreak } from "./vmap";
 
@@ -18,13 +19,11 @@ export async function getAdMediasFromVast(adBreak: VmapAdBreak) {
 
   for (const adMedia of adMedias) {
     const url = getMasterUrl(`asset://${adMedia.assetId}`);
-
     const isAvailable = await isUrlAvailable(url);
     if (!isAvailable) {
-      scheduleForPackage(adMedia);
+      await scheduleForPackage(adMedia);
       continue;
     }
-
     result.push(adMedia);
   }
 
@@ -51,41 +50,40 @@ async function getAdMedias(adBreak: VmapAdBreak): Promise<AdMedia[]> {
   return [];
 }
 
-function scheduleForPackage(adMedia: AdMedia) {
-  // TODO: Push this to the API.
-  // addTranscodeJob({
-  //   tag: "ad",
-  //   assetId: adMedia.assetId,
-  //   packageAfter: true,
-  //   inputs: [
-  //     {
-  //       path: adMedia.fileUrl,
-  //       type: "video",
-  //     },
-  //     {
-  //       path: adMedia.fileUrl,
-  //       type: "audio",
-  //       language: "eng",
-  //     },
-  //   ],
-  //   streams: [
-  //     {
-  //       type: "video",
-  //       codec: "h264",
-  //       height: 720,
-  //     },
-  //     {
-  //       type: "video",
-  //       codec: "h264",
-  //       height: 480,
-  //     },
-  //     {
-  //       type: "audio",
-  //       codec: "aac",
-  //       language: "eng",
-  //     },
-  //   ],
-  // });
+async function scheduleForPackage(adMedia: AdMedia) {
+  await api.transcode.post({
+    tag: "ad",
+    assetId: adMedia.assetId,
+    packageAfter: true,
+    inputs: [
+      {
+        path: adMedia.fileUrl,
+        type: "video",
+      },
+      {
+        path: adMedia.fileUrl,
+        type: "audio",
+        language: "eng",
+      },
+    ],
+    streams: [
+      {
+        type: "video",
+        codec: "h264",
+        height: 720,
+      },
+      {
+        type: "video",
+        codec: "h264",
+        height: 480,
+      },
+      {
+        type: "audio",
+        codec: "aac",
+        language: "eng",
+      },
+    ],
+  });
 }
 
 async function formatVastResponse(response: VastResponse) {

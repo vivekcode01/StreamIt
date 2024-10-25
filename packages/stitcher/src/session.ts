@@ -84,7 +84,6 @@ export async function swapStarterForSession(id: string, starter: Starter) {
   };
 
   const ttl = starter.expiry ?? 3600;
-  console.log("set a ttl", ttl);
   await kv.set(`session:${id}`, JSON.stringify(serializableSession), ttl);
 
   return session;

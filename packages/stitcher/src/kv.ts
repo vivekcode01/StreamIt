@@ -31,9 +31,6 @@ function createServerlessKv() {
  */
 async function createRedisKv() {
   const { createClient } = await import("redis");
-
-  const REDIS_PREFIX = "stitcher";
-
   const client = createClient({
     socket: {
       host: env.REDIS_HOST,
@@ -45,12 +42,12 @@ async function createRedisKv() {
 
   return {
     async set(key: string, value: string, ttl: number) {
-      await client.set(`${REDIS_PREFIX}:${key}`, value, {
+      await client.set(`stitcher:${key}`, value, {
         EX: ttl,
       });
     },
     async get(key: string) {
-      return await client.get(`${REDIS_PREFIX}:${key}`);
+      return await client.get(`stitcher:${key}`);
     },
   };
 }

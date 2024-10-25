@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import { env } from "./env";
-import { getAdMediasFromVast } from "./vast";
+import { getAdMediasFromVast, type AdMedia } from "./vast";
 import { Presentation } from "./presentation";
 import type { VmapResponse } from "./vmap";
 import type { DateRange } from "./parser";
@@ -105,15 +105,20 @@ async function formatAdBreaks(
   baseDate: DateTime,
   lookupDate: DateTime,
 ) {
-  const adBreak = vmapResponse.adBreaks.find((adBreak) =>
+  const adBreaks = vmapResponse.adBreaks.filter((adBreak) =>
     isEqualTimeOffset(baseDate, adBreak.timeOffset, lookupDate),
   );
 
-  if (!adBreak) {
+  if (!adBreaks.length) {
     return;
   }
 
-  const adMedias = await getAdMediasFromVast(adBreak);
+  const adMedias: AdMedia[] = [];
+
+  for (const adBreak of adBreaks) {
+    const items = await getAdMediasFromVast(adBreak);
+    adMedias.push(...items);
+  }
 
   for (const adMedia of adMedias) {
     const presentation = new Presentation(`asset://${adMedia.assetId}`);
