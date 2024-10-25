@@ -13,7 +13,7 @@ export async function formatMasterPlaylist(sessionId: string) {
 
   const master = await presentation.getMaster();
 
-  if (session.vmap) {
+  if (session.vmap && !session.vmapResponse) {
     session.vmapResponse = await fetchVmap(session.vmap.url);
     updateSession(session);
   }

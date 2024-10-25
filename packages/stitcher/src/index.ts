@@ -1,7 +1,6 @@
 import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@elysiajs/swagger";
-import { Base64Object } from "shared/typebox";
 import { customCss } from "shared/scalar";
 import { env } from "./env";
 import { createSession } from "./session";
@@ -12,69 +11,6 @@ import {
   formatMediaPlaylist,
   formatAssetList,
 } from "./playlist";
-import { verifySig } from "./helpers";
-import type { Static } from "elysia";
-
-const sessionBodySchema = t.Object({
-  uri: t.String({
-    description:
-      'Reference to a master playlist, you can point to an asset with "asset://{uuid}" or as http(s).',
-  }),
-  interstitials: t.Optional(
-    t.Array(
-      t.Object({
-        timeOffset: t.Number(),
-        uri: t.String(),
-        type: t.Optional(t.Union([t.Literal("ad"), t.Literal("bumper")])),
-      }),
-      {
-        description: "Manual HLS interstitial insertion.",
-      },
-    ),
-  ),
-  filter: t.Optional(
-    t.Object(
-      {
-        resolution: t.Optional(
-          t.String({
-            description: 'Filter on resolution, like "<= 720".',
-          }),
-        ),
-      },
-      {
-        description: "Filter applies to master and media playlist.",
-      },
-    ),
-  ),
-  vmap: t.Optional(
-    t.Object(
-      {
-        url: t.String(),
-      },
-      {
-        description:
-          "Describes a VMAP, will transcode ads and insert interstitials on the fly.",
-      },
-    ),
-  ),
-});
-
-async function newSession(body: Static<typeof sessionBodySchema>) {
-  // This'll fail when uri is invalid.
-  getMasterUrl(body.uri);
-
-  if (body.filter) {
-    // When we have a filter, validate it here first. There is no need to wait until we approach
-    // the master playlist. We can bail out early.
-    validateFilter(body.filter);
-  }
-
-  const session = await createSession(body);
-
-  return {
-    url: `${env.PUBLIC_STITCHER_ENDPOINT}/session/${session.id}/master.m3u8`,
-  };
-}
 
 export const app = new Elysia({
   // Serverless env does not support ahead of time compilation,
@@ -98,41 +34,78 @@ export const app = new Elysia({
       },
     }),
   )
-  .get(
-    "/session/master.m3u8",
-    async ({ query, redirect, set }) => {
-      const secret = env.STITCHER_SIGNATURE_SECRET;
-      if (secret && !verifySig(query.data, secret, query.sig)) {
-        set.status = "Unauthorized";
-        return { code: "INVALID_SIG" };
-      }
-      const { url } = await newSession(query.data.body);
-      return redirect(url);
-    },
-    {
-      detail: {
-        summary: "Create a session with payload in query",
-      },
-      query: t.Object({
-        data: Base64Object(
-          t.Object({
-            body: sessionBodySchema,
-          }),
-        ),
-        sig: t.Optional(t.String()),
-      }),
-    },
-  )
   .post(
     "/session",
     async ({ body }) => {
-      return await newSession(body);
+      // This'll fail when uri is invalid.
+      getMasterUrl(body.uri);
+
+      if (body.filter) {
+        // When we have a filter, validate it here first. There is no need to wait until we approach
+        // the master playlist. We can bail out early.
+        validateFilter(body.filter);
+      }
+
+      const session = await createSession(body);
+
+      return {
+        url: `${env.PUBLIC_STITCHER_ENDPOINT}/session/${session.id}/master.m3u8`,
+      };
     },
     {
       detail: {
         summary: "Create a session",
       },
-      body: sessionBodySchema,
+      body: t.Object({
+        uri: t.String({
+          description:
+            'Reference to a master playlist, you can point to an asset with "asset://{uuid}" or as http(s).',
+        }),
+        interstitials: t.Optional(
+          t.Array(
+            t.Object({
+              timeOffset: t.Number(),
+              uri: t.String(),
+              type: t.Optional(t.Union([t.Literal("ad"), t.Literal("bumper")])),
+            }),
+            {
+              description: "Manual HLS interstitial insertion.",
+            },
+          ),
+        ),
+        filter: t.Optional(
+          t.Object(
+            {
+              resolution: t.Optional(
+                t.String({
+                  description: 'Filter on resolution, like "<= 720".',
+                }),
+              ),
+            },
+            {
+              description: "Filter applies to master and media playlist.",
+            },
+          ),
+        ),
+        vmap: t.Optional(
+          t.Object(
+            {
+              url: t.String(),
+            },
+            {
+              description:
+                "Describes a VMAP, will transcode ads and insert interstitials on the fly.",
+            },
+          ),
+        ),
+        ttl: t.Optional(
+          t.Number({
+            description:
+              "The amount of seconds a session should be accessible.",
+            default: 3600,
+          }),
+        ),
+      }),
     },
   )
   .get(

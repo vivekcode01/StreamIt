@@ -3,6 +3,8 @@ import { DateTime } from "luxon";
 import { kv } from "./kv";
 import type { VmapResponse } from "./vmap";
 
+const DEFAULT_SESSION_EXPIRY = 3600;
+
 export type Session = {
   id: string;
   uri: string;
@@ -11,6 +13,7 @@ export type Session = {
   filter?: SessionFilter;
   vmap?: SessionVmap;
   vmapResponse?: VmapResponse;
+  expiry: number;
 };
 
 export type SessionInterstitialType = "ad" | "bumper";
@@ -34,6 +37,7 @@ export async function createSession(data: {
   interstitials?: SessionInterstitial[];
   filter?: SessionFilter;
   vmap?: SessionVmap;
+  expiry?: number;
 }) {
   const sessionId = randomUUID();
 
@@ -44,10 +48,10 @@ export async function createSession(data: {
     interstitials: data.interstitials,
     vmap: data.vmap,
     dt: DateTime.now(),
+    expiry: data.expiry ?? DEFAULT_SESSION_EXPIRY,
   };
 
-  const ttl = 60 * 60 * 6; // 6 hours
-  await kv.set(`sessions:${sessionId}`, toSerializable(session), ttl);
+  await kv.set(`sessions:${sessionId}`, toSerializable(session), 60 * 15);
 
   return session;
 }

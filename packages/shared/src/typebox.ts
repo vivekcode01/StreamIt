@@ -1,7 +1,6 @@
 import { Type as t, TypeRegistry, Kind } from "@sinclair/typebox";
-import { Value } from "@sinclair/typebox/value";
 import { by639_2T } from "iso-language-codes";
-import type { Static, SchemaOptions, TSchema } from "@sinclair/typebox";
+import type { Static, SchemaOptions } from "@sinclair/typebox";
 import type { AssertError } from "@sinclair/typebox/value";
 
 TypeRegistry.Set("StringEnum", (schema: { enum: string[] }, value: unknown) => {
@@ -43,14 +42,4 @@ export function formatFails(error: AssertError) {
   return Array.from(error.Errors()).map((fail) => {
     return `${fail.path.substring(1)}: ${fail.value} (${fail.message})`;
   });
-}
-
-export function Base64Object<T extends TSchema>(schema: T) {
-  const base64ToObject = (value: string) => {
-    return JSON.parse(Buffer.from(value, "base64").toString("utf8"));
-  };
-  return t
-    .Transform(t.String())
-    .Decode((value) => Value.Parse(schema, base64ToObject(value)))
-    .Encode(() => "");
 }
