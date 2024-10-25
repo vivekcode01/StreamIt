@@ -1,4 +1,3 @@
-import { addTranscodeJob } from "@superstreamer/artisan/producer";
 import { VASTClient } from "vast-client";
 import { DOMParser } from "@xmldom/xmldom";
 import * as uuid from "uuid";
@@ -53,39 +52,40 @@ async function getAdMedias(adBreak: VmapAdBreak): Promise<AdMedia[]> {
 }
 
 function scheduleForPackage(adMedia: AdMedia) {
-  addTranscodeJob({
-    tag: "ad",
-    assetId: adMedia.assetId,
-    packageAfter: true,
-    inputs: [
-      {
-        path: adMedia.fileUrl,
-        type: "video",
-      },
-      {
-        path: adMedia.fileUrl,
-        type: "audio",
-        language: "eng",
-      },
-    ],
-    streams: [
-      {
-        type: "video",
-        codec: "h264",
-        height: 720,
-      },
-      {
-        type: "video",
-        codec: "h264",
-        height: 480,
-      },
-      {
-        type: "audio",
-        codec: "aac",
-        language: "eng",
-      },
-    ],
-  });
+  // TODO: Push this to the API.
+  // addTranscodeJob({
+  //   tag: "ad",
+  //   assetId: adMedia.assetId,
+  //   packageAfter: true,
+  //   inputs: [
+  //     {
+  //       path: adMedia.fileUrl,
+  //       type: "video",
+  //     },
+  //     {
+  //       path: adMedia.fileUrl,
+  //       type: "audio",
+  //       language: "eng",
+  //     },
+  //   ],
+  //   streams: [
+  //     {
+  //       type: "video",
+  //       codec: "h264",
+  //       height: 720,
+  //     },
+  //     {
+  //       type: "video",
+  //       codec: "h264",
+  //       height: 480,
+  //     },
+  //     {
+  //       type: "audio",
+  //       codec: "aac",
+  //       language: "eng",
+  //     },
+  //   ],
+  // });
 }
 
 async function formatVastResponse(response: VastResponse) {

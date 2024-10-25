@@ -107,6 +107,7 @@ export const app = new Elysia({
             description:
               "In seconds, the session will no longer be available after this time.",
             default: 3600,
+            minimum: 60,
           }),
         ),
       }),
@@ -178,6 +179,7 @@ export const app = new Elysia({
       }),
       query: t.Object({
         startDate: t.String(),
+        _HLS_primary_id: t.Optional(t.String()),
       }),
     },
   );

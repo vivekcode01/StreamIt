@@ -13,5 +13,5 @@ PUBLIC_S3_ENDPOINT = "https://cdn.superstreamer.xyz"
 PUBLIC_STITCHER_ENDPOINT = "https://stitcher.superstreamer.xyz"
 
 [[kv_namespaces]]
-binding = "sessions"
-id = "0385981fe1df474ca3648f625e18ba33"
+binding = "kv"
+id = "08ccfb81f250464ead5689f1e2b36432"

@@ -25,7 +25,6 @@
   "dependencies": {
     "@elysiajs/cors": "^1.1.1",
     "@elysiajs/swagger": "^1.1.5",
-    "@superstreamer/artisan": "workspace:*",
     "@xmldom/xmldom": "^0.8.10",
     "dom-parser": "^1.1.5",
     "elysia": "^1.1.20",
