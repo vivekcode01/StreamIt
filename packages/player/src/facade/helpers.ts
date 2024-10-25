@@ -37,7 +37,10 @@ export function preciseFloat(value: number) {
 
 export function getLang(key?: string) {
   const value = key ? langMap[key]?.split(",")[0] : null;
-  return value ?? "Unknown";
+  if (!value) {
+    return "Unknown";
+  }
+  return `${value[0].toUpperCase()}${value.slice(1)}`;
 }
 
 export function getAssetListItem(data: InterstitialAssetStartedData): {
