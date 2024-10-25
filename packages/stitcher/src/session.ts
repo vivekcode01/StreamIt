@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { DateTime } from "luxon";
-import { kv } from "./redis";
+import { kv } from "./kv";
 import type { VmapResponse } from "./vmap";
 
 export type Session = {
@@ -47,13 +47,13 @@ export async function createSession(data: {
   };
 
   const ttl = 60 * 60 * 6; // 6 hours
-  await kv.set(`session:${sessionId}`, toSerializable(session), ttl);
+  await kv.set(`sessions:${sessionId}`, toSerializable(session), ttl);
 
   return session;
 }
 
 export async function getSession(sessionId: string) {
-  const data = await kv.get(`session:${sessionId}`);
+  const data = await kv.get(`sessions:${sessionId}`);
   if (!data) {
     throw new Error(`No session found with id "${sessionId}".`);
   }
@@ -61,7 +61,8 @@ export async function getSession(sessionId: string) {
 }
 
 export async function updateSession(session: Session) {
-  await kv.set(`session:${session.id}`, toSerializable(session), "preserve");
+  const ttl = 60 * 60 * 6; // 6 hours
+  await kv.set(`session:${session.id}`, toSerializable(session), ttl);
 }
 
 function toSerializable(session: Session) {

@@ -21,23 +21,25 @@ type ParseEnvResolve<R extends Parameters<typeof t.Object>[0]> = (
   typeBox: typeof t,
 ) => R;
 
-export let env_: object | null = null;
+export let envOverride: object | null = null;
 
-export function setEnv_(env: object) {
-  env_ = env;
+export function setEnvOverride(obj: object) {
+  envOverride = obj;
 }
 
 export function parseEnv<R extends Parameters<typeof t.Object>[0]>(
   resolve: ParseEnvResolve<R>,
 ) {
-  if (!env_) {
-    // If we did not explicitly set them, eg; in a serverless env,
-    // we can load config.env instead.
+  if (!envOverride) {
+    // If we didn't override the env variables, try and load them from
+    // the config.env file.
     loadConfigEnv();
   }
 
   const schema = t.Object(resolve(t));
-  const env = env_ ?? process.env;
+
+  // Fallback on process.env when we didn't override them explicitly.
+  const env = envOverride ?? process.env;
 
   try {
     return Value.Parse(schema, env);
