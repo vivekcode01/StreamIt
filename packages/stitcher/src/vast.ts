@@ -1,8 +1,8 @@
-import { addTranscodeJob } from "@superstreamer/artisan/producer";
 import { VASTClient } from "vast-client";
 import { DOMParser } from "@xmldom/xmldom";
 import * as uuid from "uuid";
 import { getMasterUrl, isUrlAvailable } from "./url";
+import { api } from "./api";
 import type { VastResponse, VastCreativeLinear, VastAd } from "vast-client";
 import type { VmapAdBreak } from "./vmap";
 
@@ -19,13 +19,11 @@ export async function getAdMediasFromVast(adBreak: VmapAdBreak) {
 
   for (const adMedia of adMedias) {
     const url = getMasterUrl(`asset://${adMedia.assetId}`);
-
     const isAvailable = await isUrlAvailable(url);
     if (!isAvailable) {
-      scheduleForPackage(adMedia);
+      await scheduleForPackage(adMedia);
       continue;
     }
-
     result.push(adMedia);
   }
 
@@ -52,8 +50,8 @@ async function getAdMedias(adBreak: VmapAdBreak): Promise<AdMedia[]> {
   return [];
 }
 
-function scheduleForPackage(adMedia: AdMedia) {
-  addTranscodeJob({
+async function scheduleForPackage(adMedia: AdMedia) {
+  await api.transcode.post({
     tag: "ad",
     assetId: adMedia.assetId,
     packageAfter: true,

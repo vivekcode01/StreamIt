@@ -2,21 +2,13 @@ import { DateTime } from "luxon";
 import { stringifyMasterPlaylist, stringifyMediaPlaylist } from "./parser";
 import { Presentation } from "./presentation";
 import { filterMaster } from "./filters";
-import { fetchVmap } from "./vmap";
-import { getSession, updateSession } from "./session";
 import { getStaticDateRanges, getAssets, getStaticPDT } from "./interstitials";
+import type { Session } from "./session";
 
-export async function formatMasterPlaylist(sessionId: string) {
-  const session = await getSession(sessionId);
-
+export async function formatMasterPlaylist(session: Session) {
   const presentation = new Presentation(session.uri);
 
   const master = await presentation.getMaster();
-
-  if (session.vmap) {
-    session.vmapResponse = await fetchVmap(session.vmap.url);
-    updateSession(session);
-  }
 
   if (session.filter) {
     filterMaster(master, session.filter);
@@ -29,9 +21,7 @@ export async function formatMasterPlaylist(sessionId: string) {
   return stringifyMasterPlaylist(master);
 }
 
-export async function formatMediaPlaylist(sessionId: string, path: string) {
-  const session = await getSession(sessionId);
-
+export async function formatMediaPlaylist(session: Session, path: string) {
   const presentation = new Presentation(session.uri);
 
   const { mediaType, media } = await presentation.getMedia(path);
@@ -46,11 +36,8 @@ export async function formatMediaPlaylist(sessionId: string, path: string) {
   return stringifyMediaPlaylist(media);
 }
 
-export async function formatAssetList(sessionId: string, startDate: string) {
-  const session = await getSession(sessionId);
-
+export async function formatAssetList(session: Session, startDate: string) {
   const lookupDate = DateTime.fromISO(startDate);
   const assets = await getAssets(session, lookupDate);
-
   return { ASSETS: assets };
 }

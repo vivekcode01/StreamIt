@@ -131,7 +131,7 @@ async function formatJobNode(node: JobNode): Promise<Job> {
       : undefined;
 
   let tag: string | undefined;
-  const potentialTag = job.data?.metadata?.tag;
+  const potentialTag = job.data?.tag;
   if (typeof potentialTag === "string") {
     tag = potentialTag;
   }

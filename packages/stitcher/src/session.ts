@@ -1,17 +1,22 @@
 import { randomUUID } from "crypto";
 import { DateTime } from "luxon";
-import { client } from "./redis";
+import { kv } from "./kv";
+import { fetchVmap } from "./vmap";
 import type { VmapResponse } from "./vmap";
 
-export type Session = {
-  id: string;
+export type Starter = {
   uri: string;
-  dt: DateTime;
   interstitials?: SessionInterstitial[];
   filter?: SessionFilter;
   vmap?: SessionVmap;
-  vmapResponse?: VmapResponse;
+  expiry?: number;
 };
+
+export type Session = {
+  id: string;
+  initialTime: DateTime;
+  vmap?: VmapResponse;
+} & Pick<Starter, "uri" | "interstitials" | "filter">;
 
 export type SessionInterstitialType = "ad" | "bumper";
 
@@ -29,72 +34,72 @@ export type SessionVmap = {
   url: string;
 };
 
-const REDIS_PREFIX = `stitcher:session`;
-
-function redisKey(sessionId: string) {
-  return `${REDIS_PREFIX}:${sessionId}`;
-}
-
-export async function createSession(data: {
+export async function createStarter(data: {
   uri: string;
   interstitials?: SessionInterstitial[];
   filter?: SessionFilter;
   vmap?: SessionVmap;
+  expiry?: number;
 }) {
-  const sessionId = randomUUID();
+  const id = randomUUID();
 
-  const session: Session = {
-    id: sessionId,
+  const starter: Starter = {
     uri: data.uri,
     filter: data.filter,
     interstitials: data.interstitials,
     vmap: data.vmap,
-    dt: DateTime.now(),
+    expiry: data.expiry,
   };
 
-  const key = redisKey(sessionId);
+  await kv.set(`starter:${id}`, JSON.stringify(starter), 60 * 15);
 
-  await client.set(key, serializeToJson(session), {
-    EX: 60 * 60 * 6,
-  });
+  return id;
+}
+
+export async function getStarter(id: string): Promise<Starter> {
+  const data = await kv.get(`starter:${id}`);
+  if (!data) {
+    throw new Error(`Invalid starter for id "${id}"`);
+  }
+  return JSON.parse(data);
+}
+
+export async function swapStarterForSession(id: string, starter: Starter) {
+  const session: Session = {
+    id,
+    initialTime: DateTime.now(),
+    uri: starter.uri,
+    interstitials: starter.interstitials,
+    filter: starter.filter,
+  };
+
+  if (starter.vmap) {
+    session.vmap = await fetchVmap(starter.vmap.url);
+  }
+
+  const serializableSession = {
+    ...session,
+    id: undefined,
+    initialTime: session.initialTime.toISO(),
+  };
+
+  const ttl = starter.expiry ?? 3600;
+  await kv.set(`session:${id}`, JSON.stringify(serializableSession), ttl);
 
   return session;
 }
 
-export async function getSession(sessionId: string) {
-  const data = await client.get(redisKey(sessionId));
-
+export async function getSession(id: string) {
+  const data = await kv.get(`session:${id}`);
   if (!data) {
-    throw new Error(`No session found with id "${sessionId}".`);
+    return null;
   }
 
-  if (typeof data !== "string") {
-    throw new SyntaxError(
-      "Redis did not return a string for session, cannot deserialize.",
-    );
-  }
+  const fields = JSON.parse(data);
 
-  return parseFromJson(data);
-}
-
-export async function updateSession(session: Session) {
-  const key = redisKey(session.id);
-  await client.set(key, serializeToJson(session), {
-    EX: await client.ttl(key),
-  });
-}
-
-function serializeToJson(session: Session) {
-  return JSON.stringify({
-    ...session,
-    dt: session.dt.toISO(),
-  });
-}
-
-function parseFromJson(text: string): Session {
-  const obj = JSON.parse(text);
   return {
-    ...obj,
-    dt: DateTime.fromISO(obj.dt),
-  };
+    ...fields,
+    id,
+    initialTime: DateTime.fromISO(fields.initialTime),
+  } as Session;
 }

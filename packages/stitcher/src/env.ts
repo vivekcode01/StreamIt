@@ -1,6 +1,8 @@
 import { parseEnv } from "shared/env";
 
 export const env = parseEnv((t) => ({
+  SERVERLESS: t.Boolean({ default: false }),
+
   // process
   PORT: t.Number({ default: 52002 }),
   HOST: t.String({ default: "0.0.0.0" }),
@@ -10,4 +12,5 @@ export const env = parseEnv((t) => ({
   REDIS_PORT: t.Number(),
   PUBLIC_S3_ENDPOINT: t.String(),
   PUBLIC_STITCHER_ENDPOINT: t.String(),
+  PUBLIC_API_ENDPOINT: t.String(),
 }));
