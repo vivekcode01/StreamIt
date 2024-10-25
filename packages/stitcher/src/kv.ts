@@ -1,5 +1,3 @@
-import { envOverride } from "shared/env";
-import { assert } from "./assert";
 import { env } from "./env";
 import type { KVNamespace } from "@cloudflare/workers-types";
 
@@ -8,9 +6,7 @@ import type { KVNamespace } from "@cloudflare/workers-types";
  * @returns
  */
 function createServerlessKv() {
-  assert(envOverride, "envOverride for Cloudflare worker");
-
-  const cloudflareEnv = envOverride as { kv: KVNamespace };
+  const cloudflareEnv = process.env as unknown as { kv: KVNamespace };
   const client = cloudflareEnv.kv;
 
   return {

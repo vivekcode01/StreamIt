@@ -7,6 +7,7 @@
     "build": "tsc -b && bun build ./src/index.ts --target=bun --outdir=./dist",
     "test": "bun test",
     "lint": "eslint",
+    "dev:cloudflare": "wrangler dev src/serverless/cloudflare.ts",
     "deploy:cloudflare": "wrangler deploy --minify src/serverless/cloudflare.ts"
   },
   "devDependencies": {

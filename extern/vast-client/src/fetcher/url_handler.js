@@ -66,7 +66,8 @@ async function get(url, options) {
     const response = await fetch(url, {
       ...options,
       signal: controller.signal,
-      credentials: options.withCredentials ? "include" : "omit",
+      // TODO: Bring this upstream, credentials does not work with Cloudflare workers.
+      // credentials: options.withCredentials ? "include" : "omit",
     });
     clearTimeout(timer);
 

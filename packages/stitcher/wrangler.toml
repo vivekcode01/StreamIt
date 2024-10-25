@@ -10,7 +10,7 @@ HOST = "0.0.0.0"
 REDIS_HOST = "redis"
 REDIS_PORT = "0000"
 PUBLIC_S3_ENDPOINT = "https://cdn.superstreamer.xyz"
-PUBLIC_STITCHER_ENDPOINT = "https://stitcher.superstreamer.xyz"
+PUBLIC_STITCHER_ENDPOINT = "http://localhost:8787"
 PUBLIC_API_ENDPOINT = "https://api.tunnel.superstreamer.xyz"
 
 [[kv_namespaces]]
