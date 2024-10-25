@@ -11,6 +11,7 @@ REDIS_HOST = "redis"
 REDIS_PORT = "0000"
 PUBLIC_S3_ENDPOINT = "https://cdn.superstreamer.xyz"
 PUBLIC_STITCHER_ENDPOINT = "https://stitcher.superstreamer.xyz"
+PUBLIC_API_ENDPOINT = "https://api.tunnel.superstreamer.xyz"
 
 [[kv_namespaces]]
 binding = "kv"
