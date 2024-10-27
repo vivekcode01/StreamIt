@@ -369,6 +369,6 @@ function defaultReason<T extends Stream["type"]>(
 ) {
   return (
     `Could not extract a default value for "${type}" "${prop.toString()}", ` +
-    "You will have to provide it in the input instead."
+    "You will have to provide it in the stream instead."
   );
 }
