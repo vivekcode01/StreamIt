@@ -10,8 +10,9 @@ export function getDurationStr(duration?: number | null) {
 }
 
 export function getShortId(id: string) {
+  // The format is queue_uuid(_name), the latter is custom for each job.
   const chunks = id.split("_", 3);
-  return chunks[chunks.length - 1].substring(0, 7);
+  return chunks[1].substring(0, 7);
 }
 
 export function getTimeAgo(value: number | null) {
