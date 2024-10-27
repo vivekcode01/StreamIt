@@ -56,7 +56,7 @@ export function PlayerPage() {
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel>
         <Editor
-          localStorageKey="mixPlayerEditorValue"
+          localStorageKey="sprsPlayerEditorValue"
           schema={schema}
           title={
             <div className="flex gap-2 text-xs">

@@ -1,5 +1,5 @@
-import { api } from "@/api";
 import { useQuery } from "@tanstack/react-query";
+import { api } from "@/api";
 import { JobsList } from "@/components/JobsList";
 import { JobsFilter } from "@/components/JobsFilter";
 import { useJobsFilter } from "@/hooks/useJobsFilter";
@@ -19,7 +19,7 @@ export function JobsPage() {
       }
       return result.data;
     },
-    refetchInterval: 2000,
+    refetchInterval: 5000,
   });
 
   if (!data) {
