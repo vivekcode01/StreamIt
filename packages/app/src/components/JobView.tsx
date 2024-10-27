@@ -4,6 +4,7 @@ import AlertCircle from "lucide-react/icons/alert-circle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getDurationStr } from "@/lib/helpers";
 import { JsonHighlight } from "./JsonHighlight";
+import { JobProgress } from "./JobProgress";
 import type { Job } from "@/api";
 
 type JobViewProps = {
@@ -25,7 +26,7 @@ export function JobView({ job }: JobViewProps) {
         </div>
         <div>
           <div className="text-sm font-medium">Progress</div>
-          <pre>{JSON.stringify(job.progress, null, 2)}</pre>
+          <JobProgress progress={job.progress} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2">

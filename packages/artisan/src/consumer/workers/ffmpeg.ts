@@ -29,10 +29,10 @@ export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
 }) => {
   const input = await mapInputToFf(job.data.input);
 
-  const progress = await createProgressTracker(job, {
-    transcode: 0,
-    upload: 0,
-  });
+  const progress = await createProgressTracker(job, [
+    ["transcode", 0],
+    ["upload", 0],
+  ]);
 
   let name: string | undefined;
   const outputOptions: string[] = [];

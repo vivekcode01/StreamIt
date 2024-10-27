@@ -1,42 +1,47 @@
 import type { Job } from "bullmq";
 
-export async function createProgressTracker<T extends Record<string, number>>(
+export async function createProgressTracker<T extends [string, number][]>(
   job: Job,
-  obj: T,
+  tuples: T,
 ) {
-  await job.updateProgress(obj);
+  await job.updateProgress(tuples);
 
-  let lastKey = Object.keys(obj)[0];
-  let isUpdating = false;
+  let lastKey = tuples[0]?.[0];
 
+  let updating = false;
   const persist = async () => {
-    if (isUpdating) {
+    if (updating) {
       return;
     }
-    isUpdating = true;
-    await job.updateProgress(obj);
-    isUpdating = false;
+    updating = true;
+    await job.updateProgress(tuples);
+    updating = false;
+  };
+
+  const updateTuple = (key: string, value: number) => {
+    if (value < 0) {
+      value = 0;
+    }
+    const index = tuples.findIndex((tuple) => tuple[0] === key);
+    if (tuples[index]) {
+      tuples[index][1] = value;
+    }
   };
 
   return {
-    update: (type: keyof T, value: number) => {
-      if (value < 0) {
-        value = 0;
+    update: (key: string, value: number) => {
+      if (lastKey !== key) {
+        if (lastKey) {
+          updateTuple(lastKey, 100);
+        }
+        lastKey = key;
       }
-
-      if (lastKey !== type) {
-        // @ts-expect-error keyof T
-        obj[lastKey] = 100;
-        lastKey = <string>type;
-      }
-      // @ts-expect-error keyof T
-      obj[type] = value;
+      updateTuple(key, value);
       persist();
     },
     finish: () => {
-      Object.keys(obj).forEach((key) => {
-        // @ts-expect-error keyof T
-        obj[key] = 100;
+      tuples.forEach((tuple) => {
+        tuple[1] = 100;
       });
       persist();
     },

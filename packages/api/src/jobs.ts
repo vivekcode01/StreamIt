@@ -131,11 +131,16 @@ async function formatJobNode(node: JobNode): Promise<Job> {
     tag = potentialTag;
   }
 
+  let progress: [string, number][] | undefined;
+  if (Array.isArray(job.progress)) {
+    progress = job.progress;
+  }
+
   return {
     id: job.id,
     name: job.name,
     state,
-    progress: job.progress,
+    progress,
     duration,
     processedOn: job.processedOn,
     finishedOn: job.finishedOn,
