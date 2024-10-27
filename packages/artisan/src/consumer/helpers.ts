@@ -1,6 +1,4 @@
-import parseFilepath from "parse-filepath";
-import { downloadFile } from "./s3";
-import { Dir } from "./lib/dir";
+import { getS3SignedUrl } from "./s3";
 import type { PartialInput } from "../types";
 
 export async function getBinaryPath(name: string) {
@@ -22,21 +20,14 @@ export async function getBinaryPath(name: string) {
   );
 }
 
-export async function getInputPath(input: PartialInput, dir: Dir | string) {
-  const filePath = parseFilepath(input.path);
-
-  // If the input is on S3, download the file locally.
-  if (filePath.path.startsWith("s3://")) {
-    const inDir = dir instanceof Dir ? await dir.createTempDir() : dir;
-    await downloadFile(inDir, filePath.path.replace("s3://", ""));
-    return parseFilepath(`${inDir}/${filePath.basename}`);
+export async function mapInputToFf(input: PartialInput) {
+  if (input.path.startsWith("s3://")) {
+    const path = input.path.substring(5);
+    return await getS3SignedUrl(path);
   }
 
-  if (
-    filePath.dir.startsWith("http://") ||
-    filePath.dir.startsWith("https://")
-  ) {
-    return filePath;
+  if (input.path.startsWith("http://") || input.path.startsWith("https://")) {
+    return input.path;
   }
 
   throw new Error("Failed to resolve input path");

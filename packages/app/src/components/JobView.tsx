@@ -23,6 +23,10 @@ export function JobView({ job }: JobViewProps) {
           <div className="text-sm font-medium">Duration</div>
           {getDurationStr(job.duration) ?? "N/A"}
         </div>
+        <div>
+          <div className="text-sm font-medium">Progress</div>
+          <pre>{JSON.stringify(job.progress, null, 2)}</pre>
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div>

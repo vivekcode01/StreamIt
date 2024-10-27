@@ -1,14 +1,7 @@
-import { FFmpeggy } from "ffmpeggy";
-import { getBinaryPath, getInputPath } from "../helpers";
+import { ffprobe } from "../ffmpeg";
+import { mapInputToFf } from "../helpers";
 import type { PartialInput } from "../../types";
 import type { WorkerCallback } from "../lib/worker-processor";
-
-const ffprobeBin = await getBinaryPath("ffprobe");
-
-FFmpeggy.DefaultConfig = {
-  ...FFmpeggy.DefaultConfig,
-  ffprobeBin,
-};
 
 type VideoInfo = {
   height?: number;
@@ -33,17 +26,15 @@ export type FfprobeResult = {
 export const ffprobeCallback: WorkerCallback<
   FfprobeData,
   FfprobeResult
-> = async ({ job, dir }) => {
+> = async ({ job }) => {
   const result: FfprobeResult = {
     video: {},
     audio: {},
   };
 
-  const tempDir = await dir.createTempDir();
-
   for (const input of job.data.inputs) {
-    const file = await getInputPath(input, tempDir);
-    const info = await FFmpeggy.probe(file.path);
+    const ff = await mapInputToFf(input);
+    const info = await ffprobe(ff);
 
     if (input.type === "video") {
       const stream = info.streams.find(
@@ -65,7 +56,7 @@ export const ffprobeCallback: WorkerCallback<
         (stream) => stream.codec_type === "audio",
       );
       result.audio[input.path] = {
-        language: stream?.tags.language,
+        language: info.format.tags?.["language"] as string,
         channels: stream?.channels,
       };
     }

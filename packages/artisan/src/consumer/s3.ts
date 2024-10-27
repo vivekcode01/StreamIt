@@ -1,12 +1,12 @@
-import { GetObjectCommand, S3 } from "@aws-sdk/client-s3";
-import { Upload } from "@aws-sdk/lib-storage";
 import { S3SyncClient } from "s3-sync-client";
-import { basename } from "path";
-import { writeFile } from "node:fs/promises";
+import { S3, GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { Upload } from "@aws-sdk/lib-storage";
 import { createReadStream } from "node:fs";
+import { lookup } from "mime-types";
 import { env } from "./env";
-import type { Readable } from "node:stream";
-import type { SyncOptions } from "s3-sync-client/dist/commands/SyncCommand";
+import type { PutObjectCommandInput } from "@aws-sdk/client-s3";
+import type { CommandInput } from "s3-sync-client";
 
 const client = new S3({
   endpoint: env.S3_ENDPOINT,
@@ -19,91 +19,90 @@ const client = new S3({
 
 const { sync } = new S3SyncClient({ client });
 
-type UploadFolderOptions = {
-  del?: boolean;
-  commandInput?: (event: { Key: string }) => Partial<object>;
-};
+export async function syncFromS3(remotePath: string, localPath: string) {
+  await sync(`s3://${env.S3_BUCKET}/${remotePath}`, localPath);
+}
 
-/**
- * Upload a folder, with all files and subdirectories to S3.
- * @param path Local file path
- * @param key S3 key
- * @param options
- */
-export async function uploadFolder(
-  path: string,
-  key: string,
-  options?: UploadFolderOptions,
+export async function syncToS3(
+  localPath: string,
+  remotePath: string,
+  options?: {
+    del?: boolean;
+    public?: boolean;
+  },
 ) {
-  await sync(path, `s3://${env.S3_BUCKET}/${key}`, options as SyncOptions);
+  const commandInput: CommandInput<PutObjectCommandInput> = (input) => {
+    let contentType: string | undefined;
+    if (input.Key) {
+      contentType = lookup(input.Key) || "binary/octet-stream";
+    }
+    return {
+      ContentType: contentType,
+      ACL: options?.public ? "public-read" : undefined,
+    };
+  };
+
+  await sync(localPath, `s3://${env.S3_BUCKET}/${remotePath}`, {
+    del: options?.del,
+    commandInput,
+  });
 }
 
-/**
- * Download a folder, with all subdirectories from S3.
- * @param key S3 key
- * @param path Local file path
- */
-export async function downloadFolder(key: string, path: string) {
-  await sync(`s3://${env.S3_BUCKET}/${key}`, path);
-}
+type UploadToS3File =
+  | { type: "json"; data: object }
+  | { type: "local"; path: string };
 
-/**
- * Download a single file from S3 to local file system.
- * @param path Local file path
- * @param key S3 key
- */
-export async function downloadFile(path: string, key: string) {
-  const name = `${path}/${basename(key)}`;
+export async function uploadToS3(
+  remoteFilePath: string,
+  file: UploadToS3File,
+  onProgress?: (value: number) => void,
+) {
+  let params: Omit<PutObjectCommandInput, "Bucket" | "Key"> | undefined;
 
-  if (await Bun.file(name).exists()) {
-    // If the file already exists, we have nothing to do.
-    return;
+  switch (file.type) {
+    case "json":
+      params = {
+        Body: JSON.stringify(file.data, null, 2),
+        ContentType: "application/json",
+      };
+      break;
+    case "local":
+      params = {
+        Body: createReadStream(file.path),
+      };
+      break;
+    default:
+      return;
   }
 
-  const response = await client.send(
-    new GetObjectCommand({
-      Bucket: env.S3_BUCKET,
-      Key: key,
-    }),
-  );
-
-  await writeFile(name, response.Body as Readable);
-}
-
-/**
- * Upload a single file to S3 from local file system.
- * @param key S3 key
- * @param path Local file path
- */
-export async function uploadFile(key: string, path: string) {
   const upload = new Upload({
     client,
     params: {
+      ...params,
       Bucket: env.S3_BUCKET,
-      Key: key,
-      Body: createReadStream(path),
+      Key: remoteFilePath,
     },
   });
+
+  upload.on("httpUploadProgress", (event) => {
+    if (event.loaded === undefined || event.total === undefined) {
+      return;
+    }
+    const value = Math.round((event.loaded / event.total) * 100);
+    onProgress?.(value);
+  });
+
   await upload.done();
 }
 
-/**
- * Upload an object as a *.json file.
- * @param key S3 key
- * @param data Any object, will be serialized to json.
- */
-export async function uploadJson(key: string, data: object) {
-  if (!key.endsWith(".json")) {
-    throw new Error("Key must be a .json file");
-  }
-  const upload = new Upload({
-    client,
-    params: {
-      Bucket: env.S3_BUCKET,
-      Key: key,
-      Body: JSON.stringify(data, null, 2),
-      ContentType: "application/json",
-    },
+export async function getS3SignedUrl(remoteFilePath: string) {
+  const command = new GetObjectCommand({
+    Bucket: env.S3_BUCKET,
+    Key: remoteFilePath,
   });
-  await upload.done();
+  // @ts-expect-error https://github.com/aws/aws-sdk-js-v3/issues/4451
+  const url = await getSignedUrl(client, command, {
+    expiresIn: 60 * 60 * 2,
+  });
+  return url;
 }

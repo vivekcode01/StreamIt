@@ -93,11 +93,6 @@ async function formatJobNode(node: JobNode): Promise<Job> {
     throw new Error("Missing job id");
   }
 
-  let progress = 0;
-  if (typeof job.progress === "number") {
-    progress = job.progress;
-  }
-
   const state = mapJobState(await job.getState());
 
   const failedReason = state === "failed" ? job.failedReason : undefined;
@@ -140,7 +135,7 @@ async function formatJobNode(node: JobNode): Promise<Job> {
     id: job.id,
     name: job.name,
     state,
-    progress,
+    progress: job.progress,
     duration,
     processedOn: job.processedOn,
     finishedOn: job.finishedOn,

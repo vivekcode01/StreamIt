@@ -1,15 +1,9 @@
-import { FFmpeggy } from "ffmpeggy";
-import { uploadFile } from "../s3";
-import { getBinaryPath, getInputPath } from "../helpers";
+import { uploadToS3 } from "../s3";
+import { mapInputToFf } from "../helpers";
+import { ffmpeg } from "../ffmpeg";
+import { createProgressTracker } from "../lib/worker-progress";
 import type { WorkerCallback } from "../lib/worker-processor";
 import type { Stream, Input } from "../../types";
-
-const ffmpegBin = await getBinaryPath("ffmpeg");
-
-FFmpeggy.DefaultConfig = {
-  ...FFmpeggy.DefaultConfig,
-  ffmpegBin,
-};
 
 export type FfmpegData = {
   input: Input;
@@ -24,19 +18,20 @@ export type FfmpegResult = {
   stream: Stream;
 };
 
+export type FfmpegProgress = {
+  transcode: number;
+  upload: number;
+};
+
 export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
   job,
   dir,
 }) => {
-  const outDir = await dir.createTempDir();
+  const input = await mapInputToFf(job.data.input);
 
-  const inputFile = await getInputPath(job.data.input, dir);
-
-  job.log(`Input is ${inputFile.path}`);
-
-  const ffmpeg = new FFmpeggy({
-    input: inputFile.path,
-    globalOptions: ["-loglevel error"],
+  const progress = await createProgressTracker(job, {
+    transcode: 0,
+    upload: 0,
   });
 
   let name: string | undefined;
@@ -65,33 +60,37 @@ export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
     );
   }
 
-  ffmpeg.setOutput(`${outDir}/${name}`);
-  ffmpeg.setOutputOptions(outputOptions);
-
   job.log(`Transcode to ${name}`);
 
-  ffmpeg.on("start", (args) => {
-    job.log(args.join(" "));
-  });
-
-  ffmpeg.on("progress", (event) => {
-    job.updateProgress(event.percent ?? 0);
-  });
-
-  ffmpeg.run();
-
-  await ffmpeg.done();
-
-  job.updateProgress(100);
+  const outDir = await dir.createTempDir();
+  await ffmpeg(
+    input,
+    `${outDir}/${name}`,
+    outputOptions,
+    (command) => {
+      job.log(command);
+    },
+    (value) => {
+      progress.update("transcode", value);
+    },
+  );
 
   job.log(
     `Uploading ${outDir}/${name} to transcode/${job.data.assetId}/${name}`,
   );
 
-  await uploadFile(
+  await uploadToS3(
     `transcode/${job.data.assetId}/${name}`,
-    `${outDir}/${name}`,
+    {
+      type: "local",
+      path: `${outDir}/${name}`,
+    },
+    (value) => {
+      progress.update("upload", value);
+    },
   );
+
+  await progress.finish();
 
   return {
     name,
