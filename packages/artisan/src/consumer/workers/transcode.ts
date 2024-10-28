@@ -2,7 +2,7 @@ import { WaitingChildrenError } from "bullmq";
 import { randomUUID } from "crypto";
 import { getLangCode } from "shared/lang";
 import { ffprobeQueue, ffmpegQueue } from "../../producer";
-import { uploadJson } from "../s3";
+import { uploadToS3 } from "../s3";
 import { assert } from "../../assert";
 import { getDefaultAudioBitrate, getDefaultVideoBitrate } from "../../defaults";
 import { addPackageJob } from "../../producer";
@@ -272,7 +272,10 @@ async function handleStepMeta(job: Job<TranscodeData>, token?: string) {
 
   await job.log(`Writing meta.json (${JSON.stringify(meta)})`);
 
-  await uploadJson(`transcode/${job.data.assetId}/meta.json`, meta);
+  await uploadToS3(`transcode/${job.data.assetId}/meta.json`, {
+    type: "json",
+    data: meta,
+  });
 }
 
 async function waitForChildren(job: Job, token?: string) {
@@ -369,6 +372,6 @@ function defaultReason<T extends Stream["type"]>(
 ) {
   return (
     `Could not extract a default value for "${type}" "${prop.toString()}", ` +
-    "You will have to provide it in the input instead."
+    "You will have to provide it in the stream instead."
   );
 }

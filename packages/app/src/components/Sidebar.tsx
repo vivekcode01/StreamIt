@@ -1,6 +1,6 @@
 import logo from "../assets/logo-mascotte.png";
 import { SidebarTitle } from "./SidebarTitle";
-import { Link } from "react-router-dom";
+import { TransitionNavLink } from "./TransitionNavLink";
 import Rows3 from "lucide-react/icons/rows-3";
 import Sailboat from "lucide-react/icons/sailboat";
 import Play from "lucide-react/icons/play";
@@ -12,7 +12,7 @@ export function Sidebar() {
   return (
     <div className="flex h-full max-h-screen flex-col gap-2">
       <div className="flex h-14 items-center border-b px-4">
-        <Link to="/" className="flex items-center gap-2">
+        <TransitionNavLink to="/" className="flex items-center gap-2">
           <img src={logo} className="w-6" />
           <div className="relative">
             <span className="font-medium text-sm">Superstreamer</span>
@@ -20,7 +20,7 @@ export function Sidebar() {
               {__VERSION__}
             </span>
           </div>
-        </Link>
+        </TransitionNavLink>
       </div>
       <div className="flex-1 flex-col flex">
         <SidebarTitle className="my-4">Manage</SidebarTitle>

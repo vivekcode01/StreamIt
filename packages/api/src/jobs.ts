@@ -1,5 +1,6 @@
 import { allQueus, flowProducer } from "@superstreamer/artisan/producer";
 import { Job as BullMQJob } from "bullmq";
+import { isRecordWithNumbers } from "./helpers";
 import type { JobNode, JobState, Queue } from "bullmq";
 import type { Job } from "./types";
 
@@ -93,11 +94,6 @@ async function formatJobNode(node: JobNode): Promise<Job> {
     throw new Error("Missing job id");
   }
 
-  let progress = 0;
-  if (typeof job.progress === "number") {
-    progress = job.progress;
-  }
-
   const state = mapJobState(await job.getState());
 
   const failedReason = state === "failed" ? job.failedReason : undefined;
@@ -134,6 +130,11 @@ async function formatJobNode(node: JobNode): Promise<Job> {
   const potentialTag = job.data?.tag;
   if (typeof potentialTag === "string") {
     tag = potentialTag;
+  }
+
+  let progress: Record<string, number> | undefined;
+  if (isRecordWithNumbers(job.progress)) {
+    progress = job.progress;
   }
 
   return {

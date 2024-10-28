@@ -1,7 +1,6 @@
 import { execa } from "execa";
-import { lookup } from "mime-types";
 import parseFilePath from "parse-filepath";
-import { downloadFolder, uploadFolder } from "../s3";
+import { syncFromS3, syncToS3 } from "../s3";
 import { getMeta } from "../meta";
 import { getBinaryPath } from "../helpers";
 import type { LangCode } from "shared/typebox";
@@ -29,7 +28,7 @@ export const packageCallback: WorkerCallback<
 > = async ({ job, dir }) => {
   const inDir = await dir.createTempDir();
 
-  await downloadFolder(`transcode/${job.data.assetId}`, inDir);
+  await syncFromS3(`transcode/${job.data.assetId}`, inDir);
 
   job.log(`Synced folder in ${inDir}`);
 
@@ -114,12 +113,9 @@ export const packageCallback: WorkerCallback<
   const s3Dir = `package/${job.data.assetId}/${job.data.name}`;
   job.log(`Uploading to ${s3Dir}`);
 
-  await uploadFolder(outDir, s3Dir, {
+  await syncToS3(outDir, s3Dir, {
     del: true,
-    commandInput: (input) => ({
-      ContentType: lookup(input.Key) || "binary/octet-stream",
-      ACL: "public-read",
-    }),
+    public: true,
   });
 
   job.updateProgress(100);
