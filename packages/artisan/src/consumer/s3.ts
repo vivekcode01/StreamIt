@@ -103,7 +103,8 @@ export async function getS3SignedUrl(
     Bucket: env.S3_BUCKET,
     Key: remoteFilePath,
   });
-  // @ts-expect-error https://github.com/aws/aws-sdk-js-v3/issues/4451
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore https://github.com/aws/aws-sdk-js-v3/issues/4451
   const url = await getSignedUrl(client, command, {
     expiresIn,
   });
