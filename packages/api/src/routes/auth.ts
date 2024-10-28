@@ -10,7 +10,7 @@ export const authJwt = new Elysia().use(
     schema: t.Object({
       id: t.Number(),
     }),
-    secret: env.JWT_SECRET,
+    secret: env.API_JWT_SECRET,
   }),
 );
 

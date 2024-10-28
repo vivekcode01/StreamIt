@@ -57,7 +57,7 @@ const app = new Elysia()
   .use(
     jwt({
       name: "jwt",
-      secret: env.JWT_SECRET,
+      secret: env.API_JWT_SECRET,
     }),
   )
   .use(auth)
