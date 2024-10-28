@@ -1,5 +1,5 @@
 import type { JobsFilterData } from "@/components/types";
-import type { Job } from "@/api";
+import type { Job } from "@/ApiContext";
 
 export function filterJobs(jobs: Job[], filter: JobsFilterData) {
   if (filter.tag) {

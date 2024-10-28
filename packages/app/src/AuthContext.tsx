@@ -1,47 +1,21 @@
-import {
-  useState,
-  createContext,
-  useContext,
-  useMemo,
-  useCallback,
-  useLayoutEffect,
-  useEffect,
-} from "react";
+import { useState, createContext, useContext, useMemo, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { Loader } from "@/components/Loader";
 import { ShortCrypt } from "short-crypt";
-import { api, setApiToken } from "./api";
 import type { ReactNode } from "react";
 
-type User = {
-  id: number;
-  username: string;
+type AuthContextValue = {
+  token: string | null;
+  setToken(value: string | null): void;
 };
 
-type AuthValue =
-  | {
-      token: null;
-      error: boolean;
-      loading: boolean;
-      login(credentials: Credentials): void;
-    }
-  | {
-      token: string;
-      user: User;
-      logout(): void;
-    };
-
-export const AuthContext = createContext<AuthValue>({} as AuthValue);
+export const AuthContext = createContext<AuthContextValue>(
+  {} as AuthContextValue,
+);
 
 const sc = new ShortCrypt("superstreamer");
 
 type AuthProviderProps = {
   children: ReactNode;
-};
-
-type Credentials = {
-  username: string;
-  password: string;
 };
 
 const LOCAL_STORAGE_KEY = "sprsToken";
@@ -61,86 +35,35 @@ function saveToken(value: string) {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string | null>(getInitialToken);
-  const [user, setUser] = useState<User | null>(null);
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const login = useCallback(async (credentials: Credentials) => {
-    setError(false);
-    setLoading(true);
-
-    const result = await api.auth.index.post(credentials);
-
-    if (result.status === 200 && result.data) {
-      saveToken(result.data.token);
-      setToken(result.data.token);
-      setUser(result.data.user);
-    } else {
-      setError(true);
-    }
-
-    setLoading(false);
-  }, []);
-
-  const logout = useCallback(() => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
-  }, []);
-
-  useLayoutEffect(() => {
-    setApiToken(token);
-  }, [token]);
 
   useEffect(() => {
-    if (token && !user) {
-      api.auth.index.get().then((result) => {
-        if (result.status === 200 && result.data) {
-          setUser(result.data);
-        }
-      });
+    if (token) {
+      saveToken(token);
+    } else {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
     }
-  }, [token, user]);
+  }, [token]);
 
   const value = useMemo(() => {
-    return token && user
-      ? { token, user, logout }
-      : {
-          token: null,
-          error,
-          loading,
-          login,
-        };
-  }, [token, user, login, logout, error, loading]);
+    return {
+      token,
+      setToken,
+    };
+  }, [token, setToken]);
 
-  const ready = (!user && !token) || (user && token);
-
-  return (
-    <AuthContext.Provider value={value}>
-      {ready ? (
-        children
-      ) : (
-        <div className="h-screen flex items-center justify-center">
-          <Loader />
-        </div>
-      )}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useUser() {
-  const data = useContext(AuthContext);
-  if (!data.token) {
-    throw new Error("Missing token");
-  }
-  return data;
+export function useAuth() {
+  return useContext(AuthContext);
 }
 
-function Auth(props: { children: ReactNode }) {
+export function Auth(props: { children: ReactNode }) {
   const { token } = useContext(AuthContext);
   return token ? props.children : <Navigate to="/login" />;
 }
 
-export function auth(component: ReactNode) {
-  return <Auth>{component}</Auth>;
+export function Guest(props: { children: ReactNode }) {
+  const { token } = useContext(AuthContext);
+  return token ? <Navigate to="/" /> : props.children;
 }

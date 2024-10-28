@@ -1,11 +1,13 @@
 import { SelectObject } from "@/components/SelectObject";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "@/AuthContext";
 
 export function ApiPage() {
   const navigate = useNavigate();
   const { service = "api" } = useParams() as {
     service?: string;
   };
+  const { token } = useAuth();
 
   const baseUrl = {
     api: window.__ENV__.PUBLIC_API_ENDPOINT,
@@ -35,7 +37,10 @@ export function ApiPage() {
           />
         </div>
       </div>
-      <iframe className="w-full h-full" src={`${baseUrl}/swagger`} />
+      <iframe
+        className="w-full h-full"
+        src={`${baseUrl}/swagger?token=${token}`}
+      />
     </>
   );
 }

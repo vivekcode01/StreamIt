@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { env } from "../env";
-import { getUser, getUserIdByCredentials } from "../db/repo-user";
+import { getUserIdByCredentials } from "../db/repo-user";
 import bearer from "@elysiajs/bearer";
 
 export const authJwt = new Elysia().use(
@@ -28,43 +28,31 @@ export const authUser = new Elysia()
     };
   });
 
-export const auth = new Elysia({
-  prefix: "/auth",
-})
-  .use(authJwt)
-  .post(
-    "/",
-    async ({ authJwt, body, set }) => {
-      const id = await getUserIdByCredentials(body.username, body.password);
-      if (id === null) {
-        set.status = 400;
-        return "Unauthorized";
-      }
-      const user = await getUser(id);
-      return {
-        token: await authJwt.sign({ id }),
-        user,
-      };
+export const auth = new Elysia().use(authJwt).post(
+  "/login",
+  async ({ authJwt, body, set }) => {
+    const id = await getUserIdByCredentials(body.username, body.password);
+    if (id === null) {
+      set.status = 400;
+      return "Unauthorized";
+    }
+    return {
+      token: await authJwt.sign({ id }),
+    };
+  },
+  {
+    detail: {
+      summary: "Create a token",
     },
-    {
-      body: t.Object({
-        username: t.String(),
-        password: t.String(),
-      }),
-      response: {
-        400: t.Literal("Unauthorized"),
-        200: t.Object({
-          token: t.String(),
-          user: t.Object({
-            id: t.Number(),
-            username: t.String(),
-          }),
-        }),
-      },
-    },
-  )
-  .group("", (app) =>
-    app.use(authUser).get("/", async ({ userId }) => {
-      return await getUser(userId);
+    body: t.Object({
+      username: t.String(),
+      password: t.String(),
     }),
-  );
+    response: {
+      400: t.Literal("Unauthorized"),
+      200: t.Object({
+        token: t.String(),
+      }),
+    },
+  },
+);

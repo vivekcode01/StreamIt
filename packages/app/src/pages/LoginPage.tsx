@@ -1,13 +1,12 @@
 import logo from "../assets/logo-mascotte.png";
 import { cn } from "@/lib/utils";
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "@/AuthContext";
+import { useEffect, useState } from "react";
 import z from "zod";
 import { AutoForm } from "@/components/ui/autoform";
 import { ZodProvider } from "@autoform/zod";
-import { Navigate } from "react-router-dom";
 import { buildZodFieldConfig } from "@autoform/react";
 import { Button } from "@/components/ui/button";
+import { useLogin } from "@/hooks/useLogin";
 import type { FieldTypes } from "@/components/ui/autoform";
 
 const fieldConfig = buildZodFieldConfig<FieldTypes>();
@@ -27,7 +26,7 @@ const schemaProvider = new ZodProvider(
 
 export function LoginPage() {
   const [show, setShow] = useState(false);
-  const data = useContext(AuthContext);
+  const { login, error, loading } = useLogin();
 
   useEffect(() => {
     if (show) {
@@ -42,10 +41,6 @@ export function LoginPage() {
       clearTimeout(timerId);
     };
   }, [show]);
-
-  if (data.token !== null) {
-    return <Navigate to="/" />;
-  }
 
   return (
     <div className="pt-24">
@@ -64,10 +59,10 @@ export function LoginPage() {
             show ? "opacity-100" : "opacity-0 scale-75",
           )}
         >
-          <AutoForm schema={schemaProvider} onSubmit={data.login}>
+          <AutoForm schema={schemaProvider} onSubmit={login}>
             <div className="flex items-center gap-4">
               <Button
-                disabled={data.loading}
+                disabled={loading}
                 className={cn(
                   "w-full relative transition-transform",
                   show ? "translate-y-0" : "translate-y-12",
@@ -77,7 +72,7 @@ export function LoginPage() {
               >
                 Sign in
               </Button>
-              {data.error ? (
+              {error ? (
                 <div className="text-red-400">Invalid credentials...</div>
               ) : null}
             </div>

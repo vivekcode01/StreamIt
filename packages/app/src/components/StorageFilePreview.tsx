@@ -4,7 +4,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import type { StorageFile } from "@/api";
+import type { StorageFile } from "@/ApiContext";
 
 type StoragePreviewProps = {
   file: StorageFile | null;

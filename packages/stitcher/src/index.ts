@@ -1,7 +1,6 @@
 import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
-import { swagger } from "@elysiajs/swagger";
-import { customCss } from "shared/scalar";
+import { scalar } from "shared/scalar";
 import { env } from "./env";
 import {
   createStarter,
@@ -24,7 +23,7 @@ export const app = new Elysia({
 })
   .use(cors())
   .use(
-    swagger({
+    scalar({
       documentation: {
         info: {
           title: "Superstreamer Stitcher API",
@@ -32,10 +31,6 @@ export const app = new Elysia({
           description:
             "Realtime playlist manipulator. Can be used for ad, bumper or other HLS interstitials insertion on-the-fly. Can apply filters to playlists.",
         },
-      },
-      scalarConfig: {
-        hideDownloadButton: true,
-        customCss,
       },
     }),
   )

@@ -1,4 +1,4 @@
-import { Job } from "@/api";
+import { Job } from "@/ApiContext";
 
 export type JobsFilterData = {
   tag?: string;

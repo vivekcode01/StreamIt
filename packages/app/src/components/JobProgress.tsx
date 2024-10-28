@@ -1,5 +1,5 @@
 import { Progress } from "@/components/ui/progress";
-import type { Job } from "@/api";
+import type { Job } from "@/ApiContext";
 
 type JobProgressProps = {
   progress: Job["progress"];

@@ -1,6 +1,6 @@
 import { JobTag } from "@/components/JobTag";
 import { SelectObject } from "./SelectObject";
-import type { Job } from "@/api";
+import type { Job } from "@/ApiContext";
 import type { JobsFilterData } from "./types";
 import type { SelectObjectItem } from "./SelectObject";
 

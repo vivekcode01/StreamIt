@@ -1,25 +1,30 @@
 import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
-import { swagger } from "@elysiajs/swagger";
+import { scalar } from "shared/scalar";
 import { jwt } from "@elysiajs/jwt";
+import { env } from "./env";
+import { auth } from "./routes/auth";
+import { jobs } from "./routes/jobs";
+import { storage } from "./routes/storage";
+import { profile } from "./routes/profile";
 import {
   LangCodeSchema,
   VideoCodecSchema,
   AudioCodecSchema,
 } from "shared/typebox";
-import { customCss } from "shared/scalar";
-import { env } from "./env";
-import { JobSchema, StorageFolderSchema, StorageFileSchema } from "./types";
-import { auth } from "./routes/auth";
-import { jobs } from "./routes/jobs";
-import { storage } from "./routes/storage";
+import {
+  UserSchema,
+  JobSchema,
+  StorageFolderSchema,
+  StorageFileSchema,
+} from "./types";
 
 export type App = typeof app;
 
 const app = new Elysia()
   .use(cors())
   .use(
-    swagger({
+    scalar({
       documentation: {
         info: {
           title: "Superstreamer API",
@@ -30,28 +35,22 @@ const app = new Elysia()
         },
         components: {
           securitySchemes: {
-            bearer: {
+            bearerAuth: {
               type: "http",
               scheme: "bearer",
+              bearerFormat: "JWT",
             },
           },
         },
       },
-      scalarConfig: {
-        hideDownloadButton: true,
-        customCss,
-        authentication: {
-          preferredSecurityScheme: "bearer",
-          http: {
-            basic: {
-              username: "",
-              password: "",
-            },
-            bearer: {
-              token: "hello",
-            },
-          },
-        },
+      models: {
+        User: UserSchema,
+        LangCode: LangCodeSchema,
+        VideoCodec: VideoCodecSchema,
+        AudioCodec: AudioCodecSchema,
+        Job: JobSchema,
+        StorageFolder: StorageFolderSchema,
+        StorageFile: StorageFileSchema,
       },
     }),
   )
@@ -61,17 +60,10 @@ const app = new Elysia()
       secret: env.JWT_SECRET,
     }),
   )
-  .model({
-    LangCode: LangCodeSchema,
-    VideoCodec: VideoCodecSchema,
-    AudioCodec: AudioCodecSchema,
-    Job: JobSchema,
-    StorageFolder: StorageFolderSchema,
-    StorageFile: StorageFileSchema,
-  })
   .use(auth)
   .use(jobs)
-  .use(storage);
+  .use(storage)
+  .use(profile);
 
 app.on("stop", () => {
   process.exit(0);

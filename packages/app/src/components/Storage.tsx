@@ -1,10 +1,10 @@
-import { api } from "@/api";
+import { useApi } from "@/ApiContext";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { StorageTable } from "./StorageTable";
 import { StorageFilePreview } from "./StorageFilePreview";
 import { StoragePathBreadcrumbs } from "./StoragePathBreadcrumbs";
-import type { StorageFile } from "@/api";
+import type { StorageFile } from "@/ApiContext";
 
 type StorageProps = {
   path: string;
@@ -12,6 +12,7 @@ type StorageProps = {
 
 export function Storage({ path }: StorageProps) {
   const [file, setFile] = useState<StorageFile | null>(null);
+  const api = useApi();
 
   const { data, fetchNextPage } = useSuspenseInfiniteQuery({
     queryKey: ["storage", path],

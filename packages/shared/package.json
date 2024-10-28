@@ -13,8 +13,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@elysiajs/swagger": "^1.1.5",
     "@sinclair/typebox": "^0.33.16",
     "dotenv": "^16.4.5",
+    "elysia": "^1.1.20",
     "find-config": "^1.0.0",
     "iso-language-codes": "^2.0.0"
   },

@@ -2,7 +2,7 @@ import { TransitionNavLink } from "./TransitionNavLink";
 import { cn } from "@/lib/utils";
 import { JobState } from "./JobState";
 import { getDurationStr } from "@/lib/helpers";
-import type { Job } from "@/api";
+import type { Job } from "@/ApiContext";
 
 type JobTreeItemProps = {
   job: Job;

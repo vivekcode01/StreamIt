@@ -4,7 +4,8 @@ import {
   Navigate,
   RouterProvider,
 } from "react-router-dom";
-import { auth, AuthProvider } from "./AuthContext";
+import { Auth, Guest, AuthProvider } from "./AuthContext";
+import { ApiProvider } from "./ApiContext";
 import { JobsPage } from "@/pages/JobsPage";
 import { JobPage } from "@/pages/JobPage";
 import { ApiPage } from "@/pages/ApiPage";
@@ -30,11 +31,19 @@ const queryClient = new QueryClient({
 const router = createBrowserRouter([
   {
     path: "/login",
-    element: <LoginPage />,
+    element: (
+      <Guest>
+        <LoginPage />
+      </Guest>
+    ),
   },
   {
     path: "/",
-    element: auth(<RootLayout />),
+    element: (
+      <Auth>
+        <RootLayout />
+      </Auth>
+    ),
     children: [
       {
         index: true,
@@ -69,7 +78,9 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <Suspense fallback={<AppLoader />}>
         <AuthProvider>
-          <RouterProvider router={router} />
+          <ApiProvider>
+            <RouterProvider router={router} />
+          </ApiProvider>
         </AuthProvider>
       </Suspense>
       <Toaster />

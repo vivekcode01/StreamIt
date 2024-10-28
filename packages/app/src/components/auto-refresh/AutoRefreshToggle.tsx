@@ -1,14 +1,10 @@
 import { Switch } from "@/components/ui/switch";
 import { Loader } from "@/components/Loader";
 import { cn } from "@/lib/utils";
-import type { AutoRefetch } from "./useAutoRefetch";
+import { useAutoRefresh } from "./AutoRefreshContext";
 
-type AutoRefetchToggleProps = {
-  autoRefetch: AutoRefetch;
-};
-
-export function AutoRefetchToggle({ autoRefetch }: AutoRefetchToggleProps) {
-  const { active, countdown, toggle } = autoRefetch;
+export function AutoRefreshToggle() {
+  const { active, countdown, toggle } = useAutoRefresh();
 
   return (
     <div className="relative flex items-center">
