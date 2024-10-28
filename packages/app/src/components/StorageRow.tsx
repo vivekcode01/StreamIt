@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { TransitionNavLink } from "./TransitionNavLink";
 import { TableCell, TableRow } from "@/components/ui/table";
 import Folder from "lucide-react/icons/folder";
 import { StorageRowFile } from "./StorageRowFile";
@@ -20,12 +20,12 @@ export function StorageRow({ item, setFile }: StorageRowProps) {
           <Folder className="w-4 h-4" />
         </TableCell>
         <TableCell>
-          <Link
+          <TransitionNavLink
             to={`/storage?path=${item.path}`}
             className="flex gap-2 text-sm items-center hover:underline w-full"
           >
             {name}
-          </Link>
+          </TransitionNavLink>
         </TableCell>
         <TableCell></TableCell>
       </TableRow>

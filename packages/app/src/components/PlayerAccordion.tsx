@@ -7,7 +7,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/hooks/use-toast";
+import { useToast } from "@/components/ui/hooks/use-toast";
 import { PlayerMetadataForm } from "./PlayerMetadataForm";
 import copy from "copy-to-clipboard";
 import { SelectObject } from "./SelectObject";

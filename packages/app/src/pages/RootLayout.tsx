@@ -1,5 +1,4 @@
 import { Outlet } from "react-router-dom";
-import { Suspense } from "react";
 import { Sidebar } from "@/components/Sidebar";
 
 export function RootLayout() {
@@ -10,9 +9,7 @@ export function RootLayout() {
       </aside>
       <div className="flex flex-col flex-1 overflow-y-auto">
         <main className="flex flex-col grow">
-          <Suspense>
-            <Outlet />
-          </Suspense>
+          <Outlet />
         </main>
       </div>
     </div>

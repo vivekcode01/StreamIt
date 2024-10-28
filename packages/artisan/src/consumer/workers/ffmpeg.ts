@@ -1,7 +1,6 @@
 import { uploadToS3 } from "../s3";
-import { mapInputToFf } from "../helpers";
+import { mapInputToPublicUrl } from "../helpers";
 import { ffmpeg } from "../ffmpeg";
-import { createProgressTracker } from "../lib/worker-progress";
 import type { WorkerCallback } from "../lib/worker-processor";
 import type { Stream, Input } from "../../types";
 
@@ -26,14 +25,8 @@ export type FfmpegProgress = {
 export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
   job,
   dir,
+  progressTracker,
 }) => {
-  const input = await mapInputToFf(job.data.input);
-
-  const progress = await createProgressTracker(job, [
-    ["transcode", 0],
-    ["upload", 0],
-  ]);
-
   let name: string | undefined;
   const outputOptions: string[] = [];
 
@@ -62,16 +55,18 @@ export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
 
   job.log(`Transcode to ${name}`);
 
+  const publicUrl = await mapInputToPublicUrl(job.data.input);
+
   const outDir = await dir.createTempDir();
   await ffmpeg(
-    input,
+    publicUrl,
     `${outDir}/${name}`,
     outputOptions,
     (command) => {
       job.log(command);
     },
     (value) => {
-      progress.update("transcode", value);
+      progressTracker.set("transcode", value);
     },
   );
 
@@ -86,11 +81,9 @@ export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
       path: `${outDir}/${name}`,
     },
     (value) => {
-      progress.update("upload", value);
+      progressTracker.set("upload", value);
     },
   );
-
-  await progress.finish();
 
   return {
     name,
