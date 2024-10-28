@@ -27,7 +27,7 @@ export function JobsPage() {
       <div className="h-14 border-b flex px-4">
         <div className="flex gap-2 items-center w-full">
           <JobsStats jobs={data} filter={filter} onChange={setFilter} />
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
             <JobsFilter allJobs={data} filter={filter} onChange={setFilter} />
           </div>
         </div>
