@@ -1,5 +1,6 @@
 import { allQueus, flowProducer } from "@superstreamer/artisan/producer";
 import { Job as BullMQJob } from "bullmq";
+import { isRecordWithNumbers } from "./helpers";
 import type { JobNode, JobState, Queue } from "bullmq";
 import type { Job } from "./types";
 
@@ -131,8 +132,8 @@ async function formatJobNode(node: JobNode): Promise<Job> {
     tag = potentialTag;
   }
 
-  let progress: [string, number][] | undefined;
-  if (Array.isArray(job.progress)) {
+  let progress: Record<string, number> | undefined;
+  if (isRecordWithNumbers(job.progress)) {
     progress = job.progress;
   }
 

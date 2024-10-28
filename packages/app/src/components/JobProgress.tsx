@@ -6,15 +6,29 @@ type JobProgressProps = {
 };
 
 export function JobProgress({ progress }: JobProgressProps) {
-  const value = progress?.find((tuple) => tuple[1] < 100);
-  if (!value) {
+  if (!progress) {
     return "N/A";
   }
-  const [name, percent] = value;
+  const entries = Object.entries(progress);
+  const entry = entries.find(([, value]) => {
+    return value < 100;
+  });
+  if (!entry) {
+    return "N/A";
+  }
   return (
-    <div>
-      <div className="text-xs">{name}</div>
-      <Progress value={percent} />
+    <div className="relative">
+      <div className="flex gap-2 items-center">
+        <Progress className="[&>*]:bg-black/20" value={entry[1]} max={100} />
+        <div className="min-w-10 text-right">{entry[1]}%</div>
+      </div>
+      <div className="text-xs absolute left-0 -bottom-4 flex items-center z-10">
+        {capFirstLetter(entry[0])}
+      </div>
     </div>
   );
+}
+
+function capFirstLetter(val: string) {
+  return `${val.charAt(0).toUpperCase()}${val.slice(1)}`;
 }
