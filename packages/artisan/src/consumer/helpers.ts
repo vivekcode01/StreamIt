@@ -20,15 +20,15 @@ export async function getBinaryPath(name: string) {
   );
 }
 
-export async function mapInputToFf(input: PartialInput) {
+export async function mapInputToPublicUrl(input: PartialInput) {
   if (input.path.startsWith("s3://")) {
     const path = input.path.substring(5);
-    return await getS3SignedUrl(path);
+    return await getS3SignedUrl(path, 60 * 60 * 24);
   }
 
   if (input.path.startsWith("http://") || input.path.startsWith("https://")) {
     return input.path;
   }
 
-  throw new Error("Failed to resolve input path");
+  throw new Error("Failed to map input to public URL, invalid scheme.");
 }
