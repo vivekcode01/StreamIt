@@ -67,3 +67,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+#nprogress .bar {
+  background: #ff7400 !important;
+}

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { TransitionNavLink } from "./TransitionNavLink";
 import { cn } from "@/lib/utils";
 import { JobState } from "./JobState";
 import { getDurationStr } from "@/lib/helpers";
@@ -13,7 +13,7 @@ export function JobTreeItem({ job, activeId }: JobTreeItemProps) {
   const durationStr = getDurationStr(job.duration);
 
   return (
-    <Link
+    <TransitionNavLink
       to={`/jobs/${job.id}`}
       className={cn(
         "px-3 py-2 flex gap-3 items-center rounded-lg text-muted-foreground transition-all hover:text-primary text-sm",
@@ -23,6 +23,6 @@ export function JobTreeItem({ job, activeId }: JobTreeItemProps) {
       <JobState state={job.state} />
       {job.name}
       {durationStr ? <span className="text-xs">{durationStr}</span> : null}
-    </Link>
+    </TransitionNavLink>
   );
 }

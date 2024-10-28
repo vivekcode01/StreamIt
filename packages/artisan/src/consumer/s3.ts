@@ -95,14 +95,17 @@ export async function uploadToS3(
   await upload.done();
 }
 
-export async function getS3SignedUrl(remoteFilePath: string) {
+export async function getS3SignedUrl(
+  remoteFilePath: string,
+  expiresIn: number,
+) {
   const command = new GetObjectCommand({
     Bucket: env.S3_BUCKET,
     Key: remoteFilePath,
   });
   // @ts-expect-error https://github.com/aws/aws-sdk-js-v3/issues/4451
   const url = await getSignedUrl(client, command, {
-    expiresIn: 60 * 60 * 2,
+    expiresIn,
   });
   return url;
 }

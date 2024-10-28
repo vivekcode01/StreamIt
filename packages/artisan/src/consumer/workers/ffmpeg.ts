@@ -1,5 +1,5 @@
 import { uploadToS3 } from "../s3";
-import { mapInputToFf } from "../helpers";
+import { mapInputToPublicUrl } from "../helpers";
 import { ffmpeg } from "../ffmpeg";
 import type { WorkerCallback } from "../lib/worker-processor";
 import type { Stream, Input } from "../../types";
@@ -27,8 +27,6 @@ export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
   dir,
   progressTracker,
 }) => {
-  const input = await mapInputToFf(job.data.input);
-
   let name: string | undefined;
   const outputOptions: string[] = [];
 
@@ -57,9 +55,11 @@ export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
 
   job.log(`Transcode to ${name}`);
 
+  const publicUrl = await mapInputToPublicUrl(job.data.input);
+
   const outDir = await dir.createTempDir();
   await ffmpeg(
-    input,
+    publicUrl,
     `${outDir}/${name}`,
     outputOptions,
     (command) => {

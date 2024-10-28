@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { TransitionNavLink } from "./TransitionNavLink";
 import { JobState } from "./JobState";
 import { getDurationStr, getShortId, getTimeAgo } from "@/lib/helpers";
 import { JobTag } from "./JobTag";
@@ -13,7 +13,7 @@ export function JobsList({ jobs }: JobsListProps) {
     <ul>
       {jobs.map((job) => (
         <li key={job.id} className="mb-2">
-          <Link
+          <TransitionNavLink
             to={`/jobs/${job.id}`}
             className="px-4 h-20 flex items-center border border-border rounded-md hover:shadow-sm transition-shadow hover:bg-muted/50"
           >
@@ -37,7 +37,7 @@ export function JobsList({ jobs }: JobsListProps) {
                 </div>
               </div>
             </div>
-          </Link>
+          </TransitionNavLink>
         </li>
       ))}
     </ul>

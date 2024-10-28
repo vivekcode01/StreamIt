@@ -1,5 +1,5 @@
 import { ffprobe } from "../ffmpeg";
-import { mapInputToFf } from "../helpers";
+import { mapInputToPublicUrl } from "../helpers";
 import type { PartialInput } from "../../types";
 import type { WorkerCallback } from "../lib/worker-processor";
 
@@ -33,8 +33,8 @@ export const ffprobeCallback: WorkerCallback<
   };
 
   for (const input of job.data.inputs) {
-    const ff = await mapInputToFf(input);
-    const info = await ffprobe(ff);
+    const publicUrl = await mapInputToPublicUrl(input);
+    const info = await ffprobe(publicUrl);
 
     if (input.type === "video") {
       const stream = info.streams.find(

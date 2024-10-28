@@ -20,7 +20,7 @@ export function JobProgress({ progress }: JobProgressProps) {
     <div className="relative">
       <div className="flex gap-2 items-center">
         <Progress className="[&>*]:bg-black/20" value={entry[1]} max={100} />
-        <div className="min-w-10 text-right">{entry[1]}%</div>
+        <div className="min-w-10 text-right">{Math.trunc(entry[1])}%</div>
       </div>
       <div className="text-xs absolute left-0 -bottom-4 flex items-center z-10">
         {capFirstLetter(entry[0])}
