@@ -12,6 +12,7 @@ import { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { PlayerPage } from "./pages/PlayerPage";
 import { StoragePage } from "./pages/StoragePage";
+import { Loader } from "@/components/Loader";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,10 +61,18 @@ const router = createBrowserRouter([
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Suspense>
+      <Suspense fallback={<AppLoader />}>
         <RouterProvider router={router} />
       </Suspense>
       <Toaster />
     </QueryClientProvider>
+  );
+}
+
+function AppLoader() {
+  return (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <Loader />
+    </div>
   );
 }
