@@ -16,7 +16,6 @@ export function Storage({ path }: StorageProps) {
   const { data, fetchNextPage } = useSuspenseInfiniteQuery({
     queryKey: ["storage", path],
     queryFn: async ({ queryKey, pageParam }) => {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
       const result = await api.storage.folder.get({
         query: {
           path: queryKey[1],

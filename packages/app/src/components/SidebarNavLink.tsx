@@ -1,5 +1,5 @@
-import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { TransitionNavLink } from "./TransitionNavLink";
 import type { ReactNode } from "react";
 
 type SidebarNavLinkProps = {
@@ -8,18 +8,17 @@ type SidebarNavLinkProps = {
 };
 
 export function SidebarNavLink({ children, to }: SidebarNavLinkProps) {
-  const { pathname } = useLocation();
-
   return (
-    <Link
+    <TransitionNavLink
       to={to}
-      className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-
-        pathname.startsWith(to) && "bg-muted text-primary",
-      )}
+      className={({ isActive }) => {
+        return cn(
+          "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
+          isActive ? "bg-muted text-primary" : null,
+        );
+      }}
     >
       {children}
-    </Link>
+    </TransitionNavLink>
   );
 }

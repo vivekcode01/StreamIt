@@ -1,12 +1,12 @@
 import { useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { api } from "@/api";
 import type { Job } from "@/api";
 
 export function useJob(id: string) {
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const { data } = useSuspenseQuery({
     queryKey: ["jobsFromRoot", id],
     queryFn: async ({ queryKey }) => {
       const result = await api
@@ -17,7 +17,6 @@ export function useJob(id: string) {
       }
       return result.data;
     },
-    refetchInterval: 2000,
   });
 
   useEffect(() => {
