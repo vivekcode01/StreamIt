@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { api } from "@/api";
-import { useAutoRefetch } from "@/components/auto-refetch/AutoRefetchProvider";
+import { useAutoRefetchBind } from "@/components/auto-refetch/useAutoRefetch";
 import type { Job } from "@/api";
+import type { AutoRefetch } from "@/components/auto-refetch/useAutoRefetch";
 
-export function useJob(id: string) {
+export function useJob(id: string, autoRefetch?: AutoRefetch) {
   const queryClient = useQueryClient();
 
   const { data, refetch } = useSuspenseQuery({
@@ -20,7 +21,7 @@ export function useJob(id: string) {
     },
   });
 
-  useAutoRefetch(refetch);
+  useAutoRefetchBind(autoRefetch, refetch);
 
   useEffect(() => {
     const populateCache = (rootJob: Job, jobs: Job[]) => {

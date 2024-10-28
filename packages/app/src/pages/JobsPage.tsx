@@ -6,7 +6,10 @@ import { useJobsFilter } from "@/hooks/useJobsFilter";
 import { JobsStats } from "@/components/JobsStats";
 import { filterJobs } from "@/lib/jobs-filter";
 import { AutoRefetchToggle } from "@/components/auto-refetch/AutoRefetchToggle";
-import { useAutoRefetch } from "@/components/auto-refetch/AutoRefetchProvider";
+import {
+  useAutoRefetch,
+  useAutoRefetchBind,
+} from "@/components/auto-refetch/useAutoRefetch";
 
 export function JobsPage() {
   const [filter, setFilter] = useJobsFilter();
@@ -22,7 +25,8 @@ export function JobsPage() {
     },
   });
 
-  useAutoRefetch(refetch);
+  const autoRefetch = useAutoRefetch();
+  useAutoRefetchBind(autoRefetch, refetch);
 
   const filteredJobs = filterJobs(data, filter);
 
@@ -32,7 +36,7 @@ export function JobsPage() {
         <div className="flex gap-2 items-center w-full">
           <JobsStats jobs={data} filter={filter} onChange={setFilter} />
           <div className="ml-auto flex items-center gap-2">
-            <AutoRefetchToggle />
+            <AutoRefetchToggle autoRefetch={autoRefetch} />
             <JobsFilter allJobs={data} filter={filter} onChange={setFilter} />
           </div>
         </div>

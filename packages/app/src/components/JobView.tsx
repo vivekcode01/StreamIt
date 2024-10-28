@@ -6,12 +6,14 @@ import { getDurationStr } from "@/lib/helpers";
 import { JsonHighlight } from "./JsonHighlight";
 import { JobProgress } from "./JobProgress";
 import type { Job } from "@/api";
+import type { AutoRefetch } from "./auto-refetch/useAutoRefetch";
 
 type JobViewProps = {
   job: Job;
+  autoRefetch: AutoRefetch;
 };
 
-export function JobView({ job }: JobViewProps) {
+export function JobView({ job, autoRefetch }: JobViewProps) {
   return (
     <>
       {job.failedReason ? <JobError error={job.failedReason} /> : null}
@@ -42,7 +44,7 @@ export function JobView({ job }: JobViewProps) {
         </div>
         <div>
           <div className="mb-2">Logs</div>
-          <JobLogs id={job.id} />
+          <JobLogs id={job.id} autoRefetch={autoRefetch} />
         </div>
       </div>
     </>

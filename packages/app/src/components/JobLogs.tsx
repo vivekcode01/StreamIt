@@ -1,13 +1,15 @@
 import { api } from "@/api";
 import { useQuery } from "@tanstack/react-query";
 import { JobLog } from "./JobLog";
-import { useAutoRefetch } from "./auto-refetch/AutoRefetchProvider";
+import { useAutoRefetchBind } from "./auto-refetch/useAutoRefetch";
+import type { AutoRefetch } from "./auto-refetch/useAutoRefetch";
 
 type JobLogsProps = {
   id: string;
+  autoRefetch: AutoRefetch;
 };
 
-export function JobLogs({ id }: JobLogsProps) {
+export function JobLogs({ id, autoRefetch }: JobLogsProps) {
   const { data, refetch } = useQuery({
     queryKey: ["jobs", id, "logs"],
     queryFn: async ({ queryKey }) => {
@@ -19,7 +21,7 @@ export function JobLogs({ id }: JobLogsProps) {
     },
   });
 
-  useAutoRefetch(refetch);
+  useAutoRefetchBind(autoRefetch, refetch);
 
   const logs = data ?? [];
 
