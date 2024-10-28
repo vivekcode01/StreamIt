@@ -1,16 +1,15 @@
 import { api } from "@/api";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { JobsList } from "@/components/JobsList";
 import { JobsFilter } from "@/components/JobsFilter";
 import { useJobsFilter } from "@/hooks/useJobsFilter";
 import { JobsStats } from "@/components/JobsStats";
 import { filterJobs } from "@/lib/jobs-filter";
-import { Loader } from "@/components/Loader";
 
 export function JobsPage() {
   const [filter, setFilter] = useJobsFilter();
 
-  const { data } = useQuery({
+  const { data } = useSuspenseQuery({
     queryKey: ["jobs"],
     queryFn: async () => {
       const result = await api.jobs.get();
@@ -19,12 +18,7 @@ export function JobsPage() {
       }
       return result.data;
     },
-    refetchInterval: 2000,
   });
-
-  if (!data) {
-    return <Loader className="min-h-44" />;
-  }
 
   const filteredJobs = filterJobs(data, filter);
 

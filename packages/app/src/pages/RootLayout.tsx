@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { Suspense } from "react";
 import { Sidebar } from "@/components/Sidebar";
+import { SuspendedPage } from "@/components/SuspendedPage";
 
 export function RootLayout() {
   return (
@@ -15,6 +16,7 @@ export function RootLayout() {
           </Suspense>
         </main>
       </div>
+      <SuspendedPage />
     </div>
   );
 }
