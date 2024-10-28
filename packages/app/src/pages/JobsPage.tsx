@@ -5,11 +5,13 @@ import { JobsFilter } from "@/components/JobsFilter";
 import { useJobsFilter } from "@/hooks/useJobsFilter";
 import { JobsStats } from "@/components/JobsStats";
 import { filterJobs } from "@/lib/jobs-filter";
+import { AutoRefetchToggle } from "@/components/auto-refetch/AutoRefetchToggle";
+import { useAutoRefetch } from "@/components/auto-refetch/AutoRefetchProvider";
 
 export function JobsPage() {
   const [filter, setFilter] = useJobsFilter();
 
-  const { data } = useSuspenseQuery({
+  const { data, refetch } = useSuspenseQuery({
     queryKey: ["jobs"],
     queryFn: async () => {
       const result = await api.jobs.get();
@@ -20,6 +22,8 @@ export function JobsPage() {
     },
   });
 
+  useAutoRefetch(refetch);
+
   const filteredJobs = filterJobs(data, filter);
 
   return (
@@ -28,6 +32,7 @@ export function JobsPage() {
         <div className="flex gap-2 items-center w-full">
           <JobsStats jobs={data} filter={filter} onChange={setFilter} />
           <div className="ml-auto flex items-center gap-2">
+            <AutoRefetchToggle />
             <JobsFilter allJobs={data} filter={filter} onChange={setFilter} />
           </div>
         </div>

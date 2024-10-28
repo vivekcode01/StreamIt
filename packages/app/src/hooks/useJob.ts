@@ -1,12 +1,13 @@
 import { useEffect } from "react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { api } from "@/api";
+import { useAutoRefetch } from "@/components/auto-refetch/AutoRefetchProvider";
 import type { Job } from "@/api";
 
 export function useJob(id: string) {
   const queryClient = useQueryClient();
 
-  const { data } = useSuspenseQuery({
+  const { data, refetch } = useSuspenseQuery({
     queryKey: ["jobsFromRoot", id],
     queryFn: async ({ queryKey }) => {
       const result = await api
@@ -18,6 +19,8 @@ export function useJob(id: string) {
       return result.data;
     },
   });
+
+  useAutoRefetch(refetch);
 
   useEffect(() => {
     const populateCache = (rootJob: Job, jobs: Job[]) => {

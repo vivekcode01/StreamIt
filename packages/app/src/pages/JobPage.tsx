@@ -13,6 +13,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { AutoRefetchToggle } from "@/components/auto-refetch/AutoRefetchToggle";
 
 export function JobPage() {
   const { id } = useParams() as { id: string };
@@ -42,6 +43,9 @@ export function JobPage() {
         </Breadcrumb>
         <div className="ml-4 flex items-center">
           <JobTag tag={job.tag} />
+        </div>
+        <div className="ml-auto">
+          <AutoRefetchToggle />
         </div>
       </div>
       <div className="flex grow basis-0 overflow-hidden">
