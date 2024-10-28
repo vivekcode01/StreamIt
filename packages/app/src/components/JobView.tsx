@@ -4,13 +4,16 @@ import AlertCircle from "lucide-react/icons/alert-circle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getDurationStr } from "@/lib/helpers";
 import { JsonHighlight } from "./JsonHighlight";
+import { JobProgress } from "./JobProgress";
 import type { Job } from "@/api";
+import type { AutoRefetch } from "./auto-refetch/useAutoRefetch";
 
 type JobViewProps = {
   job: Job;
+  autoRefetch: AutoRefetch;
 };
 
-export function JobView({ job }: JobViewProps) {
+export function JobView({ job, autoRefetch }: JobViewProps) {
   return (
     <>
       {job.failedReason ? <JobError error={job.failedReason} /> : null}
@@ -22,6 +25,10 @@ export function JobView({ job }: JobViewProps) {
         <div>
           <div className="text-sm font-medium">Duration</div>
           {getDurationStr(job.duration) ?? "N/A"}
+        </div>
+        <div>
+          <div className="text-sm font-medium">Progress</div>
+          <JobProgress progress={job.progress} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2">
@@ -37,7 +44,7 @@ export function JobView({ job }: JobViewProps) {
         </div>
         <div>
           <div className="mb-2">Logs</div>
-          <JobLogs id={job.id} />
+          <JobLogs id={job.id} autoRefetch={autoRefetch} />
         </div>
       </div>
     </>

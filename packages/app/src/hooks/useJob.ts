@@ -1,12 +1,14 @@
 import { useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { api } from "@/api";
+import { useAutoRefetchBind } from "@/components/auto-refetch/useAutoRefetch";
 import type { Job } from "@/api";
+import type { AutoRefetch } from "@/components/auto-refetch/useAutoRefetch";
 
-export function useJob(id: string) {
+export function useJob(id: string, autoRefetch?: AutoRefetch) {
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const { data, refetch } = useSuspenseQuery({
     queryKey: ["jobsFromRoot", id],
     queryFn: async ({ queryKey }) => {
       const result = await api
@@ -17,8 +19,9 @@ export function useJob(id: string) {
       }
       return result.data;
     },
-    refetchInterval: 2000,
   });
+
+  useAutoRefetchBind(autoRefetch, refetch);
 
   useEffect(() => {
     const populateCache = (rootJob: Job, jobs: Job[]) => {

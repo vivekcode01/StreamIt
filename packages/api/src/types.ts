@@ -12,7 +12,7 @@ export const JobSchema = t.Recursive(
         t.Literal("failed"),
         t.Literal("completed"),
       ]),
-      progress: t.Number(),
+      progress: t.Optional(t.Record(t.String(), t.Number())),
       createdOn: t.Number(),
       processedOn: t.Optional(t.Number()),
       finishedOn: t.Optional(t.Number()),

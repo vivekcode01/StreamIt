@@ -1,16 +1,20 @@
 import { api } from "@/api";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { JobsList } from "@/components/JobsList";
 import { JobsFilter } from "@/components/JobsFilter";
 import { useJobsFilter } from "@/hooks/useJobsFilter";
 import { JobsStats } from "@/components/JobsStats";
 import { filterJobs } from "@/lib/jobs-filter";
-import { Loader } from "@/components/Loader";
+import { AutoRefetchToggle } from "@/components/auto-refetch/AutoRefetchToggle";
+import {
+  useAutoRefetch,
+  useAutoRefetchBind,
+} from "@/components/auto-refetch/useAutoRefetch";
 
 export function JobsPage() {
   const [filter, setFilter] = useJobsFilter();
 
-  const { data } = useQuery({
+  const { data, refetch } = useSuspenseQuery({
     queryKey: ["jobs"],
     queryFn: async () => {
       const result = await api.jobs.get();
@@ -19,12 +23,10 @@ export function JobsPage() {
       }
       return result.data;
     },
-    refetchInterval: 2000,
   });
 
-  if (!data) {
-    return <Loader className="min-h-44" />;
-  }
+  const autoRefetch = useAutoRefetch();
+  useAutoRefetchBind(autoRefetch, refetch);
 
   const filteredJobs = filterJobs(data, filter);
 
@@ -33,7 +35,8 @@ export function JobsPage() {
       <div className="h-14 border-b flex px-4">
         <div className="flex gap-2 items-center w-full">
           <JobsStats jobs={data} filter={filter} onChange={setFilter} />
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <AutoRefetchToggle autoRefetch={autoRefetch} />
             <JobsFilter allJobs={data} filter={filter} onChange={setFilter} />
           </div>
         </div>

@@ -1,7 +1,6 @@
 import { api } from "@/api";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Loader } from "@/components/Loader";
 import { StorageTable } from "./StorageTable";
 import { StorageFilePreview } from "./StorageFilePreview";
 import { StoragePathBreadcrumbs } from "./StoragePathBreadcrumbs";
@@ -14,7 +13,7 @@ type StorageProps = {
 export function Storage({ path }: StorageProps) {
   const [file, setFile] = useState<StorageFile | null>(null);
 
-  const { data, fetchNextPage } = useInfiniteQuery({
+  const { data, fetchNextPage } = useSuspenseInfiniteQuery({
     queryKey: ["storage", path],
     queryFn: async ({ queryKey, pageParam }) => {
       const result = await api.storage.folder.get({
@@ -35,18 +34,14 @@ export function Storage({ path }: StorageProps) {
     },
   });
 
-  const items = data ? data.pages.flatMap((page) => page.items ?? []) : null;
+  const items = data.pages.flatMap((page) => page.items ?? []);
 
   return (
     <div className="flex flex-col grow">
       <div className="p-4 h-14 border-b flex items-center">
         <StoragePathBreadcrumbs path={path} />
       </div>
-      {items ? (
-        <StorageTable items={items} onNext={fetchNextPage} setFile={setFile} />
-      ) : (
-        <Loader className="min-h-44" />
-      )}
+      <StorageTable items={items} onNext={fetchNextPage} setFile={setFile} />
       <StorageFilePreview file={file} onClose={() => setFile(null)} />
     </div>
   );

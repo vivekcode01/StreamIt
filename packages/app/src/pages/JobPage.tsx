@@ -13,10 +13,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { AutoRefetchToggle } from "@/components/auto-refetch/AutoRefetchToggle";
+import { useAutoRefetch } from "@/components/auto-refetch/useAutoRefetch";
 
 export function JobPage() {
   const { id } = useParams() as { id: string };
-  const result = useJob(id);
+  const autoRefetch = useAutoRefetch();
+  const result = useJob(id, autoRefetch);
 
   if (!result) {
     return <Loader className="min-h-44" />;
@@ -43,13 +46,16 @@ export function JobPage() {
         <div className="ml-4 flex items-center">
           <JobTag tag={job.tag} />
         </div>
+        <div className="ml-auto">
+          <AutoRefetchToggle autoRefetch={autoRefetch} />
+        </div>
       </div>
       <div className="flex grow basis-0 overflow-hidden">
         <div className="px-4 py-2 border-r min-w-[300px] overflow-auto grow">
           <JobTree job={rootJob} activeId={id!} depth={0} />
         </div>
         <div className="overflow-auto p-4 grow">
-          <JobView job={job} />
+          <JobView job={job} autoRefetch={autoRefetch} />
         </div>
       </div>
     </>
