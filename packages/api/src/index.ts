@@ -1,6 +1,5 @@
 import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
-import { swagger } from "@elysiajs/swagger";
 import {
   addTranscodeJob,
   addPackageJob,
@@ -10,8 +9,8 @@ import {
   VideoCodecSchema,
   AudioCodecSchema,
 } from "shared/typebox";
-import { customCss } from "shared/scalar";
 import { env } from "./env";
+import { scalar } from "./scalar";
 import { getJob, getJobs, getJobLogs } from "./jobs";
 import { getStorageFolder, getStorageFile } from "./s3";
 import { StorageFolderSchema, StorageFileSchema, JobSchema } from "./types";
@@ -20,23 +19,7 @@ export type App = typeof app;
 
 const app = new Elysia()
   .use(cors())
-  .use(
-    swagger({
-      documentation: {
-        info: {
-          title: "Superstreamer API",
-          description:
-            "The Superstreamer API is organized around REST, returns JSON-encoded responses " +
-            "and uses standard HTTP response codes and verbs.",
-          version: "1.0.0",
-        },
-      },
-      scalarConfig: {
-        hideDownloadButton: true,
-        customCss,
-      },
-    }),
-  )
+  .use(scalar())
   .model({
     LangCode: LangCodeSchema,
     VideoCodec: VideoCodecSchema,
