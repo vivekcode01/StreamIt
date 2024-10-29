@@ -26,7 +26,6 @@ export async function getAdMediasFromVast(adBreak: VmapAdBreak) {
     }
     result.push(adMedia);
   }
-
   return result;
 }
 
