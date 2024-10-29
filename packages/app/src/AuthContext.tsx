@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import type { User } from "@superstreamer/api/client";
 
 type AuthContextValue = {
+  token: string | null;
   setToken(value: string | null): void;
   user: User | null;
   api: ReturnType<typeof createApiClient>;
@@ -62,11 +63,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const value = useMemo(() => {
     return {
+      token,
       setToken,
       user,
       api,
     };
-  }, [setToken, user, api]);
+  }, [token, setToken, user, api]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

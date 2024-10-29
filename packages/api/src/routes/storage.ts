@@ -1,10 +1,10 @@
 import { Elysia, t } from "elysia";
-import { authUser } from "./auth";
+import { user } from "./auth";
 import { getStorageFolder, getStorageFile } from "../s3";
 import { StorageFolderSchema, StorageFileSchema } from "../types";
 
 export const storage = new Elysia()
-  .use(authUser)
+  .use(user)
   .get(
     "/storage/folder",
     async ({ query }) => {

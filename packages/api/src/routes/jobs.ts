@@ -10,10 +10,10 @@ import {
 } from "shared/typebox";
 import { getJob, getJobs, getJobLogs } from "../jobs";
 import { JobSchema } from "../types";
-import { authUser } from "./auth";
+import { user } from "./auth";
 
 export const jobs = new Elysia()
-  .use(authUser)
+  .use(user)
   .post(
     "/transcode",
     async ({ body }) => {

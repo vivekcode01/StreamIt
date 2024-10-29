@@ -1,17 +1,19 @@
-import { BunSqliteDialect } from "kysely-bun-sqlite";
-import { Kysely, Migrator, FileMigrationProvider } from "kysely";
-import { Database } from "bun:sqlite";
+import {
+  Kysely,
+  Migrator,
+  FileMigrationProvider,
+  PostgresDialect,
+} from "kysely";
 import * as path from "node:path";
 import * as fs from "node:fs/promises";
+import { Pool } from "pg";
 import { env } from "../env";
 import type { KyselyDatabase } from "./types.ts";
 
-const dialect = new BunSqliteDialect({
-  database: new Database(env.DATABASE),
-});
-
 export const db = new Kysely<KyselyDatabase>({
-  dialect,
+  dialect: new PostgresDialect({
+    pool: new Pool({ connectionString: env.DATABASE }),
+  }),
 });
 
 async function migrateToLatest() {

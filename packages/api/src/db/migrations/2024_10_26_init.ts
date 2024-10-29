@@ -5,9 +5,10 @@ import { Kysely } from "kysely";
 export async function up(db: Kysely<any>) {
   await db.schema
     .createTable("user")
-    .addColumn("id", "integer", (col) => col.primaryKey())
+    .addColumn("id", "serial", (col) => col.primaryKey())
     .addColumn("username", "text", (col) => col.notNull())
     .addColumn("password", "text", (col) => col.notNull())
+    .addColumn("settingAutoRefetch", "boolean", (col) => col.defaultTo(true))
     .execute();
 
   await db

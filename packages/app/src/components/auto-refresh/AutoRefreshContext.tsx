@@ -1,3 +1,4 @@
+import { useUser } from "@/AuthContext";
 import {
   createContext,
   useState,
@@ -28,7 +29,8 @@ type AutoRefreshProviderProps = {
 const COUNTDOWN_INTERVAL = 5;
 
 export function AutoRefreshProvider({ children }: AutoRefreshProviderProps) {
-  const [active, setActive] = useState(false);
+  const user = useUser();
+  const [active, setActive] = useState(user.settingAutoRefetch);
   const [countdown, setCountdown] = useState(COUNTDOWN_INTERVAL);
   const [listeners] = useState(() => new Set<AutoRefreshListener>());
 

@@ -1,57 +1,20 @@
 import { Elysia, t } from "elysia";
-import { jwt } from "@elysiajs/jwt";
 import { env } from "../env";
 import { getUserIdByCredentials } from "../db/repo-user";
-import bearer from "@elysiajs/bearer";
+import { bearerAuth } from "shared/auth";
 
-export const authJwt = new Elysia().use(
-  jwt({
-    name: "authJwt",
-    schema: t.Union([
-      // User tokens describe a user interacting with the API.
-      t.Object({
-        type: t.Literal("user"),
-        id: t.Number(),
-      }),
-      // Service tokens, such as Stitcher.
-      t.Object({ type: t.Literal("service") }),
-    ]),
-    secret: env.JWT_SECRET,
-  }),
-);
+const { user, jwtUser } = bearerAuth(env.JWT_SECRET);
 
-export const authUser = new Elysia()
-  .use(bearer())
-  .use(authJwt)
-  .derive({ as: "scoped" }, async ({ bearer, authJwt, set }) => {
-    const token = await authJwt.verify(bearer);
-    if (!token) {
-      set.status = 401;
-      throw new Error("Unauthorized");
-    }
-    if (token.type === "user") {
-      return {
-        user: { type: "user", id: token.id },
-      };
-    }
-    if (token.type === "service") {
-      return {
-        user: { type: "service" },
-      };
-    }
-    throw new Error("Invalid token type");
-  });
-
-export const auth = new Elysia().use(authJwt).post(
+export const auth = new Elysia().use(jwtUser).post(
   "/login",
-  async ({ authJwt, body, set }) => {
+  async ({ jwtUser, body, set }) => {
     const id = await getUserIdByCredentials(body.username, body.password);
     if (id === null) {
       set.status = 400;
       return "Unauthorized";
     }
     return {
-      token: await authJwt.sign({
+      token: await jwtUser.sign({
         type: "user",
         id,
       }),
@@ -73,3 +36,6 @@ export const auth = new Elysia().use(authJwt).post(
     },
   },
 );
+
+// Re-export these so we can consume them in other routes.
+export { user, jwtUser };

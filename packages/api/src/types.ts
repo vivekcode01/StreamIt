@@ -71,6 +71,7 @@ export const UserSchema = t.Object(
   {
     id: t.Number(),
     username: t.String(),
+    settingAutoRefetch: t.Boolean(),
   },
   { $id: "#/components/schemas/User" },
 );
