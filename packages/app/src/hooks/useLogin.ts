@@ -1,4 +1,3 @@
-import { useApi } from "@/ApiContext";
 import { useAuth } from "@/AuthContext";
 import { useState, useCallback } from "react";
 
@@ -8,8 +7,7 @@ type Credentials = {
 };
 
 export function useLogin() {
-  const { setToken } = useAuth();
-  const api = useApi();
+  const { setToken, api } = useAuth();
 
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);

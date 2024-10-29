@@ -1,3 +1,4 @@
+import { useUser } from "@/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -8,11 +9,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLogout } from "@/hooks/useLogout";
-import { useUser } from "@/hooks/useUser";
 
 export function AccountBadge() {
   const logout = useLogout();
   const { username } = useUser();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>

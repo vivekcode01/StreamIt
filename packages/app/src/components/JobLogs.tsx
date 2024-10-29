@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { JobLog } from "./JobLog";
-import { useApi } from "@/ApiContext";
 import { useAutoRefreshFunction } from "@/components/auto-refresh/AutoRefreshContext";
+import { useAuth } from "@/AuthContext";
 
 type JobLogsProps = {
   id: string;
 };
 
 export function JobLogs({ id }: JobLogsProps) {
-  const api = useApi();
+  const { api } = useAuth();
 
   const { data, refetch } = useQuery({
     queryKey: ["jobs", id, "logs"],

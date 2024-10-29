@@ -71,3 +71,6 @@
 #nprogress .bar {
   background: #ff7400 !important;
 }
+#nprogress .peg {
+  box-shadow: 0 0 10px #ff7400, 0 0 5px #ff7400 !important;
+}

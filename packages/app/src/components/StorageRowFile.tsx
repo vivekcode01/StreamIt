@@ -1,11 +1,11 @@
 import { TableCell, TableRow } from "@/components/ui/table";
-import { useApi } from "@/ApiContext";
 import { useState } from "react";
 import { Loader } from "./Loader";
 import { Button } from "@/components/ui/button";
 import SquareArrowOutUpRight from "lucide-react/icons/square-arrow-out-up-right";
 import { getSizeStr } from "@/lib/helpers";
-import type { StorageFolderItem, StorageFile } from "@/ApiContext";
+import { useAuth } from "@/AuthContext";
+import type { StorageFolderItem, StorageFile } from "@superstreamer/api/client";
 
 type StorageRowFileProps = {
   name: string;
@@ -15,7 +15,7 @@ type StorageRowFileProps = {
 
 export function StorageRowFile({ name, item, setFile }: StorageRowFileProps) {
   const [loading, setLoading] = useState(false);
-  const api = useApi();
+  const { api } = useAuth();
 
   const onClick = async () => {
     setLoading(true);

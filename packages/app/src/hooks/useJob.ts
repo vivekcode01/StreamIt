@@ -1,12 +1,12 @@
 import { useEffect } from "react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { useApi } from "@/ApiContext";
 import { useAutoRefreshFunction } from "@/components/auto-refresh/AutoRefreshContext";
-import type { Job } from "@/ApiContext";
+import { useAuth } from "@/AuthContext";
+import type { Job } from "@superstreamer/api/client";
 
 export function useJob(id: string) {
   const queryClient = useQueryClient();
-  const api = useApi();
+  const { api } = useAuth();
 
   const { data, refetch } = useSuspenseQuery({
     queryKey: ["jobsFromRoot", id],

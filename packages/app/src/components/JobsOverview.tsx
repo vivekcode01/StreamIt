@@ -4,13 +4,13 @@ import { JobsFilter } from "@/components/JobsFilter";
 import { useJobsFilter } from "@/hooks/useJobsFilter";
 import { JobsStats } from "@/components/JobsStats";
 import { filterJobs } from "@/lib/jobs-filter";
-import { useApi } from "@/ApiContext";
 import { useAutoRefreshFunction } from "@/components/auto-refresh/AutoRefreshContext";
 import { AutoRefreshToggle } from "./auto-refresh/AutoRefreshToggle";
+import { useAuth } from "@/AuthContext";
 
 export function JobsOverview() {
   const [filter, setFilter] = useJobsFilter();
-  const api = useApi();
+  const { api } = useAuth();
 
   const { data, refetch } = useSuspenseQuery({
     queryKey: ["jobs"],
