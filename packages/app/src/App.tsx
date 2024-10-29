@@ -19,6 +19,11 @@ import { Loader } from "@/components/Loader";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      gcTime: 4,
+      staleTime: 4,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
       retry: 0,
     },
   },
