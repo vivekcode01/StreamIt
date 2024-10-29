@@ -5,7 +5,6 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import { Auth, Guest, AuthProvider } from "./AuthContext";
-import { ApiProvider } from "./ApiContext";
 import { JobsPage } from "@/pages/JobsPage";
 import { JobPage } from "@/pages/JobPage";
 import { ApiPage } from "@/pages/ApiPage";
@@ -20,10 +19,6 @@ import { Loader } from "@/components/Loader";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // staleTime: 0,
-      // gcTime: 0,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
       retry: 0,
     },
   },
@@ -79,9 +74,7 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <Suspense fallback={<AppLoader />}>
         <AuthProvider>
-          <ApiProvider>
-            <RouterProvider router={router} />
-          </ApiProvider>
+          <RouterProvider router={router} />
         </AuthProvider>
       </Suspense>
       <Toaster />
