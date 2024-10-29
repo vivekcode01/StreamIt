@@ -1,6 +1,6 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
-import { scalar } from "shared/scalar";
+import { swagger } from "@matvp91/elysia-swagger";
 import { jwt } from "@elysiajs/jwt";
 import { env } from "./env";
 import { auth } from "./routes/auth";
@@ -24,7 +24,7 @@ export type App = typeof app;
 const app = new Elysia()
   .use(cors())
   .use(
-    scalar({
+    swagger({
       documentation: {
         info: {
           title: "Superstreamer API",
@@ -43,17 +43,18 @@ const app = new Elysia()
           },
         },
       },
-      models: {
-        User: UserSchema,
-        LangCode: LangCodeSchema,
-        VideoCodec: VideoCodecSchema,
-        AudioCodec: AudioCodecSchema,
-        Job: JobSchema,
-        StorageFolder: StorageFolderSchema,
-        StorageFile: StorageFileSchema,
-      },
+      querySchema: t.Object({}),
     }),
   )
+  .model({
+    User: UserSchema,
+    LangCode: LangCodeSchema,
+    VideoCodec: VideoCodecSchema,
+    AudioCodec: AudioCodecSchema,
+    Job: JobSchema,
+    StorageFolder: StorageFolderSchema,
+    StorageFile: StorageFileSchema,
+  })
   .use(
     jwt({
       name: "jwt",

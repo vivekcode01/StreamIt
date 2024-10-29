@@ -44,9 +44,9 @@ importers:
       '@elysiajs/jwt':
         specifier: ^1.1.1
         version: 1.1.1(elysia@1.1.20(@sinclair/typebox@0.33.16)(openapi-types@12.1.3)(typescript@5.6.3))
-      '@elysiajs/swagger':
-        specifier: ^1.1.5
-        version: 1.1.5(elysia@1.1.20(@sinclair/typebox@0.33.16)(openapi-types@12.1.3)(typescript@5.6.3))
+      '@matvp91/elysia-swagger':
+        specifier: ^2.0.0
+        version: 2.0.0(elysia@1.1.20(@sinclair/typebox@0.33.16)(openapi-types@12.1.3)(typescript@5.6.3))
       '@superstreamer/artisan':
         specifier: workspace:*
         version: link:../artisan
@@ -445,9 +445,6 @@ importers:
       '@elysiajs/cors':
         specifier: ^1.1.1
         version: 1.1.1(elysia@1.1.20(@sinclair/typebox@0.33.16)(openapi-types@12.1.3)(typescript@5.6.3))
-      '@elysiajs/swagger':
-        specifier: ^1.1.5
-        version: 1.1.5(elysia@1.1.20(@sinclair/typebox@0.33.16)(openapi-types@12.1.3)(typescript@5.6.3))
       '@superstreamer/api':
         specifier: workspace:*
         version: link:../api
@@ -1695,6 +1692,11 @@ packages:
 
   '@manypkg/get-packages@1.1.3':
     resolution: {integrity: sha512-fo+QhuU3qE/2TQMQmbVMqaQ6EWbMhi4ABWP+O4AM1NqPBuy0OrApV5LO6BrrgnhtAHS2NH6RrVk9OL181tTi8A==}
+
+  '@matvp91/elysia-swagger@2.0.0':
+    resolution: {integrity: sha512-lyzf/dz/9b1Z0soIdL5nnRmgD2whVwtd3YBtR+zm2dkWyoJiLjcK+iy7Sk+m9Ox7sIq9k0ciZxG8aNvr/GKwyQ==}
+    peerDependencies:
+      elysia: '>= 1.1.0'
 
   '@microsoft/api-extractor-model@7.29.6':
     resolution: {integrity: sha512-gC0KGtrZvxzf/Rt9oMYD2dHvtN/1KPEYsrQPyMKhLHnlVuO/f4AFN3E4toqZzD2pt4LhkKoYmL2H9tX3yCOyRw==}
@@ -7378,6 +7380,13 @@ snapshots:
       fs-extra: 8.1.0
       globby: 11.1.0
       read-yaml-file: 1.1.0
+
+  '@matvp91/elysia-swagger@2.0.0(elysia@1.1.20(@sinclair/typebox@0.33.16)(openapi-types@12.1.3)(typescript@5.6.3))':
+    dependencies:
+      '@scalar/types': 0.0.12
+      elysia: 1.1.20(@sinclair/typebox@0.33.16)(openapi-types@12.1.3)(typescript@5.6.3)
+      openapi-types: 12.1.3
+      pathe: 1.1.2
 
   '@microsoft/api-extractor-model@7.29.6(@types/node@22.1.0)':
     dependencies:
