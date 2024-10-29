@@ -7,10 +7,16 @@ import bearer from "@elysiajs/bearer";
 export const authJwt = new Elysia().use(
   jwt({
     name: "authJwt",
-    schema: t.Object({
-      id: t.Number(),
-    }),
-    secret: env.API_JWT_SECRET,
+    schema: t.Union([
+      // User tokens describe a user interacting with the API.
+      t.Object({
+        type: t.Literal("user"),
+        id: t.Number(),
+      }),
+      // Service tokens, such as Stitcher.
+      t.Object({ type: t.Literal("service") }),
+    ]),
+    secret: env.JWT_SECRET,
   }),
 );
 
@@ -23,9 +29,17 @@ export const authUser = new Elysia()
       set.status = 401;
       throw new Error("Unauthorized");
     }
-    return {
-      userId: token.id,
-    };
+    if (token.type === "user") {
+      return {
+        user: { type: "user", id: token.id },
+      };
+    }
+    if (token.type === "service") {
+      return {
+        user: { type: "service" },
+      };
+    }
+    throw new Error("Invalid token type");
   });
 
 export const auth = new Elysia().use(authJwt).post(
@@ -37,7 +51,10 @@ export const auth = new Elysia().use(authJwt).post(
       return "Unauthorized";
     }
     return {
-      token: await authJwt.sign({ id }),
+      token: await authJwt.sign({
+        type: "user",
+        id,
+      }),
     };
   },
   {

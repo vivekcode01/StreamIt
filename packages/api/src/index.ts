@@ -25,6 +25,7 @@ const app = new Elysia()
   .use(cors())
   .use(
     swagger({
+      scalarVersion: "1.25.50",
       documentation: {
         info: {
           title: "Superstreamer API",
@@ -43,7 +44,23 @@ const app = new Elysia()
           },
         },
       },
-      querySchema: t.Object({}),
+      querySchema: t.Object({
+        token: t.String(),
+      }),
+      onRequest({ query, scalarConfig }) {
+        scalarConfig.authentication = {
+          preferredSecurityScheme: "bearerAuth",
+          http: {
+            basic: {
+              username: "",
+              password: "",
+            },
+            bearer: {
+              token: query.token,
+            },
+          },
+        };
+      },
     }),
   )
   .model({
@@ -55,12 +72,6 @@ const app = new Elysia()
     StorageFolder: StorageFolderSchema,
     StorageFile: StorageFileSchema,
   })
-  .use(
-    jwt({
-      name: "jwt",
-      secret: env.API_JWT_SECRET,
-    }),
-  )
   .use(auth)
   .use(jobs)
   .use(storage)

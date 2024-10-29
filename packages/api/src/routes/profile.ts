@@ -5,8 +5,11 @@ import { UserSchema } from "../types";
 
 export const profile = new Elysia().use(authUser).get(
   "/profile",
-  async ({ userId }) => {
-    return await getUser(userId);
+  async ({ user }) => {
+    if (user.type !== "user") {
+      throw new Error(`Not a user token , received "${user.type}"`);
+    }
+    return await getUser(user.id);
   },
   {
     detail: {

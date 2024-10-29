@@ -25,6 +25,8 @@
   },
   "dependencies": {
     "@elysiajs/cors": "^1.1.1",
+    "@matvp91/elysia-swagger": "^2.0.0",
+    "@superstreamer/api": "workspace:*",
     "@xmldom/xmldom": "^0.8.10",
     "dom-parser": "^1.1.5",
     "elysia": "^1.1.20",
@@ -34,7 +36,6 @@
     "redis": "^4.7.0",
     "shared": "workspace:*",
     "uuid": "^10.0.0",
-    "vast-client": "workspace:*",
-    "@superstreamer/api": "workspace:*"
+    "vast-client": "workspace:*"
   }
 }

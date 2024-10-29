@@ -7,7 +7,7 @@ import { env } from "../env";
 import type { KyselyDatabase } from "./types.ts";
 
 const dialect = new BunSqliteDialect({
-  database: new Database(env.API_DATABASE),
+  database: new Database(env.DATABASE),
 });
 
 export const db = new Kysely<KyselyDatabase>({

@@ -24,6 +24,7 @@ const queryClient = new QueryClient({
       gcTime: 0,
       refetchOnMount: false,
       refetchOnWindowFocus: false,
+      retry: 0,
     },
   },
 });

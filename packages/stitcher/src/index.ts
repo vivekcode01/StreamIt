@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
-import { scalar } from "shared/scalar";
+import { swagger } from "@matvp91/elysia-swagger";
 import { env } from "./env";
 import {
   createStarter,
@@ -23,7 +23,8 @@ export const app = new Elysia({
 })
   .use(cors())
   .use(
-    scalar({
+    swagger({
+      scalarVersion: "1.25.50",
       documentation: {
         info: {
           title: "Superstreamer Stitcher API",
