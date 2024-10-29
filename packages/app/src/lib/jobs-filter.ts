@@ -1,5 +1,5 @@
 import type { JobsFilterData } from "@/components/types";
-import type { Job } from "@/ApiContext";
+import type { Job } from "@superstreamer/api/client";
 
 export function filterJobs(jobs: Job[], filter: JobsFilterData) {
   if (filter.tag) {

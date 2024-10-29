@@ -1,5 +1,5 @@
 import { Progress } from "@/components/ui/progress";
-import type { Job } from "@/ApiContext";
+import type { Job } from "@superstreamer/api/client";
 
 type JobProgressProps = {
   progress: Job["progress"];

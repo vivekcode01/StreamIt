@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/table";
 import { StorageRow } from "./StorageRow";
 import type { UIEventHandler } from "react";
-import type { StorageFolderItem, StorageFile } from "@/ApiContext";
+import type { StorageFolderItem, StorageFile } from "@superstreamer/api/client";
 
 type StorageExplorerProps = {
   items: StorageFolderItem[];

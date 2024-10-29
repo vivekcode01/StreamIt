@@ -2,7 +2,7 @@ import { TransitionNavLink } from "./TransitionNavLink";
 import { JobState } from "./JobState";
 import { getDurationStr, getShortId, getTimeAgo } from "@/lib/helpers";
 import { JobTag } from "./JobTag";
-import type { Job } from "@/ApiContext";
+import type { Job } from "@superstreamer/api/client";
 
 type JobsListProps = {
   jobs: Job[];

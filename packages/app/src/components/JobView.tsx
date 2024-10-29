@@ -5,7 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getDurationStr } from "@/lib/helpers";
 import { JsonHighlight } from "./JsonHighlight";
 import { JobProgress } from "./JobProgress";
-import type { Job } from "@/ApiContext";
+import type { Job } from "@superstreamer/api/client";
 
 type JobViewProps = {
   job: Job;
