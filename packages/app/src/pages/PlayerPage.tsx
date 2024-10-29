@@ -8,11 +8,13 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { useAuth } from "@/AuthContext";
 
 export function PlayerPage() {
   const [schema, setSchema] = useState<object>();
   const [masterUrl, setMasterUrl] = useState<string>();
   const [error, setError] = useState<object>();
+  const { token } = useAuth();
 
   useEffect(() => {
     fetch(`${window.__ENV__.PUBLIC_STITCHER_ENDPOINT}/swagger/json`)
@@ -34,6 +36,7 @@ export function PlayerPage() {
         method: "post",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body,
       },
@@ -56,7 +59,7 @@ export function PlayerPage() {
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel>
         <Editor
-          localStorageKey="mixPlayerEditorValue"
+          localStorageKey="sprsPlayerEditorValue"
           schema={schema}
           title={
             <div className="flex gap-2 text-xs">

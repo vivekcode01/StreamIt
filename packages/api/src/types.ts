@@ -66,3 +66,14 @@ export const StorageFolderSchema = t.Object(
 );
 
 export type StorageFolder = Static<typeof StorageFolderSchema>;
+
+export const UserSchema = t.Object(
+  {
+    id: t.Number(),
+    username: t.String(),
+    settingAutoRefetch: t.Boolean(),
+  },
+  { $id: "#/components/schemas/User" },
+);
+
+export type User = Static<typeof UserSchema>;

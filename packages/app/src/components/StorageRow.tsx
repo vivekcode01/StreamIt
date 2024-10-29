@@ -2,7 +2,7 @@ import { TransitionNavLink } from "./TransitionNavLink";
 import { TableCell, TableRow } from "@/components/ui/table";
 import Folder from "lucide-react/icons/folder";
 import { StorageRowFile } from "./StorageRowFile";
-import type { StorageFolderItem, StorageFile } from "@/api";
+import type { StorageFolderItem, StorageFile } from "@superstreamer/api/client";
 
 type StorageRowProps = {
   item: StorageFolderItem;

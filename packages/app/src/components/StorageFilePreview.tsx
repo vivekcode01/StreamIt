@@ -4,7 +4,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import type { StorageFile } from "@/api";
+import type { StorageFile } from "@superstreamer/api/client";
 
 type StoragePreviewProps = {
   file: StorageFile | null;

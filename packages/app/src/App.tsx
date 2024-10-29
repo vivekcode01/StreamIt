@@ -4,6 +4,7 @@ import {
   Navigate,
   RouterProvider,
 } from "react-router-dom";
+import { Auth, Guest, AuthProvider } from "./AuthContext";
 import { JobsPage } from "@/pages/JobsPage";
 import { JobPage } from "@/pages/JobPage";
 import { ApiPage } from "@/pages/ApiPage";
@@ -12,23 +13,38 @@ import { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { PlayerPage } from "./pages/PlayerPage";
 import { StoragePage } from "./pages/StoragePage";
+import { LoginPage } from "./pages/LoginPage";
 import { Loader } from "@/components/Loader";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 0,
-      gcTime: 0,
+      gcTime: 4,
+      staleTime: 4,
       refetchOnMount: false,
+      refetchOnReconnect: false,
       refetchOnWindowFocus: false,
+      retry: 0,
     },
   },
 });
 
 const router = createBrowserRouter([
   {
+    path: "/login",
+    element: (
+      <Guest>
+        <LoginPage />
+      </Guest>
+    ),
+  },
+  {
     path: "/",
-    element: <RootLayout />,
+    element: (
+      <Auth>
+        <RootLayout />
+      </Auth>
+    ),
     children: [
       {
         index: true,
@@ -62,7 +78,9 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Suspense fallback={<AppLoader />}>
-        <RouterProvider router={router} />
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
       </Suspense>
       <Toaster />
     </QueryClientProvider>

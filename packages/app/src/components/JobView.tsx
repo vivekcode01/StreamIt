@@ -5,15 +5,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getDurationStr } from "@/lib/helpers";
 import { JsonHighlight } from "./JsonHighlight";
 import { JobProgress } from "./JobProgress";
-import type { Job } from "@/api";
-import type { AutoRefetch } from "./auto-refetch/useAutoRefetch";
+import type { Job } from "@superstreamer/api/client";
 
 type JobViewProps = {
   job: Job;
-  autoRefetch: AutoRefetch;
 };
 
-export function JobView({ job, autoRefetch }: JobViewProps) {
+export function JobView({ job }: JobViewProps) {
   return (
     <>
       {job.failedReason ? <JobError error={job.failedReason} /> : null}
@@ -44,7 +42,7 @@ export function JobView({ job, autoRefetch }: JobViewProps) {
         </div>
         <div>
           <div className="mb-2">Logs</div>
-          <JobLogs id={job.id} autoRefetch={autoRefetch} />
+          <JobLogs id={job.id} />
         </div>
       </div>
     </>

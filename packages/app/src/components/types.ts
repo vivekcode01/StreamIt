@@ -1,4 +1,4 @@
-import { Job } from "@/api";
+import { Job } from "@superstreamer/api/client";
 
 export type JobsFilterData = {
   tag?: string;

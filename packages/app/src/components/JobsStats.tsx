@@ -1,6 +1,6 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { JobStatsTile } from "./JobStatsTile";
-import type { Job } from "@/api";
+import type { Job } from "@superstreamer/api/client";
 import type { JobsFilterData } from "./types";
 
 type JobsStatsProps = {
