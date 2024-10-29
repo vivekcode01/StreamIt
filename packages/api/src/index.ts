@@ -1,7 +1,6 @@
 import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@matvp91/elysia-swagger";
-import { jwt } from "@elysiajs/jwt";
 import { env } from "./env";
 import { auth } from "./routes/auth";
 import { jobs } from "./routes/jobs";
