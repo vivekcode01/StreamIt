@@ -8,7 +8,7 @@ export interface UserTable {
   id: Generated<number>;
   username: string;
   password: string;
-  settingAutoRefetch: boolean;
+  autoRefresh: boolean;
 }
 
 export type UserUpdate = Updateable<UserTable>;

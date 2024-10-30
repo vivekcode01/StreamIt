@@ -1,5 +1,5 @@
-import { db } from ".";
-import type { UserUpdate } from "./types";
+import { db } from "..";
+import type { UserUpdate } from "../types";
 
 export async function getUserIdByCredentials(name: string, password: string) {
   const user = await db
@@ -23,18 +23,26 @@ export async function getUserIdByCredentials(name: string, password: string) {
 export async function getUser(id: number) {
   return await db
     .selectFrom("user")
-    .select(["id", "username", "settingAutoRefetch"])
+    .select(["id", "username"])
     .where("id", "=", id)
     .executeTakeFirstOrThrow();
 }
 
-export async function updateUser(
+export async function updateUserSettings(
   id: number,
-  fields: Omit<UserUpdate, "id" | "username" | "password">,
+  fields: Pick<UserUpdate, "autoRefresh">,
 ) {
   return await db
     .updateTable("user")
     .set(fields)
+    .where("id", "=", id)
+    .executeTakeFirstOrThrow();
+}
+
+export async function getUserSettings(id: number) {
+  return await db
+    .selectFrom("user")
+    .select(["autoRefresh"])
     .where("id", "=", id)
     .executeTakeFirstOrThrow();
 }

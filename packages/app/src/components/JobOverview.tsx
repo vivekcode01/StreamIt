@@ -11,7 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { AutoRefreshToggle } from "@/components/auto-refresh/AutoRefreshToggle";
+import { AutoRefreshStatus } from "@/components/auto-refresh/AutoRefreshStatus";
 import { TransitionNavLink } from "@/components/TransitionNavLink";
 
 type JobOverviewProps = {
@@ -42,7 +42,7 @@ export function JobOverview({ id }: JobOverviewProps) {
           <JobTag tag={job.tag} />
         </div>
         <div className="ml-auto">
-          <AutoRefreshToggle />
+          <AutoRefreshStatus />
         </div>
       </div>
       <div className="flex grow basis-0 overflow-hidden">

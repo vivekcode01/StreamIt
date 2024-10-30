@@ -1,7 +1,7 @@
 import { useState, createContext, useContext, useMemo, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { createApiClient } from "@superstreamer/api/client";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMaybeUser } from "./hooks/useMaybeUser";
 import type { ReactNode } from "react";
 import type { User } from "@superstreamer/api/client";
 
@@ -39,22 +39,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return createApiClient(window.__ENV__.PUBLIC_API_ENDPOINT, token);
   }, [token]);
 
-  const { data: user } = useSuspenseQuery({
-    queryKey: ["profile", token],
-    queryFn: async () => {
-      if (!token) {
-        return null;
-      }
-      const result = await api.profile.get();
-      if (result.status === 401) {
-        return null;
-      }
-      if (result.error) {
-        throw result.error;
-      }
-      return result.data;
-    },
-  });
+  const user = useMaybeUser(token, api);
 
   if (token && !user) {
     // We've got a token, no user, thus token is invalid.

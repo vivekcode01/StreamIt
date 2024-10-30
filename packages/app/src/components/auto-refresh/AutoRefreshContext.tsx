@@ -1,4 +1,4 @@
-import { useUser } from "@/AuthContext";
+import { useUserSettings } from "@/hooks/useUserSettings";
 import {
   createContext,
   useState,
@@ -12,9 +12,7 @@ import type { ReactNode } from "react";
 type AutoRefreshListener = () => void;
 
 type AutoRefreshContextValue = {
-  active: boolean;
-  toggle(): void;
-  countdown: number;
+  countdown: number | null;
   add(listener: AutoRefreshListener): () => void;
 };
 
@@ -29,14 +27,11 @@ type AutoRefreshProviderProps = {
 const COUNTDOWN_INTERVAL = 5;
 
 export function AutoRefreshProvider({ children }: AutoRefreshProviderProps) {
-  const user = useUser();
-  const [active, setActive] = useState(user.settingAutoRefetch);
-  const [countdown, setCountdown] = useState(COUNTDOWN_INTERVAL);
+  const { userSettings } = useUserSettings();
+  const [countdown, setCountdown] = useState(
+    userSettings.autoRefresh ? COUNTDOWN_INTERVAL : null,
+  );
   const [listeners] = useState(() => new Set<AutoRefreshListener>());
-
-  const toggle = useCallback(() => {
-    setActive((value) => !value);
-  }, []);
 
   const add = useCallback(
     (listener: AutoRefreshListener) => {
@@ -47,7 +42,7 @@ export function AutoRefreshProvider({ children }: AutoRefreshProviderProps) {
   );
 
   useEffect(() => {
-    if (!active) {
+    if (countdown === null) {
       return;
     }
 
@@ -65,16 +60,14 @@ export function AutoRefreshProvider({ children }: AutoRefreshProviderProps) {
     return () => {
       clearTimeout(timerId);
     };
-  }, [active, countdown]);
+  }, [countdown]);
 
   const value = useMemo(() => {
     return {
-      toggle,
       add,
-      active,
       countdown,
     };
-  }, [toggle, add, active, countdown]);
+  }, [add, countdown]);
 
   return (
     <AutoRefreshContext.Provider value={value}>

@@ -71,9 +71,19 @@ export const UserSchema = t.Object(
   {
     id: t.Number(),
     username: t.String(),
-    settingAutoRefetch: t.Boolean(),
   },
   { $id: "#/components/schemas/User" },
 );
 
 export type User = Static<typeof UserSchema>;
+
+export const UserSettingsSchema = t.Object(
+  {
+    autoRefresh: t.Boolean(),
+  },
+  {
+    $id: "#/components/schemas/UserSettings",
+  },
+);
+
+export type UserSettings = Static<typeof UserSettingsSchema>;

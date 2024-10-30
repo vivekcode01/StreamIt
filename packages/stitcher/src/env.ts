@@ -14,5 +14,5 @@ export const env = parseEnv((t) => ({
   PUBLIC_STITCHER_ENDPOINT: t.String(),
   PUBLIC_API_ENDPOINT: t.String(),
 
-  JWT_SECRET: t.String(),
+  JWT_SECRET: t.Optional(t.String()),
 }));

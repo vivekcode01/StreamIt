@@ -2,10 +2,10 @@ import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@matvp91/elysia-swagger";
 import { env } from "./env";
-import { auth } from "./routes/auth";
+import { token } from "./routes/token";
+import { user } from "./routes/user";
 import { jobs } from "./routes/jobs";
 import { storage } from "./routes/storage";
-import { profile } from "./routes/profile";
 import {
   LangCodeSchema,
   VideoCodecSchema,
@@ -13,6 +13,7 @@ import {
 } from "shared/typebox";
 import {
   UserSchema,
+  UserSettingsSchema,
   JobSchema,
   StorageFolderSchema,
   StorageFileSchema,
@@ -25,6 +26,9 @@ const app = new Elysia()
   .use(
     swagger({
       scalarVersion: "1.25.50",
+      scalarConfig: {
+        defaultOpenAllTags: true,
+      },
       documentation: {
         info: {
           title: "Superstreamer API",
@@ -33,6 +37,22 @@ const app = new Elysia()
             "and uses standard HTTP response codes and verbs.",
           version: "1.0.0",
         },
+        tags: [
+          {
+            name: "User",
+            description:
+              "Methods related to user actions, including authentication and personal settings updates.",
+          },
+          {
+            name: "Jobs",
+            description:
+              "Handle tasks related to jobs, including video processing and job status monitoring.",
+          },
+          {
+            name: "Storage",
+            description: "Anything related to your configured S3 bucket.",
+          },
+        ],
         components: {
           securitySchemes: {
             bearerAuth: {
@@ -64,6 +84,7 @@ const app = new Elysia()
   )
   .model({
     User: UserSchema,
+    UserSettings: UserSettingsSchema,
     LangCode: LangCodeSchema,
     VideoCodec: VideoCodecSchema,
     AudioCodec: AudioCodecSchema,
@@ -71,10 +92,10 @@ const app = new Elysia()
     StorageFolder: StorageFolderSchema,
     StorageFile: StorageFileSchema,
   })
-  .use(auth)
+  .use(token)
+  .use(user)
   .use(jobs)
-  .use(storage)
-  .use(profile);
+  .use(storage);
 
 app.on("stop", () => {
   process.exit(0);

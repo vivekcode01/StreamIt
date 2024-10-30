@@ -1,7 +1,7 @@
 import { treaty } from "@elysiajs/eden";
-import type { App } from "./";
+import type { App } from "../src";
 
-export type * from "./types";
+export type * from "../src/types";
 
 export function createApiClient(apiKey: string, token?: string | null) {
   const headers: Record<string, string> = {};

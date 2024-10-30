@@ -10,10 +10,10 @@ import {
 } from "shared/typebox";
 import { getJob, getJobs, getJobLogs } from "../jobs";
 import { JobSchema } from "../types";
-import { user } from "./auth";
+import { authUser } from "./token";
 
 export const jobs = new Elysia()
-  .use(user)
+  .use(authUser)
   .post(
     "/transcode",
     async ({ body }) => {
@@ -26,6 +26,7 @@ export const jobs = new Elysia()
     {
       detail: {
         summary: "Create transcode job",
+        tags: ["Jobs"],
       },
       body: t.Object({
         inputs: t.Array(
@@ -107,7 +108,7 @@ export const jobs = new Elysia()
               "Starts a default package job after a succesful transcode.",
           }),
         ),
-        tag: t.Optional(
+        tags: t.Optional(
           t.String({
             description:
               'Tag a job for a particular purpose, such as "ad". Arbitrary value.',
@@ -133,6 +134,7 @@ export const jobs = new Elysia()
     {
       detail: {
         summary: "Create package job",
+        tags: ["Jobs"],
       },
       body: t.Object({
         assetId: t.String(),
@@ -144,7 +146,7 @@ export const jobs = new Elysia()
               "In seconds, shall be the same or a multiple of the originally transcoded segment size.",
           }),
         ),
-        tag: t.Optional(
+        tags: t.Optional(
           t.String({
             description:
               'Tag a job for a particular purpose, such as "ad". Arbitrary value.',
@@ -172,6 +174,7 @@ export const jobs = new Elysia()
     {
       detail: {
         summary: "Get all jobs",
+        tags: ["Jobs"],
       },
       response: {
         200: t.Array(t.Ref(JobSchema)),
@@ -186,6 +189,7 @@ export const jobs = new Elysia()
     {
       detail: {
         summary: "Get a job",
+        tags: ["Jobs"],
       },
       params: t.Object({
         id: t.String(),
@@ -206,6 +210,7 @@ export const jobs = new Elysia()
     {
       detail: {
         summary: "Get job logs",
+        tags: ["Jobs"],
       },
       params: t.Object({
         id: t.String(),
