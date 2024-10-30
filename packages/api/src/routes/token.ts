@@ -30,17 +30,7 @@ export const authUser = new Elysia()
     if (!token) {
       throw new DeliberateError({ type: "ERR_UNAUTHORIZED" });
     }
-    if (token.type === "user") {
-      return {
-        user: { type: "user", id: token.id },
-      };
-    }
-    if (token.type === "service") {
-      return {
-        user: { type: "service" },
-      };
-    }
-    throw new Error("Invalid token type");
+    return { user: token };
   });
 
 export const token = new Elysia().use(jwtUser).post(

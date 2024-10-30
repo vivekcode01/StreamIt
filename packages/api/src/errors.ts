@@ -1,30 +1,40 @@
 import Elysia, { ValidationError } from "elysia";
 
 type ApiErrorCode = {
+  ERR_UNKNOWN: never;
   ERR_VALIDATION: {
-    test: number;
+    path: string;
+    fail: string;
   };
   ERR_UNAUTHORIZED: never;
+  ERR_NOT_FOUND: never;
   ERR_USER_INVALID_CREDENTIALS: never;
+  ERR_USER_INVALID_TOKEN_TYPE: {
+    only: "service" | "user";
+  };
 };
 
 const statusMap: Record<keyof ApiErrorCode, number> = {
+  ERR_UNKNOWN: 500,
   ERR_VALIDATION: 403,
+  ERR_NOT_FOUND: 404,
   ERR_UNAUTHORIZED: 401,
   ERR_USER_INVALID_CREDENTIALS: 401,
+  ERR_USER_INVALID_TOKEN_TYPE: 401,
 };
 
 export type ApiError<T extends keyof ApiErrorCode = keyof ApiErrorCode> = {
   type: T;
+  message?: string;
 } & ApiErrorCode[T];
 
 export class DeliberateError<C extends keyof ApiErrorCode> extends Error {
   constructor(
     private params_: ApiErrorCode[C] extends never
-      ? { type: C }
-      : { type: C; data: ApiErrorCode[C] },
+      ? { type: C; message?: string }
+      : { type: C; message?: string; data: ApiErrorCode[C] },
   ) {
-    super("");
+    super(params_.message ?? "");
   }
 
   get type(): keyof ApiErrorCode {
@@ -53,11 +63,7 @@ export const errors = () =>
       }
 
       if (code === "VALIDATION") {
-        const data = mapValidationError(error);
-        return {
-          type: "ERR_VALIDATION",
-          data,
-        };
+        return mapValidationError(error);
       }
 
       set.status = 500;
@@ -66,7 +72,13 @@ export const errors = () =>
       };
     });
 
-function mapValidationError(error: ValidationError) {
+function mapValidationError(
+  error: ValidationError,
+): ApiError<"ERR_VALIDATION"> {
   const first = error.validator.Errors(error.value).First();
-  return `${first.path} - ${first.message}`;
+  return {
+    type: "ERR_VALIDATION",
+    path: first.path,
+    fail: first.message,
+  };
 }

@@ -6,6 +6,7 @@ import {
   updateUserSettings,
 } from "../db/repositories/user-repository";
 import { UserSchema, UserSettingsSchema } from "../models";
+import { DeliberateError } from "../errors";
 
 export const user = new Elysia()
   .use(authUser)
@@ -31,7 +32,10 @@ export const user = new Elysia()
     "/user/settings",
     async ({ user }) => {
       if (user.type !== "user") {
-        throw new Error(`Not a user token , received "${user.type}"`);
+        throw new DeliberateError({
+          type: "ERR_USER_INVALID_TOKEN_TYPE",
+          data: { only: "user" },
+        });
       }
       return await getUserSettings(user.id);
     },
@@ -49,7 +53,10 @@ export const user = new Elysia()
     "/user/settings",
     async ({ user, body }) => {
       if (user.type !== "user") {
-        throw new Error(`Not a user token , received "${user.type}"`);
+        throw new DeliberateError({
+          type: "ERR_USER_INVALID_TOKEN_TYPE",
+          data: { only: "user" },
+        });
       }
       await updateUserSettings(user.id, body);
       return await getUserSettings(user.id);

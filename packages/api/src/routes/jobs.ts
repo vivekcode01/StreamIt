@@ -1,4 +1,5 @@
 import { Elysia, t } from "elysia";
+import { DeliberateError } from "../errors";
 import {
   addTranscodeJob,
   addPackageJob,
@@ -19,7 +20,7 @@ export const jobs = new Elysia()
     async ({ body }) => {
       const job = await addTranscodeJob(body);
       if (!job.id) {
-        throw new Error("Missing job.id");
+        throw new DeliberateError({ type: "ERR_UNKNOWN" });
       }
       return { jobId: job.id };
     },
@@ -127,7 +128,7 @@ export const jobs = new Elysia()
     async ({ body }) => {
       const job = await addPackageJob(body);
       if (!job.id) {
-        throw new Error("Missing job.id");
+        throw new DeliberateError({ type: "ERR_UNKNOWN" });
       }
       return { jobId: job.id };
     },
@@ -184,7 +185,11 @@ export const jobs = new Elysia()
   .get(
     "/jobs/:id",
     async ({ params, query }) => {
-      return await getJob(params.id, query.fromRoot);
+      const job = await getJob(params.id, query.fromRoot);
+      if (!job) {
+        throw new DeliberateError({ type: "ERR_NOT_FOUND" });
+      }
+      return job;
     },
     {
       detail: {

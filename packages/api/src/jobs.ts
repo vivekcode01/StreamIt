@@ -30,7 +30,10 @@ export async function getJobs(): Promise<Job[]> {
       if (!job.id || job.parent) {
         continue;
       }
-      result.push(await getJob(job.id, false));
+      const foundJob = await getJob(job.id, false);
+      if (foundJob) {
+        result.push(foundJob);
+      }
     }
   }
 
@@ -39,8 +42,14 @@ export async function getJobs(): Promise<Job[]> {
   return result;
 }
 
-export async function getJob(id: string, fromRoot?: boolean): Promise<Job> {
+export async function getJob(
+  id: string,
+  fromRoot?: boolean,
+): Promise<Job | null> {
   const node = await getJobNode(id, fromRoot);
+  if (!node) {
+    return null;
+  }
   return await formatJobNode(node);
 }
 
@@ -52,17 +61,26 @@ export async function getJobLogs(id: string): Promise<string[]> {
   return logs;
 }
 
-async function getJobNode(id: string, fromRoot?: boolean): Promise<JobNode> {
+async function getJobNode(
+  id: string,
+  fromRoot?: boolean,
+): Promise<JobNode | null> {
   const [queue, jobId] = formatIdPair(id);
 
-  let job = await BullMQJob.fromId(queue, jobId);
+  const rawJob = await BullMQJob.fromId(queue, jobId);
+
+  let job = rawJob ?? null;
+  if (!job) {
+    return null;
+  }
+
   if (fromRoot) {
     // If we want the root, resolve it and work with that as our job.
     job = await findRootJob(job);
   }
 
   if (!job?.id) {
-    throw new Error("No job found.");
+    throw new Error("Found a child job but it has no parent.");
   }
 
   return await flowProducer.getFlow({
@@ -71,9 +89,9 @@ async function getJobNode(id: string, fromRoot?: boolean): Promise<JobNode> {
   });
 }
 
-async function findRootJob(job?: BullMQJob): Promise<BullMQJob | undefined> {
+async function findRootJob(job?: BullMQJob): Promise<BullMQJob | null> {
   if (!job) {
-    return;
+    return null;
   }
 
   while (job.parent) {
