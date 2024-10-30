@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "type": "module",
   "exports": {
-    "./client": "./client/index.ts"
+    "./client": "./client.ts"
   },
   "scripts": {
     "dev": "bun --watch ./src/index.ts",
@@ -27,6 +27,7 @@
     "@superstreamer/artisan": "workspace:*",
     "bullmq": "^5.12.0",
     "elysia": "^1.1.20",
+    "jose": "^5.9.6",
     "kysely": "^0.27.4",
     "pg": "^8.13.1",
     "shared": "workspace:*"

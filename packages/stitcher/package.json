@@ -3,12 +3,12 @@
   "version": "1.1.0",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch ./src/index.ts",
-    "build": "tsc -b && bun build ./src/index.ts --target=bun --outdir=./dist",
+    "dev": "bun --watch ./runtime/local.ts",
+    "build": "tsc -b && bun build ./runtime/local.ts --target=bun --outdir=./dist",
     "test": "bun test",
     "lint": "eslint",
-    "dev:cloudflare": "wrangler dev src/serverless/cloudflare.ts",
-    "deploy:cloudflare": "wrangler deploy --minify src/serverless/cloudflare.ts"
+    "dev:cloudflare": "wrangler dev runtime/cloudflare.ts",
+    "deploy:cloudflare": "wrangler deploy --minify runtime/cloudflare.ts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241022.0",

@@ -7,7 +7,7 @@ type Credentials = {
 };
 
 export function useLogin() {
-  const { setToken, api } = useAuth();
+  const { api, setToken } = useAuth();
 
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);

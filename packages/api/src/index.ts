@@ -26,9 +26,6 @@ const app = new Elysia()
   .use(
     swagger({
       scalarVersion: "1.25.50",
-      scalarConfig: {
-        defaultOpenAllTags: true,
-      },
       documentation: {
         info: {
           title: "Superstreamer API",

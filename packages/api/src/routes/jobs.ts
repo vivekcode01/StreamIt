@@ -108,7 +108,7 @@ export const jobs = new Elysia()
               "Starts a default package job after a succesful transcode.",
           }),
         ),
-        tags: t.Optional(
+        tag: t.Optional(
           t.String({
             description:
               'Tag a job for a particular purpose, such as "ad". Arbitrary value.',
@@ -146,7 +146,7 @@ export const jobs = new Elysia()
               "In seconds, shall be the same or a multiple of the originally transcoded segment size.",
           }),
         ),
-        tags: t.Optional(
+        tag: t.Optional(
           t.String({
             description:
               'Tag a job for a particular purpose, such as "ad". Arbitrary value.',

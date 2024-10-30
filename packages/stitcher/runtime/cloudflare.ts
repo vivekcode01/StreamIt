@@ -3,7 +3,10 @@ export default {
     // Manually set the env before we load the app in memory.
     process.env = env;
 
-    const { app } = await import("../app");
+    const { createApp } = await import("../src");
+    const app = await createApp({
+      aot: false,
+    });
     return await app.fetch(request);
   },
 };

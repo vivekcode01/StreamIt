@@ -13,7 +13,10 @@ const jwtUser = jwt({
       id: t.Number(),
     }),
     // Service tokens, such as Stitcher.
-    t.Object({ type: t.Literal("service") }),
+    t.Object({
+      type: t.Literal("service"),
+      name: t.String(),
+    }),
   ]),
   secret: env.JWT_SECRET,
 });
