@@ -1,4 +1,5 @@
 import { FlowProducer } from "bullmq";
+import { randomUUID } from "crypto";
 import { connection } from "./env";
 import type { DefaultJobOptions, JobsOptions, Queue } from "bullmq";
 
@@ -21,15 +22,29 @@ type QueueData<T> = T extends Queue<infer D> ? D : T;
 export async function addToQueue<Q extends Queue, D = QueueData<Q>>(
   queue: Q,
   data: D,
-  jobId: string | string[],
-  options?: JobsOptions,
+  params?: {
+    id?: string | string[];
+    name?: string;
+    options?: JobsOptions;
+  },
 ) {
+  let jobId = params?.id;
   if (Array.isArray(jobId)) {
     jobId = jobId.join("_");
   }
-  return await queue.add(queue.name, data, {
+
+  if (!jobId) {
+    jobId = randomUUID();
+  }
+
+  let name = queue.name;
+  if (params?.name) {
+    name = `${name}(${params.name})`;
+  }
+
+  return await queue.add(name, data, {
     jobId: `${queue.name}_${jobId}`,
     ...DEFAULT_JOB_OPTIONS,
-    ...options,
+    ...params?.options,
   });
 }

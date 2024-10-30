@@ -1,5 +1,4 @@
 import { WaitingChildrenError } from "bullmq";
-import { randomUUID } from "crypto";
 import { getLangCode } from "shared/lang";
 import { uploadToS3 } from "../s3";
 import { assert } from "../assert";
@@ -57,14 +56,16 @@ export const transcodeCallback: WorkerCallback<
         await handleStepMeta(job, token);
 
         if (job.data.packageAfter) {
-          addToQueue(
+          await addToQueue(
             packageQueue,
             {
               assetId: job.data.assetId,
               name: "hls",
               tag: job.data.tag,
             },
-            [job.data.assetId, "hls"],
+            {
+              id: [job.data.assetId, "hls"],
+            },
           );
         }
 
@@ -84,23 +85,25 @@ export const transcodeCallback: WorkerCallback<
 };
 
 async function handleStepInitial(job: Job<TranscodeData>) {
+  assert(job.id);
+
   const inputs = job.data.inputs.filter(
     (input) => input.type === "video" || input.type === "audio",
   );
 
-  assert(job.id);
   await addToQueue(
     ffprobeQueue,
     {
       inputs,
       parentSortIndex: 0,
     },
-    randomUUID(),
     {
-      failParentOnFailure: true,
-      parent: {
-        id: job.id,
-        queue: job.queueQualifiedName,
+      options: {
+        failParentOnFailure: true,
+        parent: {
+          id: job.id,
+          queue: job.queueQualifiedName,
+        },
       },
     },
   );
@@ -116,15 +119,24 @@ async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
 
   const matches = getMatches(job.data.streams, inputs);
 
-  matches.forEach(([type, stream, input], index) => {
+  const promises = matches.map(async ([type, stream, input], index) => {
+    assert(job.id);
+
     job.log(
       `Matched ${type}: ${JSON.stringify(stream)} / ${JSON.stringify(input)}`,
     );
 
-    assert(job.id);
-    // TODO: Wait for promise
-    ffmpegQueue.add(
-      getFfmpegJobName(stream),
+    const nameParams: string[] = [stream.type];
+    if (stream.type === "video") {
+      nameParams.push(stream.height.toString());
+    }
+    if (stream.type === "audio" || stream.type === "text") {
+      nameParams.push(stream.language);
+    }
+    const name = nameParams.join(",");
+
+    await addToQueue(
+      ffmpegQueue,
       {
         input,
         stream,
@@ -134,15 +146,19 @@ async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
         parentSortIndex: index + 1,
       },
       {
-        jobId: `ffmpeg_${randomUUID()}`,
-        failParentOnFailure: true,
-        parent: {
-          id: job.id,
-          queue: job.queueQualifiedName,
+        name,
+        options: {
+          failParentOnFailure: true,
+          parent: {
+            id: job.id,
+            queue: job.queueQualifiedName,
+          },
         },
       },
     );
   });
+
+  await Promise.all(promises);
 }
 
 type MixedMatch<
@@ -295,19 +311,6 @@ async function getChildren<T>(job: Job, name: string) {
     acc.push(value as T);
     return acc;
   }, []);
-}
-
-function getFfmpegJobName(stream: Stream) {
-  const params: string[] = [stream.type];
-
-  if (stream.type === "video") {
-    params.push(stream.height.toString());
-  }
-  if (stream.type === "audio" || stream.type === "text") {
-    params.push(stream.language);
-  }
-
-  return `ffmpeg(${params.join(",")})`;
 }
 
 function mergeInputs(

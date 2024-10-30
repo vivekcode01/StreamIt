@@ -21,7 +21,9 @@ export const jobs = new Elysia()
         segmentSize: 2.24,
         ...body,
       };
-      const job = await addToQueue(transcodeQueue, data, data.assetId);
+      const job = await addToQueue(transcodeQueue, data, {
+        id: data.assetId,
+      });
       if (!job.id) {
         throw new DeliberateError({ type: "ERR_UNKNOWN" });
       }
@@ -134,10 +136,9 @@ export const jobs = new Elysia()
         name: "hls",
         ...body,
       };
-      const job = await addToQueue(packageQueue, data, [
-        data.assetId,
-        data.name,
-      ]);
+      const job = await addToQueue(packageQueue, data, {
+        id: [data.assetId, data.name],
+      });
       if (!job.id) {
         throw new DeliberateError({ type: "ERR_UNKNOWN" });
       }
