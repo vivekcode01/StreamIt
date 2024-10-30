@@ -6,6 +6,7 @@ import { token } from "./routes/token";
 import { user } from "./routes/user";
 import { jobs } from "./routes/jobs";
 import { storage } from "./routes/storage";
+import { errors } from "./errors";
 import {
   LangCodeSchema,
   VideoCodecSchema,
@@ -22,6 +23,7 @@ import {
 export type App = typeof app;
 
 const app = new Elysia()
+  .use(errors())
   .use(cors())
   .use(
     swagger({

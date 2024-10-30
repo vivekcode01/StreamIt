@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import bearer from "@elysiajs/bearer";
+import { DeliberateError } from "../errors";
 import { env } from "../env";
 import { getUserIdByCredentials } from "../db/repositories/user-repository";
 
@@ -24,11 +25,10 @@ const jwtUser = jwt({
 export const authUser = new Elysia()
   .use(bearer())
   .use(jwtUser)
-  .derive({ as: "scoped" }, async ({ bearer, jwtUser, set }) => {
+  .derive({ as: "scoped" }, async ({ bearer, jwtUser }) => {
     const token = await jwtUser.verify(bearer);
     if (!token) {
-      set.status = 401;
-      throw new Error("Unauthorized");
+      throw new DeliberateError({ type: "ERR_UNAUTHORIZED" });
     }
     if (token.type === "user") {
       return {
@@ -45,11 +45,10 @@ export const authUser = new Elysia()
 
 export const token = new Elysia().use(jwtUser).post(
   "/token",
-  async ({ jwtUser, body, set }) => {
+  async ({ jwtUser, body }) => {
     const id = await getUserIdByCredentials(body.username, body.password);
     if (id === null) {
-      set.status = 400;
-      return "Unauthorized";
+      throw new DeliberateError({ type: "ERR_USER_INVALID_CREDENTIALS" });
     }
     return await jwtUser.sign({
       type: "user",
@@ -66,7 +65,6 @@ export const token = new Elysia().use(jwtUser).post(
       password: t.String(),
     }),
     response: {
-      400: t.Literal("Unauthorized"),
       200: t.String(),
     },
   },
