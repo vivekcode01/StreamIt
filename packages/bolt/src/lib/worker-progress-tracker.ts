@@ -1,6 +1,6 @@
 import type { Job } from "bullmq";
 
-export class ProgressTracker {
+export class WorkerProgressTracker {
   private values_: Record<string, number> = {};
 
   private lastKey_?: string;

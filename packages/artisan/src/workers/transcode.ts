@@ -1,31 +1,23 @@
 import { WaitingChildrenError } from "bullmq";
 import { randomUUID } from "crypto";
 import { getLangCode } from "shared/lang";
-import { ffprobeQueue, ffmpegQueue } from "../../producer";
 import { uploadToS3 } from "../s3";
-import { assert } from "../../assert";
-import { getDefaultAudioBitrate, getDefaultVideoBitrate } from "../../defaults";
-import { addPackageJob } from "../../producer";
-import type { Input, PartialInput, Stream, PartialStream } from "../../types";
+import { assert } from "../assert";
+import { getDefaultAudioBitrate, getDefaultVideoBitrate } from "../defaults";
+import { addToQueue, packageQueue, ffprobeQueue, ffmpegQueue } from "bolt";
 import type { Job } from "bullmq";
-import type { FfprobeResult } from "./ffprobe";
-import type { FfmpegResult } from "./ffmpeg";
+import type {
+  TranscodeData,
+  TranscodeResult,
+  FfprobeResult,
+  FfmpegResult,
+  WorkerCallback,
+  Input,
+  PartialInput,
+  Stream,
+  PartialStream,
+} from "bolt";
 import type { Meta } from "../meta";
-import type { WorkerCallback } from "../lib/worker-processor";
-
-export type TranscodeData = {
-  assetId: string;
-  inputs: PartialInput[];
-  streams: PartialStream[];
-  segmentSize: number;
-  packageAfter: boolean;
-  tag?: string;
-  step?: Step;
-};
-
-export type TranscodeResult = {
-  assetId: string;
-};
 
 enum Step {
   Initial,
@@ -35,7 +27,7 @@ enum Step {
 }
 
 export const transcodeCallback: WorkerCallback<
-  TranscodeData,
+  TranscodeData & { step?: Step },
   TranscodeResult
 > = async ({ job, token }) => {
   let step = job.data.step ?? Step.Initial;
@@ -65,10 +57,15 @@ export const transcodeCallback: WorkerCallback<
         await handleStepMeta(job, token);
 
         if (job.data.packageAfter) {
-          await addPackageJob({
-            assetId: job.data.assetId,
-            tag: job.data.tag,
-          });
+          addToQueue(
+            packageQueue,
+            {
+              assetId: job.data.assetId,
+              name: "hls",
+              tag: job.data.tag,
+            },
+            [job.data.assetId, "hls"],
+          );
         }
 
         await job.updateData({
@@ -92,14 +89,14 @@ async function handleStepInitial(job: Job<TranscodeData>) {
   );
 
   assert(job.id);
-  await ffprobeQueue.add(
-    "ffprobe",
+  await addToQueue(
+    ffprobeQueue,
     {
       inputs,
       parentSortIndex: 0,
     },
+    randomUUID(),
     {
-      jobId: `ffprobe_${randomUUID()}`,
       failParentOnFailure: true,
       parent: {
         id: job.id,
@@ -125,6 +122,7 @@ async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
     );
 
     assert(job.id);
+    // TODO: Wait for promise
     ffmpegQueue.add(
       getFfmpegJobName(stream),
       {

@@ -1,26 +1,7 @@
 import { uploadToS3 } from "../s3";
 import { mapInputToPublicUrl } from "../helpers";
 import { ffmpeg } from "../ffmpeg";
-import type { WorkerCallback } from "../lib/worker-processor";
-import type { Stream, Input } from "../../types";
-
-export type FfmpegData = {
-  input: Input;
-  stream: Stream;
-  segmentSize: number;
-  assetId: string;
-  parentSortIndex: number;
-};
-
-export type FfmpegResult = {
-  name: string;
-  stream: Stream;
-};
-
-export type FfmpegProgress = {
-  transcode: number;
-  upload: number;
-};
+import type { FfmpegData, FfmpegResult, WorkerCallback, Stream } from "bolt";
 
 export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
   job,

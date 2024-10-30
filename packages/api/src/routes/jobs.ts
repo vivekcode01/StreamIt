@@ -1,9 +1,7 @@
 import { Elysia, t } from "elysia";
+import { randomUUID } from "crypto";
 import { DeliberateError } from "../errors";
-import {
-  addTranscodeJob,
-  addPackageJob,
-} from "@superstreamer/artisan/producer";
+import { addToQueue, packageQueue, transcodeQueue } from "bolt";
 import {
   LangCodeSchema,
   VideoCodecSchema,
@@ -18,7 +16,12 @@ export const jobs = new Elysia()
   .post(
     "/transcode",
     async ({ body }) => {
-      const job = await addTranscodeJob(body);
+      const data = {
+        assetId: randomUUID(),
+        segmentSize: 2.24,
+        ...body,
+      };
+      const job = await addToQueue(transcodeQueue, data, data.assetId);
       if (!job.id) {
         throw new DeliberateError({ type: "ERR_UNKNOWN" });
       }
@@ -99,6 +102,7 @@ export const jobs = new Elysia()
         ),
         assetId: t.Optional(
           t.String({
+            format: "uuid",
             description:
               "Only provide if you wish to re-transcode an existing asset. When not provided, a unique UUID is created.",
           }),
@@ -126,7 +130,14 @@ export const jobs = new Elysia()
   .post(
     "/package",
     async ({ body }) => {
-      const job = await addPackageJob(body);
+      const data = {
+        name: "hls",
+        ...body,
+      };
+      const job = await addToQueue(packageQueue, data, [
+        data.assetId,
+        data.name,
+      ]);
       if (!job.id) {
         throw new DeliberateError({ type: "ERR_UNKNOWN" });
       }
@@ -138,7 +149,9 @@ export const jobs = new Elysia()
         tags: ["Jobs"],
       },
       body: t.Object({
-        assetId: t.String(),
+        assetId: t.String({
+          format: "uuid",
+        }),
         defaultLanguage: t.Optional(LangCodeSchema),
         defaultTextLanguage: t.Optional(LangCodeSchema),
         segmentSize: t.Optional(

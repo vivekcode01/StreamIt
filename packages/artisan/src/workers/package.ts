@@ -3,24 +3,9 @@ import parseFilePath from "parse-filepath";
 import { syncFromS3, syncToS3 } from "../s3";
 import { getMeta } from "../meta";
 import { getBinaryPath } from "../helpers";
-import type { LangCode } from "shared/typebox";
-import type { WorkerCallback } from "../lib/worker-processor";
-import type { Stream } from "../../types";
+import type { PackageData, PackageResult, WorkerCallback, Stream } from "bolt";
 
 const packagerBin = await getBinaryPath("packager");
-
-export type PackageData = {
-  assetId: string;
-  defaultLanguage?: LangCode;
-  defaultTextLanguage?: LangCode;
-  segmentSize?: number;
-  name: string;
-  tag?: string;
-};
-
-export type PackageResult = {
-  assetId: string;
-};
 
 export const packageCallback: WorkerCallback<
   PackageData,

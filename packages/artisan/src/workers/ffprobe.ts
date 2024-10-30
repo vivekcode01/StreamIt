@@ -1,27 +1,6 @@
 import { ffprobe } from "../ffmpeg";
 import { mapInputToPublicUrl } from "../helpers";
-import type { PartialInput } from "../../types";
-import type { WorkerCallback } from "../lib/worker-processor";
-
-type VideoInfo = {
-  height?: number;
-  framerate?: number;
-};
-
-type AudioInfo = {
-  language?: string;
-  channels?: number;
-};
-
-export type FfprobeData = {
-  inputs: PartialInput[];
-  parentSortIndex: number;
-};
-
-export type FfprobeResult = {
-  video: Record<string, VideoInfo>;
-  audio: Record<string, AudioInfo>;
-};
+import type { WorkerCallback, FfprobeData, FfprobeResult } from "bolt";
 
 export const ffprobeCallback: WorkerCallback<
   FfprobeData,

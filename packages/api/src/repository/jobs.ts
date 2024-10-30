@@ -4,7 +4,7 @@ import {
   ffmpegQueue,
   ffprobeQueue,
   flowProducer,
-} from "@superstreamer/artisan/producer";
+} from "bolt";
 import { Job as RawJob } from "bullmq";
 import { isRecordWithNumbers } from "../helpers";
 import type { JobNode, JobState, Queue } from "bullmq";

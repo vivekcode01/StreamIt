@@ -5,7 +5,7 @@ import * as os from "node:os";
 /**
  * Manager for temporary directories on file system.
  */
-export class Dir {
+export class WorkerDir {
   private dirs_ = new Set<string>();
 
   /**
