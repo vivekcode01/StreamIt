@@ -1,15 +1,15 @@
 import { useState, createContext, useContext, useMemo, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { createApiClient } from "@superstreamer/api/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { createApiClient } from "@superstreamer/api/client";
 import type { ReactNode } from "react";
-import type { User } from "@superstreamer/api/client";
+import type { ApiClient, User } from "@superstreamer/api/client";
 
 type AuthContextValue = {
   token: string | null;
   setToken(value: string | null): void;
   user: User | null;
-  api: ReturnType<typeof createApiClient>;
+  api: ApiClient;
 };
 
 export const AuthContext = createContext<AuthContextValue>(
@@ -27,6 +27,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.getItem(LOCAL_STORAGE_KEY),
   );
 
+  const api = useMemo(
+    () => createApiClient(window.__ENV__.PUBLIC_API_ENDPOINT, { token }),
+    [token],
+  );
+
   useEffect(() => {
     if (token) {
       localStorage.setItem(LOCAL_STORAGE_KEY, token);
@@ -35,17 +40,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [token]);
 
-  const api = useMemo(() => {
-    return createApiClient(window.__ENV__.PUBLIC_API_ENDPOINT, token);
-  }, [token]);
-
   const { data: user } = useSuspenseQuery({
-    queryKey: ["profile", token],
+    queryKey: ["user", token],
     queryFn: async () => {
       if (!token) {
         return null;
       }
-      const result = await api.profile.get();
+      const result = await api.user.get();
       if (result.status === 401) {
         return null;
       }

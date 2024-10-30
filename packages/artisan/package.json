@@ -2,12 +2,9 @@
   "name": "@superstreamer/artisan",
   "version": "1.1.0",
   "type": "module",
-  "exports": {
-    "./producer": "./src/producer/index.ts"
-  },
   "scripts": {
-    "dev": "bun --watch ./src/consumer/index.ts",
-    "build": "tsc -b && bun build ./src/consumer/index.ts --target=bun --outdir=./dist",
+    "dev": "bun --watch ./src/index.ts",
+    "build": "tsc -b && bun build ./src/index.ts --target=bun --outdir=./dist",
     "test": "bun test",
     "lint": "eslint",
     "install-bin": "./scripts/install-bin.sh"
@@ -24,7 +21,8 @@
     "mime-types": "^2.1.35",
     "parse-filepath": "^1.0.2",
     "s3-sync-client": "^4.3.1",
-    "shared": "workspace:*"
+    "shared": "workspace:*",
+    "bolt": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",

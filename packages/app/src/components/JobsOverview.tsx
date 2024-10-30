@@ -5,7 +5,7 @@ import { useJobsFilter } from "@/hooks/useJobsFilter";
 import { JobsStats } from "@/components/JobsStats";
 import { filterJobs } from "@/lib/jobs-filter";
 import { useAutoRefreshFunction } from "@/components/auto-refresh/AutoRefreshContext";
-import { AutoRefreshToggle } from "./auto-refresh/AutoRefreshToggle";
+import { AutoRefreshStatus } from "./auto-refresh/AutoRefreshStatus";
 import { useAuth } from "@/AuthContext";
 
 export function JobsOverview() {
@@ -33,8 +33,8 @@ export function JobsOverview() {
         <div className="flex gap-2 items-center w-full">
           <JobsStats jobs={data} filter={filter} onChange={setFilter} />
           <div className="ml-auto flex items-center gap-2">
-            <AutoRefreshToggle />
             <JobsFilter allJobs={data} filter={filter} onChange={setFilter} />
+            <AutoRefreshStatus />
           </div>
         </div>
       </div>

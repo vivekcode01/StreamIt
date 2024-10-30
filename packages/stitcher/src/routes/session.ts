@@ -1,5 +1,4 @@
 import { Elysia, t } from "elysia";
-import { bearerAuth } from "shared/auth";
 import { env } from "../env";
 import {
   createStarter,
@@ -15,86 +14,80 @@ import {
   formatAssetList,
 } from "../playlist";
 
-const { user } = bearerAuth(env.JWT_SECRET);
-
 export const session = new Elysia()
-  .group("", (app) =>
-    app.use(user).post(
-      "/session",
-      async ({ body }) => {
-        // This'll fail when uri is invalid.
-        getMasterUrl(body.uri);
+  .post(
+    "/session",
+    async ({ body }) => {
+      // This'll fail when uri is invalid.
+      getMasterUrl(body.uri);
 
-        if (body.filter) {
-          // When we have a filter, validate it here first. There is no need to wait until we approach
-          // the master playlist. We can bail out early.
-          validateFilter(body.filter);
-        }
+      if (body.filter) {
+        // When we have a filter, validate it here first. There is no need to wait until we approach
+        // the master playlist. We can bail out early.
+        validateFilter(body.filter);
+      }
 
-        const id = await createStarter(body);
-        return {
-          url: `${env.PUBLIC_STITCHER_ENDPOINT}/session/${id}/master.m3u8`,
-        };
+      const id = await createStarter(body);
+      return {
+        url: `${env.PUBLIC_STITCHER_ENDPOINT}/session/${id}/master.m3u8`,
+      };
+    },
+    {
+      detail: {
+        summary: "Create a session",
       },
-      {
-        detail: {
-          summary: "Create a session",
-        },
-        body: t.Object({
-          uri: t.String({
-            description:
-              'Reference to a master playlist, you can point to an asset with "asset://{uuid}" or as http(s).',
-          }),
-          interstitials: t.Optional(
-            t.Array(
-              t.Object({
-                timeOffset: t.Number(),
-                uri: t.String(),
-                type: t.Optional(
-                  t.Union([t.Literal("ad"), t.Literal("bumper")]),
-                ),
-              }),
-              {
-                description: "Manual HLS interstitial insertion.",
-              },
-            ),
-          ),
-          filter: t.Optional(
-            t.Object(
-              {
-                resolution: t.Optional(
-                  t.String({
-                    description: 'Filter on resolution, like "<= 720".',
-                  }),
-                ),
-              },
-              {
-                description: "Filter applies to master and media playlist.",
-              },
-            ),
-          ),
-          vmap: t.Optional(
-            t.Object(
-              {
-                url: t.String(),
-              },
-              {
-                description:
-                  "Describes a VMAP, will transcode ads and insert interstitials on the fly.",
-              },
-            ),
-          ),
-          expiry: t.Optional(
-            t.Number({
-              description:
-                "In seconds, the session will no longer be available after this time.",
-              default: 3600,
-              minimum: 60,
-            }),
-          ),
+      body: t.Object({
+        uri: t.String({
+          description:
+            'Reference to a master playlist, you can point to an asset with "asset://{uuid}" or as http(s).',
         }),
-      },
-    ),
+        interstitials: t.Optional(
+          t.Array(
+            t.Object({
+              timeOffset: t.Number(),
+              uri: t.String(),
+              type: t.Optional(t.Union([t.Literal("ad"), t.Literal("bumper")])),
+            }),
+            {
+              description: "Manual HLS interstitial insertion.",
+            },
+          ),
+        ),
+        filter: t.Optional(
+          t.Object(
+            {
+              resolution: t.Optional(
+                t.String({
+                  description: 'Filter on resolution, like "<= 720".',
+                }),
+              ),
+            },
+            {
+              description: "Filter applies to master and media playlist.",
+            },
+          ),
+        ),
+        vmap: t.Optional(
+          t.Object(
+            {
+              url: t.String(),
+            },
+            {
+              description:
+                "Describes a VMAP, will transcode ads and insert interstitials on the fly.",
+            },
+          ),
+        ),
+        expiry: t.Optional(
+          t.Number({
+            description:
+              "In seconds, the session will no longer be available after this time.",
+            default: 3600,
+            minimum: 60,
+          }),
+        ),
+      }),
+    },
   )
   .get(
     "/session/:sessionId/master.m3u8",

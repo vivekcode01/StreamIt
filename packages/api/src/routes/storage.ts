@@ -1,10 +1,10 @@
 import { Elysia, t } from "elysia";
-import { user } from "./auth";
+import { authUser } from "./token";
 import { getStorageFolder, getStorageFile } from "../s3";
-import { StorageFolderSchema, StorageFileSchema } from "../types";
+import { StorageFolderSchema, StorageFileSchema } from "../models";
 
 export const storage = new Elysia()
-  .use(user)
+  .use(authUser)
   .get(
     "/storage/folder",
     async ({ query }) => {
@@ -15,6 +15,7 @@ export const storage = new Elysia()
         summary: "Get a storage folder",
         description:
           "Get a folder from your S3 storage by path with all files and subfolders.",
+        tags: ["Storage"],
       },
       query: t.Object({
         path: t.String(),
@@ -35,6 +36,7 @@ export const storage = new Elysia()
       detail: {
         summary: "Get a storage file",
         description: "Get a single file from storage with raw data.",
+        tags: ["Storage"],
       },
       query: t.Object({
         path: t.String(),

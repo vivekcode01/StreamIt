@@ -6,8 +6,7 @@
   "exports": {
     "./env": "./src/env.ts",
     "./typebox": "./src/typebox.ts",
-    "./lang": "./src/lang.ts",
-    "./auth": "./src/auth.ts"
+    "./lang": "./src/lang.ts"
   },
   "scripts": {
     "lint": "eslint"
@@ -15,9 +14,6 @@
   "dependencies": {
     "@sinclair/typebox": "^0.33.16",
     "dotenv": "^16.4.5",
-    "elysia": "^1.1.20",
-    "@elysiajs/bearer": "^1.1.2",
-    "@elysiajs/jwt": "^1.1.1",
     "find-config": "^1.0.0",
     "iso-language-codes": "^2.0.0"
   },

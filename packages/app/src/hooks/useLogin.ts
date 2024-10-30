@@ -7,7 +7,7 @@ type Credentials = {
 };
 
 export function useLogin() {
-  const { setToken, api } = useAuth();
+  const { api, setToken } = useAuth();
 
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -16,10 +16,10 @@ export function useLogin() {
     setError(false);
     setLoading(true);
 
-    const result = await api.login.post(credentials);
+    const result = await api.token.post(credentials);
 
     if (result.status === 200 && result.data) {
-      setToken(result.data.token);
+      setToken(result.data);
     } else {
       setError(true);
     }

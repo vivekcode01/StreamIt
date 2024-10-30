@@ -5,6 +5,7 @@ import Rows3 from "lucide-react/icons/rows-3";
 import Sailboat from "lucide-react/icons/sailboat";
 import Play from "lucide-react/icons/play";
 import Box from "lucide-react/icons/box";
+import Settings2 from "lucide-react/icons/settings-2";
 import { SidebarNavLink } from "./SidebarNavLink";
 import { AccountBadge } from "./AccountBadge";
 
@@ -43,6 +44,13 @@ export function Sidebar() {
           <SidebarNavLink to="/api">
             <Sailboat className="h-4 w-4" />
             API
+          </SidebarNavLink>
+        </nav>
+        <SidebarTitle className="my-4">Other</SidebarTitle>
+        <nav className="grid items-start px-4 text-sm font-medium">
+          <SidebarNavLink to="/settings">
+            <Settings2 className="h-4 w-4" />
+            Settings
           </SidebarNavLink>
         </nav>
         <div className="grow" />

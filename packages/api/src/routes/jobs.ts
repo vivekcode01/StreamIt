@@ -1,31 +1,38 @@
 import { Elysia, t } from "elysia";
-import {
-  addTranscodeJob,
-  addPackageJob,
-} from "@superstreamer/artisan/producer";
+import { randomUUID } from "crypto";
+import { DeliberateError } from "../errors";
+import { addToQueue, packageQueue, transcodeQueue } from "bolt";
 import {
   LangCodeSchema,
   VideoCodecSchema,
   AudioCodecSchema,
 } from "shared/typebox";
-import { getJob, getJobs, getJobLogs } from "../jobs";
-import { JobSchema } from "../types";
-import { user } from "./auth";
+import { getJob, getJobs, getJobLogs } from "../repository/jobs";
+import { JobSchema } from "../models";
+import { authUser } from "./token";
 
 export const jobs = new Elysia()
-  .use(user)
+  .use(authUser)
   .post(
     "/transcode",
     async ({ body }) => {
-      const job = await addTranscodeJob(body);
+      const data = {
+        assetId: randomUUID(),
+        segmentSize: 2.24,
+        ...body,
+      };
+      const job = await addToQueue(transcodeQueue, data, {
+        id: data.assetId,
+      });
       if (!job.id) {
-        throw new Error("Missing job.id");
+        throw new DeliberateError({ type: "ERR_UNKNOWN" });
       }
       return { jobId: job.id };
     },
     {
       detail: {
         summary: "Create transcode job",
+        tags: ["Jobs"],
       },
       body: t.Object({
         inputs: t.Array(
@@ -97,6 +104,7 @@ export const jobs = new Elysia()
         ),
         assetId: t.Optional(
           t.String({
+            format: "uuid",
             description:
               "Only provide if you wish to re-transcode an existing asset. When not provided, a unique UUID is created.",
           }),
@@ -124,18 +132,27 @@ export const jobs = new Elysia()
   .post(
     "/package",
     async ({ body }) => {
-      const job = await addPackageJob(body);
+      const data = {
+        name: "hls",
+        ...body,
+      };
+      const job = await addToQueue(packageQueue, data, {
+        id: [data.assetId, data.name],
+      });
       if (!job.id) {
-        throw new Error("Missing job.id");
+        throw new DeliberateError({ type: "ERR_UNKNOWN" });
       }
       return { jobId: job.id };
     },
     {
       detail: {
         summary: "Create package job",
+        tags: ["Jobs"],
       },
       body: t.Object({
-        assetId: t.String(),
+        assetId: t.String({
+          format: "uuid",
+        }),
         defaultLanguage: t.Optional(LangCodeSchema),
         defaultTextLanguage: t.Optional(LangCodeSchema),
         segmentSize: t.Optional(
@@ -172,6 +189,7 @@ export const jobs = new Elysia()
     {
       detail: {
         summary: "Get all jobs",
+        tags: ["Jobs"],
       },
       response: {
         200: t.Array(t.Ref(JobSchema)),
@@ -181,11 +199,16 @@ export const jobs = new Elysia()
   .get(
     "/jobs/:id",
     async ({ params, query }) => {
-      return await getJob(params.id, query.fromRoot);
+      const job = await getJob(params.id, query.fromRoot);
+      if (!job) {
+        throw new DeliberateError({ type: "ERR_NOT_FOUND" });
+      }
+      return job;
     },
     {
       detail: {
         summary: "Get a job",
+        tags: ["Jobs"],
       },
       params: t.Object({
         id: t.String(),
@@ -206,6 +229,7 @@ export const jobs = new Elysia()
     {
       detail: {
         summary: "Get job logs",
+        tags: ["Jobs"],
       },
       params: t.Object({
         id: t.String(),

@@ -4,7 +4,7 @@ import {
   mergeInput,
   mergeStream,
   getMatches,
-} from "../../src/consumer/workers/transcode";
+} from "../../src/workers/transcode";
 
 const ALL_FFPROBE_RESULT = {
   video: {

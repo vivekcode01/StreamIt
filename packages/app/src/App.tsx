@@ -14,6 +14,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { PlayerPage } from "./pages/PlayerPage";
 import { StoragePage } from "./pages/StoragePage";
 import { LoginPage } from "./pages/LoginPage";
+import { SettingsPage } from "./pages/SettingsPage";
 import { Loader } from "@/components/Loader";
 
 const queryClient = new QueryClient({
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
       {
         path: "/storage",
         element: <StoragePage />,
+      },
+      {
+        path: "/settings",
+        element: <SettingsPage />,
       },
     ],
   },
