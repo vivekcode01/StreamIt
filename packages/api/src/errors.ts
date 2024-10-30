@@ -66,6 +66,8 @@ export const errors = () =>
         return mapValidationError(error);
       }
 
+      console.error(error);
+
       set.status = 500;
       return {
         type: "ERR_UNKNOWN",

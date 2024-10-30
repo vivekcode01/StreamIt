@@ -13,11 +13,11 @@ export const flowProducer = new FlowProducer({
   connection,
 });
 
-const transcodeQueue = new Queue<TranscodeData>("transcode", {
+export const transcodeQueue = new Queue<TranscodeData>("transcode", {
   connection,
 });
 
-const packageQueue = new Queue<PackageData>("package", {
+export const packageQueue = new Queue<PackageData>("package", {
   connection,
 });
 
@@ -28,17 +28,6 @@ export const ffmpegQueue = new Queue<FfmpegData>("ffmpeg", {
 export const ffprobeQueue = new Queue<FfprobeData>("ffprobe", {
   connection,
 });
-
-/**
- * Export all available queues so we can read them elsewhere, such as in api
- * where we can build job stats for each queue.
- */
-export const allQueus = [
-  transcodeQueue,
-  packageQueue,
-  ffmpegQueue,
-  ffprobeQueue,
-];
 
 type AddTranscodeJobData = {
   assetId?: string;

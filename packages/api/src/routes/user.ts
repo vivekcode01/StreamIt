@@ -4,7 +4,7 @@ import {
   getUser,
   getUserSettings,
   updateUserSettings,
-} from "../repository/user";
+} from "../repository/users";
 import { UserSchema, UserSettingsSchema } from "../models";
 import { DeliberateError } from "../errors";
 

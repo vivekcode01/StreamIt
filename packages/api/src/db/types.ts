@@ -1,14 +1,21 @@
-import type { Generated, Updateable } from "kysely";
+import type { Generated, Insertable, Updateable } from "kysely";
 
 export interface KyselyDatabase {
-  user: UserTable;
+  users: UsersTable;
+  assets: AssetsTable;
 }
 
-export interface UserTable {
+export interface UsersTable {
   id: Generated<number>;
   username: string;
   password: string;
   autoRefresh: boolean;
 }
 
-export type UserUpdate = Updateable<UserTable>;
+export type UserUpdate = Updateable<UsersTable>;
+
+export interface AssetsTable {
+  id: string;
+}
+
+export type AssetInsert = Insertable<AssetsTable>;

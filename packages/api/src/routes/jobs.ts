@@ -9,7 +9,7 @@ import {
   VideoCodecSchema,
   AudioCodecSchema,
 } from "shared/typebox";
-import { getJob, getJobs, getJobLogs } from "../repository/job";
+import { getJob, getJobs, getJobLogs } from "../repository/jobs";
 import { JobSchema } from "../models";
 import { authUser } from "./token";
 

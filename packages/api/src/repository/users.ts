@@ -3,7 +3,7 @@ import type { UserUpdate } from "../db/types";
 
 export async function getUserIdByCredentials(name: string, password: string) {
   const user = await db
-    .selectFrom("user")
+    .selectFrom("users")
     .select(["id", "password"])
     .where("username", "=", name)
     .executeTakeFirst();
@@ -22,7 +22,7 @@ export async function getUserIdByCredentials(name: string, password: string) {
 
 export async function getUser(id: number) {
   return await db
-    .selectFrom("user")
+    .selectFrom("users")
     .select(["id", "username"])
     .where("id", "=", id)
     .executeTakeFirstOrThrow();
@@ -33,7 +33,7 @@ export async function updateUserSettings(
   fields: Pick<UserUpdate, "autoRefresh">,
 ) {
   return await db
-    .updateTable("user")
+    .updateTable("users")
     .set(fields)
     .where("id", "=", id)
     .executeTakeFirstOrThrow();
@@ -41,7 +41,7 @@ export async function updateUserSettings(
 
 export async function getUserSettings(id: number) {
   return await db
-    .selectFrom("user")
+    .selectFrom("users")
     .select(["autoRefresh"])
     .where("id", "=", id)
     .executeTakeFirstOrThrow();
