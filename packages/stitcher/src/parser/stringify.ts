@@ -1,4 +1,4 @@
-import { assert } from "../assert";
+import { assert } from "shared/assert";
 import { Lines } from "./lines";
 import type {
   Rendition,

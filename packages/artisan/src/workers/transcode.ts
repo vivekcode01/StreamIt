@@ -1,7 +1,7 @@
 import { WaitingChildrenError } from "bullmq";
 import { getLangCode } from "shared/lang";
 import { uploadToS3 } from "../s3";
-import { assert } from "../assert";
+import { assert } from "shared/assert";
 import { getDefaultAudioBitrate, getDefaultVideoBitrate } from "../defaults";
 import { addToQueue, packageQueue, ffprobeQueue, ffmpegQueue } from "bolt";
 import type { Job } from "bullmq";

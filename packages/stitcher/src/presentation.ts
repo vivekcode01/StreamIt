@@ -1,6 +1,6 @@
 import { LRUCache } from "lru-cache";
 import { parseMasterPlaylist, parseMediaPlaylist } from "./parser";
-import { assert } from "./assert";
+import { assert } from "shared/assert";
 import { getMasterUrl, joinPath, getDir } from "./url";
 import type { Segment, MasterPlaylist } from "./parser";
 

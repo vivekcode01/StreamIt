@@ -1,4 +1,4 @@
-import { assert } from "../assert";
+import { assert } from "shared/assert";
 import { lexicalParse } from "./lexical-parse";
 import type {
   MediaPlaylist,

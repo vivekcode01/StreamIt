@@ -6,7 +6,8 @@
   "exports": {
     "./env": "./src/env.ts",
     "./typebox": "./src/typebox.ts",
-    "./lang": "./src/lang.ts"
+    "./lang": "./src/lang.ts",
+    "./assert": "./src/assert.ts"
   },
   "scripts": {
     "lint": "eslint"

@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { assert } from "../assert";
+import { assert } from "shared/assert";
 import { mapAttributes, partOf } from "./helpers";
 import type {
   Resolution,
