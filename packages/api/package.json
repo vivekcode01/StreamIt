@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "bun --watch ./src/index.ts",
     "build": "tsc -b && bun build ./src/index.ts --target=bun --outdir=./dist",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate": "bun run ./src/db/migrate.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
