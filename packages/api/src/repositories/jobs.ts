@@ -6,9 +6,9 @@ import {
   flowProducer,
 } from "bolt";
 import { Job as RawJob } from "bullmq";
-import { isRecordWithNumbers } from "../helpers";
+import { isRecordWithNumbers } from "../utils/type-guard";
 import type { JobNode, JobState, Queue } from "bullmq";
-import type { Job } from "../models";
+import type { Job } from "../types";
 
 const allQueus = [transcodeQueue, packageQueue, ffmpegQueue, ffprobeQueue];
 

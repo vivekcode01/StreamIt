@@ -7,8 +7,8 @@ import {
   VideoCodecSchema,
   AudioCodecSchema,
 } from "shared/typebox";
-import { getJob, getJobs, getJobLogs } from "../repository/jobs";
-import { JobSchema } from "../models";
+import { getJob, getJobs, getJobLogs } from "../repositories/jobs";
+import { JobSchema } from "../types";
 import { authUser } from "./token";
 
 export const jobs = new Elysia()

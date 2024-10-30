@@ -3,7 +3,7 @@ import { jwt } from "@elysiajs/jwt";
 import bearer from "@elysiajs/bearer";
 import { DeliberateError } from "../errors";
 import { env } from "../env";
-import { getUserIdByCredentials } from "../repository/users";
+import { getUserIdByCredentials } from "../repositories/users";
 
 const jwtUser = jwt({
   name: "jwtUser",

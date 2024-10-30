@@ -4,8 +4,8 @@ import {
   getUser,
   getUserSettings,
   updateUserSettings,
-} from "../repository/users";
-import { UserSchema, UserSettingsSchema } from "../models";
+} from "../repositories/users";
+import { UserSchema, UserSettingsSchema } from "../types";
 import { DeliberateError } from "../errors";
 
 export const user = new Elysia()
