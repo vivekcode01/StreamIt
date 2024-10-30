@@ -1,5 +1,5 @@
-import { db } from "..";
-import type { UserUpdate } from "../types";
+import { db } from "../db";
+import type { UserUpdate } from "../db/types";
 
 export async function getUserIdByCredentials(name: string, password: string) {
   const user = await db
