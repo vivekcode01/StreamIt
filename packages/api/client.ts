@@ -2,7 +2,7 @@ import { treaty } from "@elysiajs/eden";
 import { SignJWT } from "jose";
 import type { App } from "./src";
 
-export type * from "./src/types";
+export type * from "./src/models";
 
 export type ApiClient = ReturnType<typeof createApiClient>;
 

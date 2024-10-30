@@ -9,7 +9,7 @@ import {
   AudioCodecSchema,
 } from "shared/typebox";
 import { getJob, getJobs, getJobLogs } from "../jobs";
-import { JobSchema } from "../types";
+import { JobSchema } from "../models";
 import { authUser } from "./token";
 
 export const jobs = new Elysia()

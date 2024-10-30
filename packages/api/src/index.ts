@@ -17,7 +17,7 @@ import {
   JobSchema,
   StorageFolderSchema,
   StorageFileSchema,
-} from "./types";
+} from "./models";
 
 export type App = typeof app;
 

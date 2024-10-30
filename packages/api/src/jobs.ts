@@ -2,7 +2,7 @@ import { allQueus, flowProducer } from "@superstreamer/artisan/producer";
 import { Job as BullMQJob } from "bullmq";
 import { isRecordWithNumbers } from "./helpers";
 import type { JobNode, JobState, Queue } from "bullmq";
-import type { Job } from "./types";
+import type { Job } from "./models";
 
 function findQueueByName(name: string): Queue {
   const queue = allQueus.find((queue) => queue.name === name);

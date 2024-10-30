@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { authUser } from "./token";
 import { getStorageFolder, getStorageFile } from "../s3";
-import { StorageFolderSchema, StorageFileSchema } from "../types";
+import { StorageFolderSchema, StorageFileSchema } from "../models";
 
 export const storage = new Elysia()
   .use(authUser)

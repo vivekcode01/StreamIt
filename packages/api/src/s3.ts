@@ -1,6 +1,6 @@
 import { S3, ListObjectsCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { env } from "./env";
-import type { StorageFolder, StorageFile, StorageFolderItem } from "./types";
+import type { StorageFolder, StorageFile, StorageFolderItem } from "./models";
 
 const client = new S3({
   endpoint: env.S3_ENDPOINT,

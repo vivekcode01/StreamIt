@@ -5,7 +5,7 @@ import {
   getUserSettings,
   updateUserSettings,
 } from "../db/repositories/user-repository";
-import { UserSchema, UserSettingsSchema } from "../types";
+import { UserSchema, UserSettingsSchema } from "../models";
 
 export const user = new Elysia()
   .use(authUser)
