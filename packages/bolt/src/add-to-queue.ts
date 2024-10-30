@@ -42,9 +42,15 @@ export async function addToQueue<Q extends Queue, D = QueueData<Q>>(
     name = `${name}(${params.name})`;
   }
 
-  return await queue.add(name, data, {
+  const job = await queue.add(name, data, {
     jobId: `${queue.name}_${jobId}`,
     ...DEFAULT_JOB_OPTIONS,
     ...params?.options,
   });
+
+  if (!job.id) {
+    throw new Error("Missing job.id");
+  }
+
+  return job.id;
 }

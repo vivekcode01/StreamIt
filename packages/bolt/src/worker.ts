@@ -4,12 +4,12 @@ import { WorkerDir } from "./lib/worker-dir";
 import { WorkerProgressTracker } from "./lib/worker-progress-tracker";
 import type { Job } from "bullmq";
 
-type WorkerDefinition = {
-  name: string;
-  callback: WorkerCallback;
-};
-
-export function runWorkers(definitions: WorkerDefinition[]) {
+export function runWorkers(
+  definitions: {
+    name: string;
+    callback: WorkerCallback;
+  }[],
+) {
   const workers = definitions.map((definition) => {
     const { name, callback } = definition;
     const processor = createWorkerProcessor(callback);

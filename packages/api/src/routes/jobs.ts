@@ -21,13 +21,10 @@ export const jobs = new Elysia()
         segmentSize: 2.24,
         ...body,
       };
-      const job = await addToQueue(transcodeQueue, data, {
+      const jobId = await addToQueue(transcodeQueue, data, {
         id: data.assetId,
       });
-      if (!job.id) {
-        throw new DeliberateError({ type: "ERR_UNKNOWN" });
-      }
-      return { jobId: job.id };
+      return { jobId };
     },
     {
       detail: {
@@ -136,13 +133,10 @@ export const jobs = new Elysia()
         name: "hls",
         ...body,
       };
-      const job = await addToQueue(packageQueue, data, {
+      const jobId = await addToQueue(packageQueue, data, {
         id: [data.assetId, data.name],
       });
-      if (!job.id) {
-        throw new DeliberateError({ type: "ERR_UNKNOWN" });
-      }
-      return { jobId: job.id };
+      return { jobId };
     },
     {
       detail: {

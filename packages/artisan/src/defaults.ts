@@ -1,8 +1,5 @@
 import type { AudioCodec, VideoCodec } from "shared/typebox";
 
-// Check https://anton.lindstrom.io/gop-size-calculator/
-export const DEFAULT_SEGMENT_SIZE = 2.24;
-
 // We use the same default bitrates as shaka-streamer, thank you!
 // https://github.com/shaka-project/shaka-streamer/blob/20c2704deacb402e39640408ac6157e94a5f78ba/streamer/bitrate_configuration.py
 
