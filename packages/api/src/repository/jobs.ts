@@ -5,7 +5,7 @@ import {
   ffprobeQueue,
   flowProducer,
 } from "@superstreamer/artisan/producer";
-import { Job as BullMQJob } from "bullmq";
+import { Job as RawJob } from "bullmq";
 import { isRecordWithNumbers } from "../helpers";
 import type { JobNode, JobState, Queue } from "bullmq";
 import type { Job } from "../models";
@@ -75,7 +75,7 @@ async function getJobNode(
 ): Promise<JobNode | null> {
   const [queue, jobId] = formatIdPair(id);
 
-  const rawJob = await BullMQJob.fromId(queue, jobId);
+  const rawJob = await RawJob.fromId(queue, jobId);
 
   let job = rawJob ?? null;
   if (!job) {
@@ -97,14 +97,14 @@ async function getJobNode(
   });
 }
 
-async function findRootJob(job?: BullMQJob): Promise<BullMQJob | null> {
+async function findRootJob(job?: RawJob): Promise<RawJob | null> {
   if (!job) {
     return null;
   }
 
   while (job.parent) {
     const [queue, jobId] = formatIdPair(job.parent.id);
-    const parentJob = await BullMQJob.fromId(queue, jobId);
+    const parentJob = await RawJob.fromId(queue, jobId);
     if (!parentJob) {
       throw new Error("No parent job found.");
     }
@@ -124,7 +124,7 @@ async function formatJobNode(node: JobNode): Promise<Job> {
 
   const failedReason = state === "failed" ? job.failedReason : undefined;
 
-  const findParentSortIndex = (job: BullMQJob): number => {
+  const findParentSortIndex = (job: RawJob): number => {
     const value = job.data?.parentSortIndex;
     return typeof value === "number" ? value : 0;
   };
