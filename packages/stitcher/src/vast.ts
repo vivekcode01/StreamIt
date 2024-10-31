@@ -51,7 +51,7 @@ async function getAdMedias(adBreak: VmapAdBreak): Promise<AdMedia[]> {
 
 async function scheduleForPackage(adMedia: AdMedia) {
   await api.transcode.post({
-    tag: "ad",
+    group: "ad",
     assetId: adMedia.assetId,
     packageAfter: true,
     inputs: [

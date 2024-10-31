@@ -1,6 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useTransition } from "react";
-import NProgress from "nprogress";
+import { useProgressTransition } from "@/hooks/useProgressTransition";
 import type { ReactNode } from "react";
 
 type TransitionNavLinkState = {
@@ -19,18 +18,9 @@ export function TransitionNavLink({
   children,
   className,
 }: TransitionNavLinkProps) {
-  const [isPending, startTransiton] = useTransition();
+  const [isPending, startTransition] = useProgressTransition();
   const navigate = useNavigate();
   const location = useLocation();
-
-  useEffect(() => {
-    if (isPending) {
-      NProgress.start();
-      return () => {
-        NProgress.done();
-      };
-    }
-  }, [isPending]);
 
   return (
     <NavLink
@@ -48,7 +38,7 @@ export function TransitionNavLink({
           return;
         }
 
-        startTransiton(() => {
+        startTransition(() => {
           navigate(to);
         });
       }}

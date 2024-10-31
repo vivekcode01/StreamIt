@@ -93,6 +93,7 @@ export const AssetSchema = t.Object(
     id: t.String({ format: "uuid" }),
     groupId: t.Nullable(t.Number()),
     createdAt: t.Date(),
+    playablesCount: t.Number(),
   },
   {
     $id: "#/components/schemas/Asset",
@@ -100,3 +101,15 @@ export const AssetSchema = t.Object(
 );
 
 export type Asset = Static<typeof AssetSchema>;
+
+export const GroupSchema = t.Object(
+  {
+    id: t.Number(),
+    name: t.String(),
+  },
+  {
+    $id: "#/components/schemas/Group",
+  },
+);
+
+export type Group = Static<typeof GroupSchema>;

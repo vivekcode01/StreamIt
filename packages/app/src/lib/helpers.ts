@@ -15,7 +15,7 @@ export function getShortId(id: string) {
   return chunks[1].substring(0, 7);
 }
 
-export function getTimeAgo(value: number | null) {
+export function getTimeAgo(value: number | null | Date) {
   if (!value) {
     return null;
   }

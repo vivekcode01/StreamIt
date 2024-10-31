@@ -13,14 +13,6 @@ export async function up(db: Kysely<any>) {
     .addColumn("autoRefresh", "boolean", (col) => col.notNull().defaultTo(true))
     .execute();
 
-  await db
-    .insertInto("users")
-    .values({
-      username: "admin",
-      password: await Bun.password.hash("admin"),
-    })
-    .execute();
-
   await db.schema
     .createTable("groups")
     .addColumn("id", "serial", (col) => col.primaryKey())
@@ -37,9 +29,31 @@ export async function up(db: Kysely<any>) {
       col.notNull().defaultTo(sql`now()`),
     )
     .execute();
+
+  await db.schema
+    .createTable("playables")
+    .addColumn("assetId", "uuid", (col) =>
+      col.references("assets.id").onDelete("cascade"),
+    )
+    .addColumn("name", "text", (col) => col.notNull())
+    .addColumn("createdAt", "timestamp", (col) =>
+      col.notNull().defaultTo(sql`now()`),
+    )
+    .addPrimaryKeyConstraint("id", ["assetId", "name"])
+    .execute();
+
+  await db
+    .insertInto("users")
+    .values({
+      username: "admin",
+      password: await Bun.password.hash("admin"),
+    })
+    .execute();
 }
 
 export async function down(db: Kysely<any>) {
   await db.schema.dropTable("users").execute();
-  await db.schema.dropTable("assets");
+  await db.schema.dropTable("groups").execute();
+  await db.schema.dropTable("assets").execute();
+  await db.schema.dropTable("playables").execute();
 }

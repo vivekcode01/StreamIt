@@ -20,6 +20,7 @@ import {
   StorageFolderSchema,
   StorageFileSchema,
   AssetSchema,
+  GroupSchema,
 } from "./types";
 
 // Import workers and they'll start running immediately.
@@ -96,6 +97,7 @@ const app = new Elysia()
     StorageFolder: StorageFolderSchema,
     StorageFile: StorageFileSchema,
     Asset: AssetSchema,
+    Group: GroupSchema,
   })
   .use(token)
   .use(user)

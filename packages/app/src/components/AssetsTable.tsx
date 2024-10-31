@@ -1,4 +1,4 @@
-import { Asset } from "@superstreamer/api/client";
+import { Asset, Group } from "@superstreamer/api/client";
 import {
   Table,
   TableBody,
@@ -7,32 +7,81 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import CircleOff from "lucide-react/icons/circle-off";
-import CircleCheckBig from "lucide-react/icons/circle-check-big";
+import { ColorTag } from "@/components/ColorTag";
+import { Button } from "./ui/button";
+import Ellipsis from "lucide-react/icons/ellipsis";
+import CircleSlash from "lucide-react/icons/circle-slash";
+import FileVideo from "lucide-react/icons/file-video";
+import GroupIcon from "lucide-react/icons/group";
+import { getTimeAgo } from "@/lib/helpers";
+import { TableHeadSorter } from "./TableHeadSorter";
 
 type AssetsTableProps = {
   assets: Asset[];
+  groups: Group[];
+  sort: string;
+  onSort(sort: string): void;
 };
 
-export function AssetsTable({ assets }: AssetsTableProps) {
+export function AssetsTable({
+  assets,
+  groups,
+  sort,
+  onSort,
+}: AssetsTableProps) {
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[50px]"></TableHead>
-          <TableHead>Key</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHeadSorter field="id" sort={sort} onChange={onSort}>
+            Name
+          </TableHeadSorter>
+          <TableHead>
+            <div className="flex justify-center">
+              <FileVideo className="w-4 h-4" />
+            </div>
+          </TableHead>
+          <TableHead>
+            <div className="flex justify-center">
+              <GroupIcon className="w-4 h-4" />
+            </div>
+          </TableHead>
+          <TableHeadSorter field="createdAt" sort={sort} onChange={onSort}>
+            Created
+          </TableHeadSorter>
+          <TableHead />
         </TableRow>
       </TableHeader>
       <TableBody>
         {assets.map((asset) => {
+          const group = groups.find((group) => group.id === asset.groupId);
           return (
             <TableRow key={asset.id}>
+              <TableCell className="w-full">{asset.id}</TableCell>
               <TableCell>
-                <CircleCheckBig className="w-4 h-4 text-emerald-700" />
+                <div className="flex justify-center">
+                  {asset.playablesCount > 0 ? (
+                    <span>{asset.playablesCount}</span>
+                  ) : (
+                    <CircleSlash className="w-4 h-4 text-pink-500" />
+                  )}
+                </div>
               </TableCell>
-              <TableCell>{asset.id}</TableCell>
-              <TableCell>N/A</TableCell>
+              <TableCell>
+                <div className="flex justify-center">
+                  <ColorTag value={group?.name ?? "none"} />
+                </div>
+              </TableCell>
+              <TableCell className="text-nowrap">
+                {getTimeAgo(asset.createdAt)}
+              </TableCell>
+              <TableCell className="py-0">
+                <div className="flex justify-center">
+                  <Button size="icon" variant="ghost">
+                    <Ellipsis className="w-4 h-4" />
+                  </Button>
+                </div>
+              </TableCell>
             </TableRow>
           );
         })}

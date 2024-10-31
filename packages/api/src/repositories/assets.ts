@@ -1,15 +1,24 @@
 import { db } from "../db";
-import { executeWithPagination } from "../utils/query-paginate";
+import { executeAsTable } from "../utils/query-table";
 import type { AssetInsert } from "../db/types";
+import type { TableQuery } from "../utils/query-table";
 
 export async function createAsset(fields: AssetInsert) {
   return await db.insertInto("assets").values(fields).executeTakeFirstOrThrow();
 }
 
-export async function getAssets(page: number, perPage: number) {
-  const query = db.selectFrom("assets").select(["id", "groupId", "createdAt"]);
-  return await executeWithPagination(query, {
-    page,
-    perPage,
-  });
+export async function getAssetsTable(query: TableQuery) {
+  return await executeAsTable(
+    query,
+    db
+      .selectFrom("assets")
+      .leftJoin("playables", "playables.assetId", "assets.id")
+      .select(({ fn }) => [
+        "assets.id",
+        "assets.groupId",
+        "assets.createdAt",
+        fn.count<number>("playables.assetId").as("playablesCount"),
+      ])
+      .groupBy("assets.id"),
+  );
 }

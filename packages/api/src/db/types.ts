@@ -4,6 +4,7 @@ export interface KyselyDatabase {
   users: UsersTable;
   groups: GroupsTable;
   assets: AssetsTable;
+  playables: PlayablesTable;
 }
 
 export interface UsersTable {
@@ -29,3 +30,11 @@ export interface AssetsTable {
 }
 
 export type AssetInsert = Insertable<AssetsTable>;
+
+export interface PlayablesTable {
+  assetId: string;
+  name: string;
+  createdAt: ColumnType<Date, never, never>;
+}
+
+export type PlayableInsert = Insertable<PlayablesTable>;

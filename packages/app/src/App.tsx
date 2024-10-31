@@ -50,7 +50,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/jobs" />,
+        element: <Navigate to="/assets" />,
       },
       {
         path: "/assets",
