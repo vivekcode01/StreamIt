@@ -1,22 +1,22 @@
 import uniqolor from "uniqolor";
 
 type JobTagProps = {
-  tag?: string;
+  value: string;
 };
 
-export function JobTag({ tag }: JobTagProps) {
-  if (!tag) {
-    return null;
-  }
+export function ColorTag({ value }: JobTagProps) {
+  let { color } = uniqolor(value, {});
 
-  const { color } = uniqolor(tag, {});
+  if (value === "none") {
+    color = "#cccccc";
+  }
 
   return (
     <span
-      className="text-xs px-2 py-[2px] rounded-full font-medium"
+      className="text-[0.7rem] rounded-md h-5 px-2 font-medium leading-none inline-flex items-center"
       style={{ color, backgroundColor: hexToRGB(color, 0.25) }}
     >
-      {tag}
+      {value}
     </span>
   );
 }

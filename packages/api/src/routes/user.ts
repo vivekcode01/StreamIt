@@ -24,7 +24,7 @@ export const user = new Elysia()
         tags: ["User"],
       },
       response: {
-        200: t.Ref(UserSchema),
+        200: UserSchema,
       },
     },
   )
@@ -45,7 +45,7 @@ export const user = new Elysia()
         tags: ["User"],
       },
       response: {
-        200: t.Ref(UserSettingsSchema),
+        200: UserSettingsSchema,
       },
     },
   )
@@ -70,7 +70,7 @@ export const user = new Elysia()
         autoRefresh: t.Optional(t.Boolean()),
       }),
       response: {
-        200: t.Ref(UserSettingsSchema),
+        200: UserSettingsSchema,
       },
     },
   );

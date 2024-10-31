@@ -23,7 +23,7 @@ export const storage = new Elysia()
         take: t.Optional(t.Number()),
       }),
       response: {
-        200: t.Ref(StorageFolderSchema),
+        200: StorageFolderSchema,
       },
     },
   )
@@ -42,7 +42,7 @@ export const storage = new Elysia()
         path: t.String(),
       }),
       response: {
-        200: t.Ref(StorageFileSchema),
+        200: StorageFileSchema,
       },
     },
   );

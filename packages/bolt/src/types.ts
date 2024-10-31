@@ -1,5 +1,9 @@
 import type { LangCode, VideoCodec, AudioCodec } from "shared/typebox";
 
+export const DEFAULT_SEGMENT_SIZE = 2.24;
+
+export const DEFAULT_PACKAGE_NAME = "hls";
+
 export type PartialStream =
   | {
       type: "video";

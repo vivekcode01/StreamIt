@@ -15,6 +15,7 @@ import { PlayerPage } from "./pages/PlayerPage";
 import { StoragePage } from "./pages/StoragePage";
 import { LoginPage } from "./pages/LoginPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { AssetsPage } from "./pages/AssetsPage";
 import { Loader } from "@/components/Loader";
 
 const queryClient = new QueryClient({
@@ -49,7 +50,11 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/jobs" />,
+        element: <Navigate to="/assets" />,
+      },
+      {
+        path: "/assets",
+        element: <AssetsPage />,
       },
       {
         path: "/jobs",

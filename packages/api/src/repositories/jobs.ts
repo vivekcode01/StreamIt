@@ -3,6 +3,7 @@ import {
   packageQueue,
   ffmpegQueue,
   ffprobeQueue,
+  outcomeQueue,
   flowProducer,
 } from "bolt";
 import { Job as RawJob } from "bullmq";
@@ -10,7 +11,13 @@ import { isRecordWithNumbers } from "../utils/type-guard";
 import type { JobNode, JobState, Queue } from "bullmq";
 import type { Job } from "../types";
 
-const allQueus = [transcodeQueue, packageQueue, ffmpegQueue, ffprobeQueue];
+const allQueus = [
+  transcodeQueue,
+  packageQueue,
+  ffmpegQueue,
+  ffprobeQueue,
+  outcomeQueue,
+];
 
 function findQueueByName(name: string): Queue {
   const queue = allQueus.find((queue) => queue.name === name);
@@ -152,12 +159,6 @@ async function formatJobNode(node: JobNode): Promise<Job> {
       ? job.finishedOn - processedOn
       : undefined;
 
-  let tag: string | undefined;
-  const potentialTag = job.data?.tag;
-  if (typeof potentialTag === "string") {
-    tag = potentialTag;
-  }
-
   let progress: Record<string, number> | undefined;
   if (isRecordWithNumbers(job.progress)) {
     progress = job.progress;
@@ -175,7 +176,6 @@ async function formatJobNode(node: JobNode): Promise<Job> {
     inputData: JSON.stringify(job.data),
     outputData: job.returnvalue ? JSON.stringify(job.returnvalue) : undefined,
     failedReason,
-    tag,
     children: jobChildren,
   };
 }

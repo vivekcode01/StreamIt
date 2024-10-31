@@ -1,9 +1,15 @@
-import { WaitingChildrenError } from "bullmq";
 import { getLangCode } from "shared/lang";
 import { uploadToS3 } from "../s3";
 import { assert } from "shared/assert";
 import { getDefaultAudioBitrate, getDefaultVideoBitrate } from "../defaults";
-import { addToQueue, packageQueue, ffprobeQueue, ffmpegQueue } from "bolt";
+import {
+  addToQueue,
+  ffprobeQueue,
+  ffmpegQueue,
+  outcomeQueue,
+  waitForChildren,
+  getChildren,
+} from "bolt";
 import type { Job } from "bullmq";
 import type {
   TranscodeData,
@@ -22,6 +28,7 @@ enum Step {
   Initial,
   Ffmpeg,
   Meta,
+  Outcome,
   Finish,
 }
 
@@ -54,20 +61,27 @@ export const transcodeCallback: WorkerCallback<
 
       case Step.Meta: {
         await handleStepMeta(job, token);
+        await job.updateData({
+          ...job.data,
+          step: Step.Outcome,
+        });
+        step = Step.Outcome;
+        break;
+      }
 
-        if (job.data.packageAfter) {
-          await addToQueue(
-            packageQueue,
-            {
-              assetId: job.data.assetId,
-              name: "hls",
-              tag: job.data.tag,
+      case Step.Outcome: {
+        await addToQueue(
+          outcomeQueue,
+          {
+            type: "transcode",
+            data: job.data,
+          },
+          {
+            options: {
+              removeOnComplete: true,
             },
-            {
-              id: [job.data.assetId, "hls"],
-            },
-          );
-        }
+          },
+        );
 
         await job.updateData({
           ...job.data,
@@ -159,6 +173,30 @@ async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
   });
 
   await Promise.all(promises);
+}
+
+async function handleStepMeta(job: Job<TranscodeData>, token?: string) {
+  await waitForChildren(job, token);
+
+  const children = await getChildren<FfmpegResult>(job, "ffmpeg");
+
+  const streams = children.reduce<Record<string, Stream>>((acc, child) => {
+    acc[child.name] = child.stream;
+    return acc;
+  }, {});
+
+  const meta: Meta = {
+    version: 1,
+    streams,
+    segmentSize: job.data.segmentSize,
+  };
+
+  await job.log(`Writing meta.json (${JSON.stringify(meta)})`);
+
+  await uploadToS3(`transcode/${job.data.assetId}/meta.json`, {
+    type: "json",
+    data: meta,
+  });
 }
 
 type MixedMatch<
@@ -266,51 +304,6 @@ function shouldSkipMatch(match: Match) {
   }
 
   return false;
-}
-
-async function handleStepMeta(job: Job<TranscodeData>, token?: string) {
-  await waitForChildren(job, token);
-
-  const children = await getChildren<FfmpegResult>(job, "ffmpeg");
-
-  const streams = children.reduce<Record<string, Stream>>((acc, child) => {
-    acc[child.name] = child.stream;
-    return acc;
-  }, {});
-
-  const meta: Meta = {
-    version: 1,
-    streams,
-    segmentSize: job.data.segmentSize,
-  };
-
-  await job.log(`Writing meta.json (${JSON.stringify(meta)})`);
-
-  await uploadToS3(`transcode/${job.data.assetId}/meta.json`, {
-    type: "json",
-    data: meta,
-  });
-}
-
-async function waitForChildren(job: Job, token?: string) {
-  assert(token);
-  const shouldWait = await job.moveToWaitingChildren(token);
-  if (shouldWait) {
-    throw new WaitingChildrenError();
-  }
-}
-
-async function getChildren<T>(job: Job, name: string) {
-  const childrenValues = await job.getChildrenValues();
-  const entries = Object.entries(childrenValues);
-
-  return entries.reduce<T[]>((acc, [key, value]) => {
-    if (!key.startsWith(`bull:${name}`)) {
-      return acc;
-    }
-    acc.push(value as T);
-    return acc;
-  }, []);
 }
 
 function mergeInputs(

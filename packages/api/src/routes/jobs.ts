@@ -1,7 +1,13 @@
 import { Elysia, t } from "elysia";
 import { randomUUID } from "crypto";
 import { DeliberateError } from "../errors";
-import { addToQueue, packageQueue, transcodeQueue } from "bolt";
+import {
+  addToQueue,
+  packageQueue,
+  transcodeQueue,
+  DEFAULT_PACKAGE_NAME,
+  DEFAULT_SEGMENT_SIZE,
+} from "bolt";
 import {
   LangCodeSchema,
   VideoCodecSchema,
@@ -18,7 +24,7 @@ export const jobs = new Elysia()
     async ({ body }) => {
       const data = {
         assetId: randomUUID(),
-        segmentSize: 2.24,
+        segmentSize: DEFAULT_SEGMENT_SIZE,
         ...body,
       };
       const jobId = await addToQueue(transcodeQueue, data, {
@@ -112,10 +118,10 @@ export const jobs = new Elysia()
               "Starts a default package job after a succesful transcode.",
           }),
         ),
-        tag: t.Optional(
+        group: t.Optional(
           t.String({
             description:
-              'Tag a job for a particular purpose, such as "ad". Arbitrary value.',
+              'Groups the asset with an arbitrary value, such as "ad"',
           }),
         ),
       }),
@@ -130,7 +136,7 @@ export const jobs = new Elysia()
     "/package",
     async ({ body }) => {
       const data = {
-        name: "hls",
+        name: DEFAULT_PACKAGE_NAME,
         ...body,
       };
       const jobId = await addToQueue(packageQueue, data, {
@@ -147,8 +153,7 @@ export const jobs = new Elysia()
         assetId: t.String({
           format: "uuid",
         }),
-        defaultLanguage: t.Optional(LangCodeSchema),
-        defaultTextLanguage: t.Optional(LangCodeSchema),
+        language: t.Optional(LangCodeSchema),
         segmentSize: t.Optional(
           t.Number({
             description:
@@ -186,7 +191,7 @@ export const jobs = new Elysia()
         tags: ["Jobs"],
       },
       response: {
-        200: t.Array(t.Ref(JobSchema)),
+        200: t.Array(JobSchema),
       },
     },
   )
@@ -211,7 +216,7 @@ export const jobs = new Elysia()
         fromRoot: t.Optional(t.Boolean()),
       }),
       response: {
-        200: t.Ref(JobSchema),
+        200: JobSchema,
       },
     },
   )
