@@ -2,7 +2,6 @@ import { JobTree } from "@/components/JobTree";
 import { JobView } from "@/components/JobView";
 import { getShortId } from "@/lib/helpers";
 import { useJob } from "@/hooks/useJob";
-import { JobTag } from "@/components/JobTag";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -38,9 +37,6 @@ export function JobOverview({ id }: JobOverviewProps) {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <div className="ml-4 flex items-center">
-          <JobTag tag={job.tag} />
-        </div>
         <div className="ml-auto">
           <AutoRefreshStatus />
         </div>

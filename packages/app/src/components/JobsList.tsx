@@ -1,7 +1,6 @@
 import { TransitionNavLink } from "./TransitionNavLink";
 import { JobState } from "./JobState";
 import { getDurationStr, getShortId, getTimeAgo } from "@/lib/helpers";
-import { JobTag } from "./JobTag";
 import type { Job } from "@superstreamer/api/client";
 
 type JobsListProps = {
@@ -31,7 +30,6 @@ export function JobsList({ jobs }: JobsListProps) {
                 </div>
               </div>
               <div className="text-right">
-                {job.tag === "default" ? null : <JobTag tag={job.tag} />}
                 <div className="text-sm text-muted-foreground">
                   {getTimeAgo(job.createdOn)}
                 </div>

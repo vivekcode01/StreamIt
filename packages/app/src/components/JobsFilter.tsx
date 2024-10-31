@@ -1,4 +1,3 @@
-import { JobTag } from "@/components/JobTag";
 import { SelectObject } from "./SelectObject";
 import type { Job } from "@superstreamer/api/client";
 import type { JobsFilterData } from "./types";
@@ -11,16 +10,6 @@ type JobsFilterProps = {
 };
 
 export function JobsFilter({ allJobs, filter, onChange }: JobsFilterProps) {
-  const tags = getTags(allJobs).map<SelectObjectItem>((tag) => ({
-    value: tag,
-    label: <JobTag tag={tag} />,
-  }));
-
-  tags.unshift(
-    { value: undefined, label: "All tags" },
-    { value: "none", label: "No tags" },
-  );
-
   const names = getNames(allJobs).map<SelectObjectItem>((name) => ({
     value: name,
     label: name,
@@ -35,22 +24,8 @@ export function JobsFilter({ allJobs, filter, onChange }: JobsFilterProps) {
         value={filter.name}
         onChange={(name) => onChange({ name })}
       />
-      <SelectObject
-        items={tags}
-        value={filter.tag}
-        onChange={(tag) => onChange({ tag })}
-      />
     </div>
   );
-}
-
-function getTags(jobs: Job[]) {
-  return jobs.reduce<string[]>((acc, job) => {
-    if (job.tag && !acc.includes(job.tag)) {
-      acc.push(job.tag);
-    }
-    return acc;
-  }, []);
 }
 
 function getNames(jobs: Job[]) {

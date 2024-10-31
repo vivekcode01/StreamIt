@@ -71,11 +71,8 @@ export const packageCallback: WorkerCallback<
 
   const packagerArgs = packagerParams.map((it) => `${it.join(",")}`);
 
-  if (job.data.defaultLanguage) {
-    packagerArgs.push("--default_language", job.data.defaultLanguage);
-  }
-  if (job.data.defaultTextLanguage) {
-    packagerArgs.push("--default_text_language", job.data.defaultTextLanguage);
+  if (job.data.language) {
+    packagerArgs.push("--default_language", job.data.language);
   }
 
   packagerArgs.push(

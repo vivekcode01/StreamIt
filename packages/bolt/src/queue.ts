@@ -9,7 +9,7 @@ export type TranscodeData = {
   streams: PartialStream[];
   segmentSize: number;
   packageAfter?: boolean;
-  tag?: string;
+  group?: string;
 };
 
 export const transcodeQueue = new Queue<TranscodeData>("transcode", {
@@ -18,11 +18,9 @@ export const transcodeQueue = new Queue<TranscodeData>("transcode", {
 
 export type PackageData = {
   assetId: string;
-  defaultLanguage?: LangCode;
-  defaultTextLanguage?: LangCode;
+  language?: LangCode;
   segmentSize?: number;
   name: string;
-  tag?: string;
 };
 
 export const packageQueue = new Queue<PackageData>("package", {
@@ -49,3 +47,15 @@ export type FfprobeData = {
 export const ffprobeQueue = new Queue<FfprobeData>("ffprobe", {
   connection,
 });
+
+export type TranscodeOutcomeData = {
+  assetId: string;
+  group?: string;
+};
+
+export const transcodeOutcomeQueue = new Queue<TranscodeOutcomeData>(
+  "transcodeOutcome",
+  {
+    connection,
+  },
+);
