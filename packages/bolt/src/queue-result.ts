@@ -29,5 +29,3 @@ export type TranscodeResult = {
 export type PackageResult = {
   assetId: string;
 };
-
-export type TranscodeOutcomeResult = undefined;

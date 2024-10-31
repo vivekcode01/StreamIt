@@ -118,10 +118,10 @@ export const jobs = new Elysia()
               "Starts a default package job after a succesful transcode.",
           }),
         ),
-        tag: t.Optional(
+        group: t.Optional(
           t.String({
             description:
-              'Tag a job for a particular purpose, such as "ad". Arbitrary value.',
+              'Groups the asset with an arbitrary value, such as "ad"',
           }),
         ),
       }),
@@ -191,7 +191,7 @@ export const jobs = new Elysia()
         tags: ["Jobs"],
       },
       response: {
-        200: t.Array(t.Ref(JobSchema)),
+        200: t.Array(JobSchema),
       },
     },
   )
@@ -216,7 +216,7 @@ export const jobs = new Elysia()
         fromRoot: t.Optional(t.Boolean()),
       }),
       response: {
-        200: t.Ref(JobSchema),
+        200: JobSchema,
       },
     },
   )

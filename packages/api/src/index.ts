@@ -6,6 +6,7 @@ import { token } from "./routes/token";
 import { user } from "./routes/user";
 import { jobs } from "./routes/jobs";
 import { storage } from "./routes/storage";
+import { assets } from "./routes/assets";
 import { errors } from "./errors";
 import {
   LangCodeSchema,
@@ -18,7 +19,11 @@ import {
   JobSchema,
   StorageFolderSchema,
   StorageFileSchema,
+  AssetSchema,
 } from "./types";
+
+// Import workers and they'll start running immediately.
+import "./workers";
 
 export type App = typeof app;
 
@@ -90,11 +95,13 @@ const app = new Elysia()
     Job: JobSchema,
     StorageFolder: StorageFolderSchema,
     StorageFile: StorageFileSchema,
+    Asset: AssetSchema,
   })
   .use(token)
   .use(user)
   .use(jobs)
-  .use(storage);
+  .use(storage)
+  .use(assets);
 
 app.on("stop", () => {
   process.exit(0);

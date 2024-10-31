@@ -1,16 +1,72 @@
 import { execa } from "execa";
 import parseFilePath from "parse-filepath";
+import { addToQueue, outcomeQueue } from "bolt";
 import { syncFromS3, syncToS3 } from "../s3";
 import { getMeta } from "../meta";
 import { getBinaryPath } from "../helpers";
-import type { PackageData, PackageResult, WorkerCallback, Stream } from "bolt";
+import type {
+  PackageData,
+  PackageResult,
+  WorkerCallback,
+  Stream,
+  WorkerDir,
+} from "bolt";
+import type { Job } from "bullmq";
 
 const packagerBin = await getBinaryPath("packager");
 
+enum Step {
+  Initial,
+  Outcome,
+  Finish,
+}
+
 export const packageCallback: WorkerCallback<
-  PackageData,
+  PackageData & { step?: Step },
   PackageResult
 > = async ({ job, dir }) => {
+  let step = job.data.step ?? Step.Initial;
+  while (step !== Step.Finish) {
+    switch (step) {
+      case Step.Initial: {
+        await handleStepInitial(job, dir);
+        await job.updateData({
+          ...job.data,
+          step: Step.Outcome,
+        });
+        step = Step.Outcome;
+        break;
+      }
+
+      case Step.Outcome: {
+        await addToQueue(
+          outcomeQueue,
+          {
+            type: "package",
+            data: job.data,
+          },
+          {
+            options: {
+              removeOnComplete: true,
+            },
+          },
+        );
+        await job.updateData({
+          ...job.data,
+          step: Step.Finish,
+        });
+        step = Step.Finish;
+        break;
+      }
+    }
+  }
+
+  return {
+    assetId: job.data.assetId,
+  };
+};
+
+async function handleStepInitial(job: Job<PackageData>, dir: WorkerDir) {
   const inDir = await dir.createTempDir();
 
   await syncFromS3(`transcode/${job.data.assetId}`, inDir);
@@ -99,13 +155,7 @@ export const packageCallback: WorkerCallback<
     del: true,
     public: true,
   });
-
-  job.updateProgress(100);
-
-  return {
-    assetId: job.data.assetId,
-  };
-};
+}
 
 function getGroupId(
   stream:

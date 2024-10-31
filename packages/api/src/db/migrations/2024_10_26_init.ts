@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Kysely } from "kysely";
+import { Kysely, sql } from "kysely";
 
 export async function up(db: Kysely<any>) {
   await db.schema
@@ -10,7 +10,7 @@ export async function up(db: Kysely<any>) {
     .addColumn("username", "text", (col) => col.notNull())
     .addColumn("password", "text", (col) => col.notNull())
     // Settings
-    .addColumn("autoRefresh", "boolean", (col) => col.defaultTo(true))
+    .addColumn("autoRefresh", "boolean", (col) => col.notNull().defaultTo(true))
     .execute();
 
   await db
@@ -22,8 +22,20 @@ export async function up(db: Kysely<any>) {
     .execute();
 
   await db.schema
+    .createTable("groups")
+    .addColumn("id", "serial", (col) => col.primaryKey())
+    .addColumn("name", "text", (col) => col.notNull().unique())
+    .execute();
+
+  await db.schema
     .createTable("assets")
     .addColumn("id", "uuid", (col) => col.primaryKey())
+    .addColumn("groupId", "integer", (col) =>
+      col.references("groups.id").onDelete("cascade"),
+    )
+    .addColumn("createdAt", "timestamp", (col) =>
+      col.notNull().defaultTo(sql`now()`),
+    )
     .execute();
 }
 

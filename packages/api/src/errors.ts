@@ -77,7 +77,14 @@ export const errors = () =>
 function mapValidationError(
   error: ValidationError,
 ): ApiError<"ERR_VALIDATION"> {
-  const first = error.validator.Errors(error.value).First();
+  const first = error.validator?.Errors(error.value).First();
+  if (!first) {
+    return {
+      type: "ERR_VALIDATION",
+      path: "/",
+      fail: error.message,
+    };
+  }
   return {
     type: "ERR_VALIDATION",
     path: first.path,

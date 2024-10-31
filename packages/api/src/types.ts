@@ -87,3 +87,16 @@ export const UserSettingsSchema = t.Object(
 );
 
 export type UserSettings = Static<typeof UserSettingsSchema>;
+
+export const AssetSchema = t.Object(
+  {
+    id: t.String({ format: "uuid" }),
+    groupId: t.Nullable(t.Number()),
+    createdAt: t.Date(),
+  },
+  {
+    $id: "#/components/schemas/Asset",
+  },
+);
+
+export type Asset = Static<typeof AssetSchema>;

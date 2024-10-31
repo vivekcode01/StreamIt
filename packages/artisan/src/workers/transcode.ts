@@ -1,15 +1,14 @@
-import { WaitingChildrenError } from "bullmq";
 import { getLangCode } from "shared/lang";
 import { uploadToS3 } from "../s3";
 import { assert } from "shared/assert";
 import { getDefaultAudioBitrate, getDefaultVideoBitrate } from "../defaults";
 import {
   addToQueue,
-  packageQueue,
   ffprobeQueue,
   ffmpegQueue,
-  transcodeOutcomeQueue,
-  DEFAULT_PACKAGE_NAME,
+  outcomeQueue,
+  waitForChildren,
+  getChildren,
 } from "bolt";
 import type { Job } from "bullmq";
 import type {
@@ -30,7 +29,6 @@ enum Step {
   Ffmpeg,
   Meta,
   Outcome,
-  PackageAfter,
   Finish,
 }
 
@@ -73,42 +71,15 @@ export const transcodeCallback: WorkerCallback<
 
       case Step.Outcome: {
         await addToQueue(
-          transcodeOutcomeQueue,
+          outcomeQueue,
           {
-            assetId: job.data.assetId,
-            group: job.data.group,
+            type: "transcode",
+            data: job.data,
           },
           {
             options: {
               removeOnComplete: true,
             },
-          },
-        );
-
-        // When packageAfter is requested, move to that step. When not,
-        // we'll finish as no work is left to be done.
-        let nextStep = Step.Finish;
-        if (job.data.packageAfter) {
-          nextStep = Step.PackageAfter;
-        }
-
-        await job.updateData({
-          ...job.data,
-          step: nextStep,
-        });
-        step = nextStep;
-        break;
-      }
-
-      case Step.PackageAfter: {
-        await addToQueue(
-          packageQueue,
-          {
-            assetId: job.data.assetId,
-            name: DEFAULT_PACKAGE_NAME,
-          },
-          {
-            id: [job.data.assetId, DEFAULT_PACKAGE_NAME],
           },
         );
 
@@ -333,27 +304,6 @@ function shouldSkipMatch(match: Match) {
   }
 
   return false;
-}
-
-async function waitForChildren(job: Job, token?: string) {
-  assert(token);
-  const shouldWait = await job.moveToWaitingChildren(token);
-  if (shouldWait) {
-    throw new WaitingChildrenError();
-  }
-}
-
-async function getChildren<T>(job: Job, name: string) {
-  const childrenValues = await job.getChildrenValues();
-  const entries = Object.entries(childrenValues);
-
-  return entries.reduce<T[]>((acc, [key, value]) => {
-    if (!key.startsWith(`bull:${name}`)) {
-      return acc;
-    }
-    acc.push(value as T);
-    return acc;
-  }, []);
 }
 
 function mergeInputs(

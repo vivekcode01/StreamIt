@@ -48,14 +48,16 @@ export const ffprobeQueue = new Queue<FfprobeData>("ffprobe", {
   connection,
 });
 
-export type TranscodeOutcomeData = {
-  assetId: string;
-  group?: string;
-};
+export type OutcomeData =
+  | {
+      type: "transcode";
+      data: TranscodeData;
+    }
+  | {
+      type: "package";
+      data: PackageData;
+    };
 
-export const transcodeOutcomeQueue = new Queue<TranscodeOutcomeData>(
-  "transcodeOutcome",
-  {
-    connection,
-  },
-);
+export const outcomeQueue = new Queue<OutcomeData>("outcome", {
+  connection,
+});

@@ -1,11 +1,12 @@
 import logo from "../assets/logo-mascotte.png";
 import { SidebarTitle } from "./SidebarTitle";
 import { TransitionNavLink } from "./TransitionNavLink";
-import Rows3 from "lucide-react/icons/rows-3";
+import Workflow from "lucide-react/icons/workflow";
 import Sailboat from "lucide-react/icons/sailboat";
 import Play from "lucide-react/icons/play";
 import Box from "lucide-react/icons/box";
 import Settings2 from "lucide-react/icons/settings-2";
+import Layers from "lucide-react/icons/layers";
 import { SidebarNavLink } from "./SidebarNavLink";
 import { AccountBadge } from "./AccountBadge";
 
@@ -26,8 +27,12 @@ export function Sidebar() {
       <div className="flex-1 flex-col flex">
         <SidebarTitle className="my-4">Manage</SidebarTitle>
         <nav className="grid items-start px-4 text-sm font-medium">
+          <SidebarNavLink to="/assets">
+            <Layers className="h-4 w-4" />
+            Assets
+          </SidebarNavLink>
           <SidebarNavLink to="/jobs">
-            <Rows3 className="h-4 w-4" />
+            <Workflow className="h-4 w-4" />
             Jobs
           </SidebarNavLink>
           <SidebarNavLink to="/storage">
