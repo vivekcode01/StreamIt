@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useProgressTransition } from "@/hooks/useProgressTransition";
+import { useLoadTransition } from "@/hooks/useLoadTransition";
 import type { ReactNode } from "react";
 
 type TransitionNavLinkState = {
@@ -18,7 +18,7 @@ export function TransitionNavLink({
   children,
   className,
 }: TransitionNavLinkProps) {
-  const [isPending, startTransition] = useProgressTransition();
+  const [isPending, startTransition] = useLoadTransition();
   const navigate = useNavigate();
   const location = useLocation();
 

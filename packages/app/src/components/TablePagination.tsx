@@ -15,44 +15,48 @@ export function TablePagination({
   totalPages,
   onSelect,
 }: TablePaginationProps) {
+  const buttons = [
+    {
+      disabled: page === 1,
+      icon: <ChevronsLeft className="w-4 h-4" />,
+      page: 1,
+    },
+    {
+      disabled: page === 1,
+      icon: <ChevronLeft className="w-4 h-4" />,
+      page: page - 1,
+    },
+    {
+      disabled: page === totalPages,
+      icon: <ChevronRight className="w-4 h-4" />,
+      page: page + 1,
+    },
+    {
+      disabled: page === totalPages,
+      icon: <ChevronsRight className="w-4 h-4" />,
+      page: totalPages,
+    },
+  ];
+
   return (
     <div className="flex items-center">
       <div className="mr-6 text-medium text-sm">
         Page {page} of {totalPages}
       </div>
       <div className="flex gap-1">
-        <Button
-          className="w-8 h-8 p-0"
-          variant="outline"
-          disabled={page === 1}
-          onClick={() => onSelect(1)}
-        >
-          <ChevronsLeft className="w-4 h-4" />
-        </Button>
-        <Button
-          className="w-8 h-8 p-0"
-          variant="outline"
-          disabled={page === 1}
-          onClick={() => onSelect(page - 1)}
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </Button>
-        <Button
-          className="w-8 h-8 p-0"
-          variant="outline"
-          disabled={page === totalPages}
-          onClick={() => onSelect(page + 1)}
-        >
-          <ChevronRight className="w-4 h-4" />
-        </Button>
-        <Button
-          className="w-8 h-8 p-0"
-          variant="outline"
-          disabled={page === totalPages}
-          onClick={() => onSelect(totalPages)}
-        >
-          <ChevronsRight className="w-4 h-4" />
-        </Button>
+        {buttons.map((button, index) => {
+          return (
+            <Button
+              key={index}
+              className="w-8 h-8 p-0"
+              variant="outline"
+              disabled={button.disabled}
+              onClick={() => onSelect(button.page)}
+            >
+              {button.icon}
+            </Button>
+          );
+        })}
       </div>
     </div>
   );

@@ -15,25 +15,31 @@ import FileVideo from "lucide-react/icons/file-video";
 import GroupIcon from "lucide-react/icons/group";
 import { getTimeAgo } from "@/lib/helpers";
 import { TableHeadSorter } from "./TableHeadSorter";
+import { TableFilterValue } from "@/hooks/useTableFilter";
 
 type AssetsTableProps = {
   assets: Asset[];
   groups: Group[];
-  sort: string;
-  onSort(sort: string): void;
+  filter: TableFilterValue;
+  onSort(orderBy: string, direction: string): void;
 };
 
 export function AssetsTable({
   assets,
   groups,
-  sort,
+  filter,
   onSort,
 }: AssetsTableProps) {
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHeadSorter field="id" sort={sort} onChange={onSort}>
+          <TableHeadSorter
+            name="name"
+            orderBy={filter.orderBy}
+            direction={filter.direction}
+            onChange={onSort}
+          >
             Name
           </TableHeadSorter>
           <TableHead>
@@ -46,7 +52,12 @@ export function AssetsTable({
               <GroupIcon className="w-4 h-4" />
             </div>
           </TableHead>
-          <TableHeadSorter field="createdAt" sort={sort} onChange={onSort}>
+          <TableHeadSorter
+            name="createdAt"
+            orderBy={filter.orderBy}
+            direction={filter.direction}
+            onChange={onSort}
+          >
             Created
           </TableHeadSorter>
           <TableHead />
@@ -57,7 +68,7 @@ export function AssetsTable({
           const group = groups.find((group) => group.id === asset.groupId);
           return (
             <TableRow key={asset.id}>
-              <TableCell className="w-full">{asset.id}</TableCell>
+              <TableCell className="w-full">{asset.name}</TableCell>
               <TableCell>
                 <div className="flex justify-center">
                   {asset.playablesCount > 0 ? (

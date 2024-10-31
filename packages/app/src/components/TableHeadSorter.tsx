@@ -6,41 +6,46 @@ import ChevronsUpDown from "lucide-react/icons/chevrons-up-down";
 import type { ReactNode } from "react";
 
 type TableHeadSorterProps = {
-  field: string;
-  sort: string;
+  name: string;
   children: ReactNode;
-  onChange(sort: string): void;
+  orderBy: string;
+  direction: string;
+  onChange(orderBy: string, duration: string): void;
 };
 
 export function TableHeadSorter({
-  field,
-  sort,
+  name,
   children,
+  orderBy,
+  direction,
   onChange,
 }: TableHeadSorterProps) {
-  const [key, mode] = sort.split(":");
-
   return (
     <TableHead>
       <Button
         variant="ghost"
         className="-ml-2 px-2 flex gap-2 text-xs h-6"
         onClick={() => {
-          const sort = `${field}:${mode === "asc" ? "desc" : "asc"}`;
-          onChange(sort);
+          onChange(name, direction === "asc" ? "desc" : "asc");
         }}
       >
         {children}
-        {key === field ? (
-          mode === "desc" ? (
-            <ArrowUp className="w-3 h-3" />
-          ) : (
-            <ArrowDown className="w-3 h-3" />
-          )
+        {orderBy === name ? (
+          getArrow(direction)
         ) : (
           <ChevronsUpDown className="w-3 h-3" />
         )}
       </Button>
     </TableHead>
   );
+}
+
+function getArrow(direction: string) {
+  if (direction === "asc") {
+    return <ArrowUp className="w-3 h-3" />;
+  }
+  if (direction === "desc") {
+    return <ArrowDown className="w-3 h-3" />;
+  }
+  return null;
 }

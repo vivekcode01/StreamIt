@@ -1,9 +1,9 @@
 import { useTransition, useEffect } from "react";
 import NProgress from "nprogress";
 
-type UseTransition = ReturnType<typeof useTransition>;
+type UseLoadTransition = ReturnType<typeof useTransition>;
 
-export function useProgressTransition(): UseTransition {
+export function useLoadTransition(): UseLoadTransition {
   const [isPending, startTransiton] = useTransition();
 
   useEffect(() => {

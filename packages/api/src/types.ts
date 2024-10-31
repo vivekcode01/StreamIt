@@ -92,6 +92,7 @@ export const AssetSchema = t.Object(
   {
     id: t.String({ format: "uuid" }),
     groupId: t.Nullable(t.Number()),
+    name: t.String(),
     createdAt: t.Date(),
     playablesCount: t.Number(),
   },
