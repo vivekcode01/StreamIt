@@ -8,9 +8,12 @@ import {
 } from "bolt";
 import { assert } from "shared/assert";
 import { getLangCode } from "shared/lang";
-import { getDefaultAudioBitrate, getDefaultVideoBitrate } from "../defaults";
-import { uploadToS3 } from "../s3";
-import type { Meta } from "../meta";
+import {
+  getDefaultAudioBitrate,
+  getDefaultVideoBitrate,
+} from "../lib/default-values";
+import { uploadToS3 } from "../lib/s3";
+import type { Meta } from "../lib/meta";
 import type {
   FfmpegResult,
   FfprobeResult,

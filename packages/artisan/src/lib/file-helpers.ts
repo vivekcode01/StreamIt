@@ -1,5 +1,5 @@
 import { getS3SignedUrl } from "./s3";
-import type { PartialInput } from "./types";
+import type { PartialInput } from "../types";
 
 export async function getBinaryPath(name: string) {
   const direct = `${process.cwd()}/bin/${name}`;

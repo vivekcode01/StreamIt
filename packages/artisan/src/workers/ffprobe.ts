@@ -1,5 +1,5 @@
-import { ffprobe } from "../ffmpeg";
-import { mapInputToPublicUrl } from "../helpers";
+import { ffprobe } from "../lib/ffmpeg";
+import { mapInputToPublicUrl } from "../lib/file-helpers";
 import type { FfprobeData, FfprobeResult, WorkerCallback } from "bolt";
 
 export const ffprobeCallback: WorkerCallback<

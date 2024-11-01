@@ -1,5 +1,5 @@
 import fluent from "fluent-ffmpeg";
-import { getBinaryPath } from "./helpers";
+import { getBinaryPath } from "./file-helpers";
 
 const ffprobeBin = await getBinaryPath("ffprobe");
 

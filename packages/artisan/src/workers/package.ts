@@ -1,9 +1,9 @@
 import { addToQueue, outcomeQueue } from "bolt";
 import { execa } from "execa";
 import parseFilePath from "parse-filepath";
-import { getBinaryPath } from "../helpers";
-import { getMeta } from "../meta";
-import { syncFromS3, syncToS3 } from "../s3";
+import { getBinaryPath } from "../lib/file-helpers";
+import { getMeta } from "../lib/meta";
+import { syncFromS3, syncToS3 } from "../lib/s3";
 import type {
   PackageData,
   PackageResult,

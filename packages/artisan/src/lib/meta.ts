@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import type { Stream } from "./types";
+import type { Stream } from "../types";
 
 export interface Meta {
   version: number;

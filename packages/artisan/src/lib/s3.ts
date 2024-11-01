@@ -4,7 +4,7 @@ import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { lookup } from "mime-types";
 import { S3SyncClient } from "s3-sync-client";
-import { env } from "./env";
+import { env } from "../env";
 import type { PutObjectCommandInput } from "@aws-sdk/client-s3";
 import type { CommandInput } from "s3-sync-client";
 
