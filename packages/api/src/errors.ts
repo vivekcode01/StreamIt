@@ -1,11 +1,17 @@
 import Elysia from "elysia";
 import type { ValidationError } from "elysia";
 
+interface ValidationField {
+  path: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: any;
+  message: string;
+}
+
 interface ApiErrorCode {
   ERR_UNKNOWN: never;
   ERR_VALIDATION: {
-    path: string;
-    fail: string;
+    fields: ValidationField[];
   };
   ERR_UNAUTHORIZED: never;
   ERR_NOT_FOUND: never;
@@ -64,10 +70,12 @@ export const errors = () =>
       }
 
       if (code === "VALIDATION") {
-        return mapValidationError(error);
+        try {
+          return mapValidationError(error);
+        } catch {
+          // Mapping validation failed, continue.
+        }
       }
-
-      console.error(error);
 
       set.status = 500;
       return {
@@ -78,17 +86,17 @@ export const errors = () =>
 function mapValidationError(
   error: ValidationError,
 ): ApiError<"ERR_VALIDATION"> {
-  const first = error.validator?.Errors(error.value).First();
-  if (!first) {
-    return {
-      type: "ERR_VALIDATION",
-      path: "/",
-      fail: error.message,
-    };
+  const fields: ValidationField[] = [];
+  const iterator = error.validator.Errors(error.value);
+  for (const error of iterator) {
+    fields.push({
+      path: error.path,
+      value: error.value,
+      message: error.message,
+    });
   }
   return {
     type: "ERR_VALIDATION",
-    path: first.path,
-    fail: first.message,
+    fields,
   };
 }
