@@ -13,7 +13,7 @@ import {
   getDefaultVideoBitrate,
 } from "../lib/default-values";
 import { uploadToS3 } from "../lib/s3";
-import type { Meta } from "../lib/meta";
+import type { MetaStruct } from "../lib/file-helpers";
 import type {
   FfmpegResult,
   FfprobeResult,
@@ -188,7 +188,7 @@ async function handleStepMeta(job: Job<TranscodeData>, token?: string) {
     return acc;
   }, {});
 
-  const meta: Meta = {
+  const meta: MetaStruct = {
     version: 1,
     streams,
     segmentSize: job.data.segmentSize,

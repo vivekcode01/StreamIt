@@ -1,8 +1,7 @@
 import { addToQueue, outcomeQueue } from "bolt";
 import { execa } from "execa";
 import parseFilePath from "parse-filepath";
-import { getBinaryPath } from "../lib/file-helpers";
-import { getMeta } from "../lib/meta";
+import { getBinaryPath, getMetaStruct } from "../lib/file-helpers";
 import { syncFromS3, syncToS3 } from "../lib/s3";
 import type {
   PackageData,
@@ -73,7 +72,7 @@ async function handleStepInitial(job: Job<PackageData>, dir: WorkerDir) {
 
   job.log(`Synced folder in ${inDir}`);
 
-  const meta = await getMeta(inDir);
+  const meta = await getMetaStruct(inDir);
 
   job.log(`Got meta: "${JSON.stringify(meta)}"`);
 

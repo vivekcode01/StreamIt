@@ -1,5 +1,6 @@
+import * as fs from "node:fs/promises";
 import { getS3SignedUrl } from "./s3";
-import type { PartialInput } from "../types";
+import type { PartialInput, Stream } from "../types";
 
 export async function getBinaryPath(name: string) {
   const direct = `${process.cwd()}/bin/${name}`;
@@ -31,4 +32,20 @@ export async function mapInputToPublicUrl(input: PartialInput) {
   }
 
   throw new Error("Failed to map input to public URL, invalid scheme.");
+}
+
+export interface MetaStruct {
+  version: number;
+  streams: Record<string, Stream>;
+  segmentSize: number;
+}
+
+/**
+ * Will fetch meta file when meta.json is found in path.
+ * @param path S3 dir
+ * @returns
+ */
+export async function getMetaStruct(path: string): Promise<MetaStruct> {
+  const text = await fs.readFile(`${path}/meta.json`, "utf8");
+  return JSON.parse(text.toString());
 }
