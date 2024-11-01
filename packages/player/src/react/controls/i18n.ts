@@ -1,4 +1,4 @@
-type OverrideMap = Partial<{ [key in LangKey]: string }>;
+type OverrideMap = Partial<Record<LangKey, string>>;
 
 export type LangKey = keyof typeof defaultLangMap;
 
