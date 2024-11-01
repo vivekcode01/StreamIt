@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { URLSearchParamsInit } from "react-router-dom";
 
-export type TableFilterValue = {
+export interface TableFilterValue {
   page: number;
   perPage: number;
   orderBy: string;
   direction: string;
-};
+}
 
 export function useTableFilter(defaultValue: TableFilterValue) {
   const [searchParams, setSearchParams] = useSearchParams();

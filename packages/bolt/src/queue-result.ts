@@ -1,11 +1,11 @@
 import type { Stream } from "./types";
 
-export type FfmpegResult = {
+export interface FfmpegResult {
   name: string;
   stream: Stream;
-};
+}
 
-export type FfprobeResult = {
+export interface FfprobeResult {
   video: Record<
     string,
     {
@@ -20,12 +20,12 @@ export type FfprobeResult = {
       channels?: number;
     }
   >;
-};
+}
 
-export type TranscodeResult = {
+export interface TranscodeResult {
   assetId: string;
-};
+}
 
-export type PackageResult = {
+export interface PackageResult {
   assetId: string;
-};
+}

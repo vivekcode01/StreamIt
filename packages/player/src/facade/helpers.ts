@@ -1,10 +1,10 @@
 import { langMap } from "./lang-map";
+import type { Asset } from "./asset";
+import type { CustomInterstitialType, State } from "./types";
 import type {
   InterstitialAssetStartedData,
   InterstitialScheduleItem,
 } from "hls.js";
-import type { CustomInterstitialType, State } from "./types";
-import type { Asset } from "./asset";
 
 export function updateActive<T extends { active: boolean }>(
   items: T[],

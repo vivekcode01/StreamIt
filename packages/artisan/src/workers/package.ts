@@ -1,14 +1,14 @@
+import { addToQueue, outcomeQueue } from "bolt";
 import { execa } from "execa";
 import parseFilePath from "parse-filepath";
-import { addToQueue, outcomeQueue } from "bolt";
-import { syncFromS3, syncToS3 } from "../s3";
-import { getMeta } from "../meta";
 import { getBinaryPath } from "../helpers";
+import { getMeta } from "../meta";
+import { syncFromS3, syncToS3 } from "../s3";
 import type {
   PackageData,
   PackageResult,
-  WorkerCallback,
   Stream,
+  WorkerCallback,
   WorkerDir,
 } from "bolt";
 import type { Job } from "bullmq";

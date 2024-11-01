@@ -1,6 +1,6 @@
 import "bun";
-import { test, expect, describe, beforeEach, setSystemTime } from "bun:test";
 import * as fs from "node:fs";
+import { beforeEach, describe, expect, setSystemTime, test } from "bun:test";
 import {
   parseMasterPlaylist,
   parseMediaPlaylist,
@@ -39,8 +39,9 @@ describe("playlists", async () => {
 
   test.each(await readPlaylistFixtures("mjs"))(
     "stringify playlist(%s)",
-    (name, text) => {
-      const playlist = new Function(text)();
+    async (name) => {
+      const mod = await import(`${__dirname}/fixtures/playlists/${name}`);
+      const playlist = mod.default;
       if (name.startsWith("master-")) {
         expect(stringifyMasterPlaylist(playlist)).toMatchSnapshot();
       }

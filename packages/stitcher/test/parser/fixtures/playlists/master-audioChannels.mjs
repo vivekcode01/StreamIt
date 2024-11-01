@@ -1,4 +1,4 @@
-return {
+export default {
   independentSegments: false,
   variants: [
     {

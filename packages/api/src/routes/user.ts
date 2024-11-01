@@ -1,12 +1,12 @@
 import { Elysia, t } from "elysia";
 import { authUser } from "./token";
+import { DeliberateError } from "../errors";
 import {
   getUser,
   getUserSettings,
   updateUserSettings,
 } from "../repositories/users";
 import { UserSchema, UserSettingsSchema } from "../types";
-import { DeliberateError } from "../errors";
 
 export const user = new Elysia()
   .use(authUser)

@@ -1,11 +1,11 @@
-import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@matvp91/elysia-swagger";
+import { Elysia } from "elysia";
 import { session } from "./routes/session";
 
-type CreateAppOptions = {
+interface CreateAppOptions {
   aot: boolean;
-};
+}
 
 export const createApp = ({ aot }: CreateAppOptions) =>
   new Elysia({

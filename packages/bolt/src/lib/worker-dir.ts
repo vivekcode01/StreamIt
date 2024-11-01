@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
-import * as path from "node:path";
 import * as os from "node:os";
+import * as path from "node:path";
 
 /**
  * Manager for temporary directories on file system.

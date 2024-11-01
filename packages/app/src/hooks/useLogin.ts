@@ -1,10 +1,10 @@
+import { useCallback, useState } from "react";
 import { useAuth } from "@/AuthContext";
-import { useState, useCallback } from "react";
 
-type Credentials = {
+interface Credentials {
   username: string;
   password: string;
-};
+}
 
 export function useLogin() {
   const { api, setToken } = useAuth();

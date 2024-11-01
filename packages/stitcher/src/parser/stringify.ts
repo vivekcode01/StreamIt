@@ -1,13 +1,13 @@
 import { assert } from "shared/assert";
 import { Lines } from "./lines";
 import type {
-  Rendition,
-  Variant,
-  MasterPlaylist,
-  Segment,
-  MediaPlaylist,
-  MediaInitializationSection,
   DateRange,
+  MasterPlaylist,
+  MediaInitializationSection,
+  MediaPlaylist,
+  Rendition,
+  Segment,
+  Variant,
 } from "./types";
 
 function buildRendition(lines: Lines, rendition: Rendition) {

@@ -1,5 +1,4 @@
 import * as React from "react";
-
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
 
 const TOAST_LIMIT = 1;
@@ -19,12 +18,12 @@ function genId() {
   return count.toString();
 }
 
-type ActionType = {
+interface ActionType {
   readonly ADD_TOAST: "ADD_TOAST";
   readonly UPDATE_TOAST: "UPDATE_TOAST";
   readonly DISMISS_TOAST: "DISMISS_TOAST";
   readonly REMOVE_TOAST: "REMOVE_TOAST";
-};
+}
 
 type Action =
   | {
@@ -121,7 +120,7 @@ export const reducer = (state: State, action: Action): State => {
   }
 };
 
-const listeners: Array<(state: State) => void> = [];
+const listeners: ((state: State) => void)[] = [];
 
 let memoryState: State = { toasts: [] };
 

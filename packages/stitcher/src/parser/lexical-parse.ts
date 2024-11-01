@@ -2,10 +2,10 @@ import { DateTime } from "luxon";
 import { assert } from "shared/assert";
 import { mapAttributes, partOf } from "./helpers";
 import type {
-  Resolution,
+  DateRange,
   MediaInitializationSection,
   PlaylistType,
-  DateRange,
+  Resolution,
 } from "./types";
 
 // Based on the latest spec:
@@ -42,28 +42,28 @@ export type Tag =
   | ["EXT-X-MAP", MediaInitializationSection]
   | ["EXT-X-DATERANGE", DateRange];
 
-export type ExtInf = {
+export interface ExtInf {
   duration: number;
-};
+}
 
-export type StreamInf = {
+export interface StreamInf {
   bandwidth: number;
   codecs?: string;
   resolution?: Resolution;
   audio?: string;
   subtitles?: string;
-};
+}
 
 export type MediaType = "AUDIO" | "SUBTITLES";
 
-export type Media = {
+export interface Media {
   type: MediaType;
   groupId: string;
   name: string;
   language?: string;
   uri?: string;
   channels?: string;
-};
+}
 
 function parseLine(line: string): Tag | null {
   const [name, param] = splitLine(line);

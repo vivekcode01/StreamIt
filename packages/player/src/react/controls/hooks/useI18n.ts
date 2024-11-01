@@ -1,6 +1,6 @@
 import { useCallback, useContext } from "react";
-import { langMap, defaultLangMap } from "../i18n";
 import { ParamsContext } from "../context/ParamsProvider";
+import { defaultLangMap, langMap } from "../i18n";
 import type { LangKey } from "../i18n";
 
 export function useI18n() {

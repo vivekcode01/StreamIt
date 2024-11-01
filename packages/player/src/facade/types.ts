@@ -13,31 +13,31 @@ export type CustomInterstitialType = "ad" | "bumper";
 /**
  * Defines an in-band subtitle track.
  */
-export type SubtitleTrack = {
+export interface SubtitleTrack {
   id: number;
   active: boolean;
   label: string;
   track: MediaPlaylist;
-};
+}
 
 /**
  * Defines an audio track.
  */
-export type AudioTrack = {
+export interface AudioTrack {
   id: number;
   active: boolean;
   label: string;
   track: MediaPlaylist;
-};
+}
 
 /**
  * Defines a quality level.
  */
-export type Quality = {
+export interface Quality {
   height: number;
   active: boolean;
   levels: Level[];
-};
+}
 
 /**
  * State of playhead across all assets.
@@ -47,18 +47,18 @@ export type Playhead = "idle" | "play" | "playing" | "pause" | "ended";
 /**
  * Defines an interstitial, which is not the primary content.
  */
-export type Interstitial = {
+export interface Interstitial {
   time: number;
   duration: number;
   player: HlsAssetPlayer;
   asset: InterstitialAssetItem;
   type?: CustomInterstitialType;
-};
+}
 
 /**
  * State variables.
  */
-export type State = {
+export interface State {
   playhead: Playhead;
   started: boolean;
   time: number;
@@ -68,7 +68,7 @@ export type State = {
   qualities: Quality[];
   audioTracks: AudioTrack[];
   subtitleTracks: SubtitleTrack[];
-};
+}
 
 /**
  * List of events.
@@ -86,44 +86,44 @@ export enum Events {
   INTERSTITIAL_CHANGE = "interstitialChange",
 }
 
-export type PlayheadChangeEventData = {
+export interface PlayheadChangeEventData {
   playhead: Playhead;
   started: boolean;
-};
+}
 
-export type TimeChangeEventData = {
+export interface TimeChangeEventData {
   time: number;
   duration: number;
-};
+}
 
-export type VolumeChangeEventData = {
+export interface VolumeChangeEventData {
   volume: number;
-};
+}
 
-export type QualitiesChangeEventData = {
+export interface QualitiesChangeEventData {
   qualities: Quality[];
-};
+}
 
-export type AudioTracksChangeEventData = {
+export interface AudioTracksChangeEventData {
   audioTracks: AudioTrack[];
-};
+}
 
-export type SubtitleTracksChangeEventData = {
+export interface SubtitleTracksChangeEventData {
   subtitleTracks: SubtitleTrack[];
-};
+}
 
-export type AutoQualityChangeEventData = {
+export interface AutoQualityChangeEventData {
   autoQuality: boolean;
-};
+}
 
-export type InterstitialChangeEventData = {
+export interface InterstitialChangeEventData {
   interstitial: Interstitial | null;
-};
+}
 
 /**
  * List of events with their respective event handlers.
  */
-export type HlsFacadeListeners = {
+export interface HlsFacadeListeners {
   "*": () => void;
   [Events.RESET]: () => void;
   [Events.READY]: () => void;
@@ -137,4 +137,4 @@ export type HlsFacadeListeners = {
   ) => void;
   [Events.AUTO_QUALITY_CHANGE]: (data: AutoQualityChangeEventData) => void;
   [Events.INTERSTITIAL_CHANGE]: (data: InterstitialChangeEventData) => void;
-};
+}

@@ -1,50 +1,50 @@
 import type { DateTime } from "luxon";
 
-export type Resolution = {
+export interface Resolution {
   width: number;
   height: number;
-};
+}
 
 export type RenditionType = "AUDIO" | "SUBTITLES";
 
-export type Rendition = {
+export interface Rendition {
   type: RenditionType;
   groupId: string;
   name: string;
   language?: string;
   uri?: string;
   channels?: string;
-};
+}
 
-export type Variant = {
+export interface Variant {
   uri: string;
   bandwidth: number;
   codecs?: string;
   resolution?: Resolution;
   audio: Rendition[];
   subtitles: Rendition[];
-};
+}
 
-export type MasterPlaylist = {
+export interface MasterPlaylist {
   independentSegments?: boolean;
   variants: Variant[];
-};
+}
 
-export type MediaInitializationSection = {
+export interface MediaInitializationSection {
   uri: string;
-};
+}
 
-export type Segment = {
+export interface Segment {
   uri: string;
   duration: number;
   discontinuity?: boolean;
   map?: MediaInitializationSection;
   programDateTime?: DateTime;
-};
+}
 
 export type PlaylistType = "EVENT" | "VOD";
 
-export type MediaPlaylist = {
+export interface MediaPlaylist {
   independentSegments?: boolean;
   targetDuration: number;
   endlist: boolean;
@@ -53,11 +53,11 @@ export type MediaPlaylist = {
   mediaSequenceBase?: number;
   discontinuitySequenceBase?: number;
   dateRanges: DateRange[];
-};
+}
 
-export type DateRange = {
+export interface DateRange {
   id: string;
   classId: string;
   startDate: DateTime;
   clientAttributes?: Record<string, string | number>;
-};
+}

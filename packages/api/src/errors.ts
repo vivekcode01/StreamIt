@@ -1,6 +1,6 @@
 import Elysia, { ValidationError } from "elysia";
 
-type ApiErrorCode = {
+interface ApiErrorCode {
   ERR_UNKNOWN: never;
   ERR_VALIDATION: {
     path: string;
@@ -12,7 +12,7 @@ type ApiErrorCode = {
   ERR_USER_INVALID_TOKEN_TYPE: {
     only: "service" | "user";
   };
-};
+}
 
 const statusMap: Record<keyof ApiErrorCode, number> = {
   ERR_UNKNOWN: 500,

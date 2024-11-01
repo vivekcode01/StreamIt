@@ -1,4 +1,4 @@
-import { Worker, WaitingChildrenError } from "bullmq";
+import { WaitingChildrenError, Worker } from "bullmq";
 import { assert } from "shared/assert";
 import { connection } from "./env";
 import { WorkerDir } from "./lib/worker-dir";

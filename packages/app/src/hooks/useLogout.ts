@@ -1,5 +1,5 @@
-import { useAuth } from "@/AuthContext";
 import { useCallback } from "react";
+import { useAuth } from "@/AuthContext";
 
 export function useLogout() {
   const { setToken } = useAuth();

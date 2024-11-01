@@ -1,26 +1,26 @@
-import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@matvp91/elysia-swagger";
-import { env } from "./env";
-import { token } from "./routes/token";
-import { user } from "./routes/user";
-import { jobs } from "./routes/jobs";
-import { storage } from "./routes/storage";
-import { assets } from "./routes/assets";
-import { errors } from "./errors";
+import { Elysia, t } from "elysia";
 import {
+  AudioCodecSchema,
   LangCodeSchema,
   VideoCodecSchema,
-  AudioCodecSchema,
 } from "shared/typebox";
+import { env } from "./env";
+import { errors } from "./errors";
+import { assets } from "./routes/assets";
+import { jobs } from "./routes/jobs";
+import { storage } from "./routes/storage";
+import { token } from "./routes/token";
+import { user } from "./routes/user";
 import {
-  UserSchema,
-  UserSettingsSchema,
-  JobSchema,
-  StorageFolderSchema,
-  StorageFileSchema,
   AssetSchema,
   GroupSchema,
+  JobSchema,
+  StorageFileSchema,
+  StorageFolderSchema,
+  UserSchema,
+  UserSettingsSchema,
 } from "./types";
 
 // Import workers and they'll start running immediately.

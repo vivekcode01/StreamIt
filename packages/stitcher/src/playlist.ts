@@ -1,8 +1,8 @@
 import { DateTime } from "luxon";
+import { filterMaster } from "./filters";
+import { getAssets, getStaticDateRanges, getStaticPDT } from "./interstitials";
 import { stringifyMasterPlaylist, stringifyMediaPlaylist } from "./parser";
 import { Presentation } from "./presentation";
-import { filterMaster } from "./filters";
-import { getStaticDateRanges, getAssets, getStaticPDT } from "./interstitials";
 import type { Session } from "./session";
 
 export async function formatMasterPlaylist(session: Session) {

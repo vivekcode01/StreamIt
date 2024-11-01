@@ -1,7 +1,7 @@
 import { StateObserver } from "./state-observer";
+import type { StateObserverEmit } from "./state-observer";
 import type Hls from "hls.js";
 import type { HlsAssetPlayer } from "hls.js";
-import type { StateObserverEmit } from "./state-observer";
 
 export class Asset {
   assetPlayer?: HlsAssetPlayer;

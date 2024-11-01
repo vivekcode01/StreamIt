@@ -1,8 +1,8 @@
-import { Elysia, t } from "elysia";
-import { jwt } from "@elysiajs/jwt";
 import bearer from "@elysiajs/bearer";
-import { DeliberateError } from "../errors";
+import { jwt } from "@elysiajs/jwt";
+import { Elysia, t } from "elysia";
 import { env } from "../env";
+import { DeliberateError } from "../errors";
 import { getUserIdByCredentials } from "../repositories/users";
 
 const jwtUser = jwt({

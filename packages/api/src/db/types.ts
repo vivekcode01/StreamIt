@@ -1,4 +1,4 @@
-import type { Generated, Insertable, Updateable, ColumnType } from "kysely";
+import type { ColumnType, Generated, Insertable, Updateable } from "kysely";
 
 export interface KyselyDatabase {
   users: UsersTable;

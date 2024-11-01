@@ -3,11 +3,12 @@ import type { AudioCodec, VideoCodec } from "shared/typebox";
 // We use the same default bitrates as shaka-streamer, thank you!
 // https://github.com/shaka-project/shaka-streamer/blob/20c2704deacb402e39640408ac6157e94a5f78ba/streamer/bitrate_configuration.py
 
-const DEFAULT_AUDIO_BITRATE: {
-  [channels: number]: {
+const DEFAULT_AUDIO_BITRATE: Record<
+  number,
+  {
     [codec in AudioCodec]: number;
-  };
-} = {
+  }
+> = {
   2: {
     aac: 128000,
     ac3: 192000,
@@ -24,11 +25,12 @@ export function getDefaultAudioBitrate(channels: number, codec: AudioCodec) {
   return DEFAULT_AUDIO_BITRATE[channels]?.[codec];
 }
 
-const DEFAULT_VIDEO_BITRATE: {
-  [height: number]: {
+const DEFAULT_VIDEO_BITRATE: Record<
+  number,
+  {
     [codec in VideoCodec]: number;
-  };
-} = {
+  }
+> = {
   144: {
     h264: 108000,
     hevc: 96000,

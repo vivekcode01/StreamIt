@@ -1,5 +1,5 @@
-import { useTransition, useEffect } from "react";
 import NProgress from "nprogress";
+import { useEffect, useTransition } from "react";
 
 type UseLoadTransition = ReturnType<typeof useTransition>;
 

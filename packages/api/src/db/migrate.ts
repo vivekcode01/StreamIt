@@ -1,6 +1,6 @@
-import { Migrator, FileMigrationProvider } from "kysely";
-import * as path from "node:path";
 import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import { FileMigrationProvider, Migrator } from "kysely";
 import { db } from ".";
 
 /*

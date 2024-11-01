@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useAppStore } from "../hooks/useAppStore";
 
 export function useAppVisible() {

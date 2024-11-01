@@ -1,9 +1,9 @@
 import "bun";
-import { test, expect, describe } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import {
+  getMatches,
   mergeInput,
   mergeStream,
-  getMatches,
 } from "../../src/workers/transcode";
 
 const ALL_FFPROBE_RESULT = {

@@ -4,13 +4,13 @@ import { kv } from "./kv";
 import { fetchVmap } from "./vmap";
 import type { VmapResponse } from "./vmap";
 
-export type Starter = {
+export interface Starter {
   uri: string;
   interstitials?: SessionInterstitial[];
   filter?: SessionFilter;
   vmap?: SessionVmap;
   expiry?: number;
-};
+}
 
 export type Session = {
   id: string;
@@ -20,19 +20,19 @@ export type Session = {
 
 export type SessionInterstitialType = "ad" | "bumper";
 
-export type SessionInterstitial = {
+export interface SessionInterstitial {
   timeOffset: number;
   uri: string;
   type?: SessionInterstitialType;
-};
+}
 
-export type SessionFilter = {
+export interface SessionFilter {
   resolution?: string;
-};
+}
 
-export type SessionVmap = {
+export interface SessionVmap {
   url: string;
-};
+}
 
 export async function createStarter(data: {
   uri: string;

@@ -1,18 +1,18 @@
 import Hls from "hls.js";
-import { EventManager } from "./event-manager";
-import { updateActive, preciseFloat, getLang } from "./helpers";
 import { assert } from "./assert";
+import { EventManager } from "./event-manager";
+import { getLang, preciseFloat, updateActive } from "./helpers";
 import { Timer } from "./timer";
 import { Events } from "./types";
-import type { Level, MediaPlaylist } from "hls.js";
 import type {
-  Playhead,
   AudioTrack,
   HlsFacadeListeners,
+  Playhead,
   Quality,
   State,
   SubtitleTrack,
 } from "./types";
+import type { Level, MediaPlaylist } from "hls.js";
 
 export type StateObserverEmit = <E extends keyof HlsFacadeListeners>(
   hls: Hls,

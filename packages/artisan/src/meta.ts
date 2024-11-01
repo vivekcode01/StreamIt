@@ -1,11 +1,11 @@
 import * as fs from "node:fs/promises";
 import type { Stream } from "./types";
 
-export type Meta = {
+export interface Meta {
   version: number;
   streams: Record<string, Stream>;
   segmentSize: number;
-};
+}
 
 /**
  * Will fetch meta file when meta.json is found in path.

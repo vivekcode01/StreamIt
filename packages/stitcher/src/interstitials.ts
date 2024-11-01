@@ -1,20 +1,20 @@
 import { DateTime } from "luxon";
 import { env } from "./env";
-import { getAdMediasFromVast, type AdMedia } from "./vast";
 import { Presentation } from "./presentation";
-import type { VmapResponse } from "./vmap";
+import { type AdMedia, getAdMediasFromVast } from "./vast";
 import type { DateRange } from "./parser";
 import type {
   Session,
-  SessionInterstitialType,
   SessionInterstitial,
+  SessionInterstitialType,
 } from "./session";
+import type { VmapResponse } from "./vmap";
 
-type InterstitialAsset = {
+interface InterstitialAsset {
   URI: string;
   DURATION: number;
   "SPRS-TYPE": Required<SessionInterstitial["type"]>;
-};
+}
 
 export function getStaticPDT(session: Session) {
   return session.initialTime;

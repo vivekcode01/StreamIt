@@ -1,5 +1,5 @@
-import prettyMs from "pretty-ms";
 import prettyBytes from "pretty-bytes";
+import prettyMs from "pretty-ms";
 import * as timeAgo from "timeago.js";
 
 export function getDurationStr(duration?: number | null) {

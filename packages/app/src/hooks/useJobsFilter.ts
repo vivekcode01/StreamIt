@@ -1,5 +1,5 @@
-import { JobsFilterData } from "@/components/types";
 import { useSearchParams } from "react-router-dom";
+import { JobsFilterData } from "@/components/types";
 
 export function useJobsFilter() {
   const [searchParams, setSearchParams] = useSearchParams({});

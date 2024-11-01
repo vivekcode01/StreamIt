@@ -1,8 +1,8 @@
 import { LRUCache } from "lru-cache";
-import { parseMasterPlaylist, parseMediaPlaylist } from "./parser";
 import { assert } from "shared/assert";
-import { getMasterUrl, joinPath, getDir } from "./url";
-import type { Segment, MasterPlaylist } from "./parser";
+import { parseMasterPlaylist, parseMediaPlaylist } from "./parser";
+import { getDir, getMasterUrl, joinPath } from "./url";
+import type { MasterPlaylist, Segment } from "./parser";
 
 export type MediaType = "video" | "audio" | "text";
 

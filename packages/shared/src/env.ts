@@ -1,7 +1,7 @@
 import { Type as t } from "@sinclair/typebox";
-import { Value, AssertError } from "@sinclair/typebox/value";
-import findConfig from "find-config";
+import { AssertError, Value } from "@sinclair/typebox/value";
 import { config } from "dotenv";
+import findConfig from "find-config";
 import { formatFails } from "./typebox";
 
 const configPath = findConfig("config.env");

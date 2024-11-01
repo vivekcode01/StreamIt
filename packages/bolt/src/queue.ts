@@ -1,48 +1,48 @@
 import { Queue } from "bullmq";
 import { connection } from "./env";
+import type { Input, PartialInput, PartialStream, Stream } from "./types";
 import type { LangCode } from "shared/typebox";
-import type { Stream, Input, PartialInput, PartialStream } from "./types";
 
-export type TranscodeData = {
+export interface TranscodeData {
   assetId: string;
   inputs: PartialInput[];
   streams: PartialStream[];
   segmentSize: number;
   packageAfter?: boolean;
   group?: string;
-};
+}
 
 export const transcodeQueue = new Queue<TranscodeData>("transcode", {
   connection,
 });
 
-export type PackageData = {
+export interface PackageData {
   assetId: string;
   language?: LangCode;
   segmentSize?: number;
   name: string;
-};
+}
 
 export const packageQueue = new Queue<PackageData>("package", {
   connection,
 });
 
-export type FfmpegData = {
+export interface FfmpegData {
   input: Input;
   stream: Stream;
   segmentSize: number;
   assetId: string;
   parentSortIndex: number;
-};
+}
 
 export const ffmpegQueue = new Queue<FfmpegData>("ffmpeg", {
   connection,
 });
 
-export type FfprobeData = {
+export interface FfprobeData {
   inputs: PartialInput[];
   parentSortIndex: number;
-};
+}
 
 export const ffprobeQueue = new Queue<FfprobeData>("ffprobe", {
   connection,

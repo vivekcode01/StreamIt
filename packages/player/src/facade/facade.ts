@@ -1,28 +1,28 @@
-import Hls from "hls.js";
 import EventEmitter from "eventemitter3";
-import { getAssetListItem, getTypes, pipeState } from "./helpers";
-import { Asset } from "./asset";
-import { Events } from "./types";
+import Hls from "hls.js";
 import { assert } from "./assert";
+import { Asset } from "./asset";
+import { getAssetListItem, getTypes, pipeState } from "./helpers";
 import { MediaManager } from "./media-manager";
-import type {
-  InterstitialAssetEndedData,
-  InterstitialAssetPlayerCreatedData,
-  InterstitialAssetStartedData,
-  HlsAssetPlayer,
-  InterstitialsUpdatedData,
-} from "hls.js";
+import { Events } from "./types";
 import type { StateObserverEmit } from "./state-observer";
 import type {
   HlsFacadeListeners,
   Interstitial,
-  PlayheadChangeEventData,
   InterstitialChangeEventData,
+  PlayheadChangeEventData,
 } from "./types";
+import type {
+  HlsAssetPlayer,
+  InterstitialAssetEndedData,
+  InterstitialAssetPlayerCreatedData,
+  InterstitialAssetStartedData,
+  InterstitialsUpdatedData,
+} from "hls.js";
 
-export type HlsFacadeOptions = {
+export interface HlsFacadeOptions {
   multipleVideoElements: boolean;
-};
+}
 
 /**
  * A facade wrapper that simplifies working with HLS.js API.
@@ -446,7 +446,7 @@ export class HlsFacade {
 /**
  * Overarching state, across all assets.
  */
-type DominantState = {
+interface DominantState {
   started?: boolean;
   playRequested?: boolean;
-};
+}

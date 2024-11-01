@@ -1,6 +1,6 @@
-import { Type as t, TypeRegistry, Kind } from "@sinclair/typebox";
+import { Kind, Type as t, TypeRegistry } from "@sinclair/typebox";
 import { by639_2T } from "iso-language-codes";
-import type { Static, SchemaOptions } from "@sinclair/typebox";
+import type { SchemaOptions, Static } from "@sinclair/typebox";
 import type { AssertError } from "@sinclair/typebox/value";
 
 TypeRegistry.Set("StringEnum", (schema: { enum: string[] }, value: unknown) => {

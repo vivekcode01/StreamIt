@@ -7,13 +7,13 @@ export type * from "./src/types";
 
 export type ApiClient = ReturnType<typeof createApiClient>;
 
-type CreateApiClientOptions = {
+interface CreateApiClientOptions {
   token?: string | null;
   service?: {
     name: string;
     secret: string;
   };
-};
+}
 
 export function createApiClient(
   domain: string,

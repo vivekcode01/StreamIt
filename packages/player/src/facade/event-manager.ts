@@ -1,9 +1,9 @@
-type Target = {
+interface Target {
   addEventListener?: Handler;
   removeEventListener?: Handler;
   on?: Handler;
   off?: Handler;
-};
+}
 
 type AddCallback<T extends Target> = T extends { addEventListener: Handler }
   ? T["addEventListener"]

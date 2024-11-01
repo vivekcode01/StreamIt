@@ -3,10 +3,10 @@ import { useAppStore } from "../hooks/useAppStore";
 
 export type SettingsMode = "text-audio" | "quality";
 
-export type Settings = {
+export interface Settings {
   entry: "hover" | "explicit";
   mode: SettingsMode;
-};
+}
 
 export type SetAppSettings = ReturnType<typeof useAppSettings>;
 

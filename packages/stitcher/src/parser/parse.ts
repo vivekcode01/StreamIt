@@ -1,16 +1,16 @@
 import { assert } from "shared/assert";
 import { lexicalParse } from "./lexical-parse";
+import type { Media, StreamInf, Tag } from "./lexical-parse";
 import type {
-  MediaPlaylist,
+  DateRange,
   MasterPlaylist,
-  PlaylistType,
   MediaInitializationSection,
+  MediaPlaylist,
+  PlaylistType,
+  Rendition,
   Segment,
   Variant,
-  Rendition,
-  DateRange,
 } from "./types";
-import type { Tag, StreamInf, Media } from "./lexical-parse";
 import type { DateTime } from "luxon";
 
 function formatMediaPlaylist(tags: Tag[]): MediaPlaylist {

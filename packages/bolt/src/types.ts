@@ -1,4 +1,4 @@
-import type { LangCode, VideoCodec, AudioCodec } from "shared/typebox";
+import type { AudioCodec, LangCode, VideoCodec } from "shared/typebox";
 
 export const DEFAULT_SEGMENT_SIZE = 2.24;
 

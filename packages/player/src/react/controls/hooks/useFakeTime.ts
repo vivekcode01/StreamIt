@@ -1,5 +1,5 @@
-import { useAppStore } from "../hooks/useAppStore";
 import { useSelector } from "../..";
+import { useAppStore } from "../hooks/useAppStore";
 
 export function useFakeTime() {
   const time = useSelector((facade) => facade.time);

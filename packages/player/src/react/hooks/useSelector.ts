@@ -1,4 +1,4 @@
-import { useContext, useCallback } from "react";
+import { useCallback, useContext } from "react";
 import { useSyncExternalStoreWithSelector } from "use-sync-external-store/shim/with-selector";
 import { ControllerContext } from "../ControllerProvider";
 import type { HlsFacade } from "..";
@@ -60,10 +60,10 @@ function isEqual<T>(objA: T, objB: T) {
   if (keysA.length !== Object.keys(objB).length) {
     return false;
   }
-  for (let i = 0; i < keysA.length; i++) {
+  for (const key of keysA) {
     if (
-      !Object.prototype.hasOwnProperty.call(objB, keysA[i] as string) ||
-      !Object.is(objA[keysA[i] as keyof T], objB[keysA[i] as keyof T])
+      !Object.prototype.hasOwnProperty.call(objB, key as string) ||
+      !Object.is(objA[key as keyof T], objB[key as keyof T])
     ) {
       return false;
     }
