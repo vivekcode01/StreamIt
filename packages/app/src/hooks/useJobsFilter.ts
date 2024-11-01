@@ -1,5 +1,5 @@
 import { useSearchParams } from "react-router-dom";
-import { JobsFilterData } from "@/components/types";
+import type { JobsFilterData } from "@/components/types";
 
 export function useJobsFilter() {
   const [searchParams, setSearchParams] = useSearchParams({});
@@ -16,12 +16,12 @@ export function useJobsFilter() {
     );
   };
 
-  return [
-    {
-      tag: searchParams.get("tag") ?? undefined,
-      name: searchParams.get("name") ?? undefined,
-      state: searchParams.get("state") ?? undefined,
-    } as JobsFilterData,
-    updateParams,
-  ] as const;
+  const data: JobsFilterData = {
+    tag: searchParams.get("tag") ?? undefined,
+    name: searchParams.get("name") ?? undefined,
+    state: (searchParams.get("state") ?? undefined) as
+      | JobsFilterData["state"]
+      | undefined,
+  };
+  return [data, updateParams] as const;
 }

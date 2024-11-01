@@ -1,4 +1,5 @@
-import Elysia, { ValidationError } from "elysia";
+import Elysia from "elysia";
+import type { ValidationError } from "elysia";
 
 interface ApiErrorCode {
   ERR_UNKNOWN: never;

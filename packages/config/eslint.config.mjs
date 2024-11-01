@@ -55,6 +55,23 @@ const customTypescriptConfig = {
         ignoreDeclarationSort: true,
       },
     ],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        args: "none",
+      },
+    ],
+    "@typescript-eslint/prefer-optional-chain": 2,
+    "@typescript-eslint/consistent-type-assertions": [
+      2,
+      {
+        assertionStyle: "as",
+        objectLiteralTypeAssertions: "never",
+      },
+    ],
+    "@typescript-eslint/consistent-type-imports": "error",
+    "@typescript-eslint/no-import-type-side-effects": "error",
+    "@typescript-eslint/no-restricted-imports": "error",
   },
 };
 

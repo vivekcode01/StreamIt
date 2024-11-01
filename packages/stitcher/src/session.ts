@@ -97,9 +97,11 @@ export async function getSession(id: string) {
 
   const fields = JSON.parse(data);
 
-  return {
+  const session: Session = {
     ...fields,
     id,
     initialTime: DateTime.fromISO(fields.initialTime),
-  } as Session;
+  };
+
+  return session;
 }

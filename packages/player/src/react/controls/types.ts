@@ -1,4 +1,4 @@
-import { langMap } from "./i18n";
+import type { langMap } from "./i18n";
 
 export interface Metadata {
   title?: string;

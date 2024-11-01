@@ -49,12 +49,12 @@ function mapOrderBy(orderBy: string) {
   if (orderBy === "name") {
     return "id";
   }
-  if (orderBy === "createdAt") {
-    return "createdAt";
-  }
   return "createdAt";
 }
 
 function mapDirection(direction: string) {
-  return direction === "asc" || direction === "desc" ? direction : "desc";
+  if (direction === "asc" || direction === "desc") {
+    return direction;
+  }
+  return "desc";
 }
