@@ -1,8 +1,8 @@
 import { DOMParser } from "@xmldom/xmldom";
 import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
-import { api } from "./api";
-import { getMasterUrl, isUrlAvailable } from "./url";
+import { api } from "./lib/api-client";
+import { getMasterUrl, isUrlAvailable } from "./lib/url";
 import type { VmapAdBreak } from "./vmap";
 import type { VastAd, VastCreativeLinear, VastResponse } from "vast-client";
 

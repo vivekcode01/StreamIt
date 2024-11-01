@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { env } from "../env";
 import { validateFilter } from "../filters";
+import { getMasterUrl } from "../lib/url";
 import {
   formatAssetList,
   formatMasterPlaylist,
@@ -12,7 +13,6 @@ import {
   getStarter,
   swapStarterForSession,
 } from "../session";
-import { getMasterUrl } from "../url";
 
 export const session = new Elysia()
   .post(
