@@ -1,3 +1,6 @@
+import House from "lucide-react/icons/house";
+import { Fragment } from "react";
+import { TransitionNavLink } from "./TransitionNavLink";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -6,13 +9,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import House from "lucide-react/icons/house";
-import { Fragment } from "react";
-import { TransitionNavLink } from "./TransitionNavLink";
 
-type StoragePathBreadcrumbsProps = {
+interface StoragePathBreadcrumbsProps {
   path: string;
-};
+}
 
 export function StoragePathBreadcrumbs({ path }: StoragePathBreadcrumbsProps) {
   const { paths, target } = parsePathInPaths(path);

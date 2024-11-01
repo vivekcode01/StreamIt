@@ -8,9 +8,9 @@ delete style["hljs"].background;
 
 SyntaxHighlighter.registerLanguage("json", json);
 
-type SyntaxHighlightProps = {
+interface SyntaxHighlightProps {
   json: string;
-};
+}
 
 export function JsonHighlight({ json }: SyntaxHighlightProps) {
   const data = useMemo(() => {

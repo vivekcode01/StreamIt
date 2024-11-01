@@ -1,17 +1,17 @@
-import Hls from "hls.js";
 import {
+  ControllerProvider,
   Controls,
   useController,
-  ControllerProvider,
 } from "@superstreamer/player/react";
+import Hls from "hls.js";
 import { useEffect, useState } from "react";
 import type { Lang, Metadata } from "@superstreamer/player/react";
 
-type PlayerProps = {
+interface PlayerProps {
   url?: string | null;
   metadata: Metadata;
   lang: Lang;
-};
+}
 
 export function Player({ url, lang, metadata }: PlayerProps) {
   const [hls] = useState(() => new Hls());

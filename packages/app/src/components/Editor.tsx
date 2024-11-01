@@ -1,13 +1,13 @@
 import MonacoEditor from "@monaco-editor/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { BeforeMount, OnChange, OnMount } from "@monaco-editor/react";
 
-type EditorProps = {
+interface EditorProps {
   schema: object;
   title: React.ReactNode;
   onSave(value: string): void;
   localStorageKey?: string;
-};
+}
 
 export function Editor({
   schema,
@@ -23,8 +23,6 @@ export function Editor({
       ? JSON.parse(localStorageValue)
       : ["{", '  "uri": ""', "}"].join("\n");
   });
-
-  useEffect(() => {}, [localStorageKey]);
 
   const beforeMount: BeforeMount = (monaco) => {
     monaco.languages.json.jsonDefaults.setDiagnosticsOptions({

@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { JobLog } from "./JobLog";
-import { useAutoRefreshFunction } from "@/components/auto-refresh/AutoRefreshContext";
 import { useAuth } from "@/AuthContext";
+import { useAutoRefreshFunction } from "@/components/auto-refresh/AutoRefreshContext";
 
-type JobLogsProps = {
+interface JobLogsProps {
   id: string;
-};
+}
 
 export function JobLogs({ id }: JobLogsProps) {
   const { api } = useAuth();

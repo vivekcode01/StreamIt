@@ -1,13 +1,13 @@
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { JobStatsTile } from "./JobStatsTile";
-import type { Job } from "@superstreamer/api/client";
 import type { JobsFilterData } from "./types";
+import type { Job } from "@superstreamer/api/client";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
-type JobsStatsProps = {
+interface JobsStatsProps {
   jobs: Job[];
   filter: JobsFilterData;
   onChange(value: Partial<JobsFilterData>): void;
-};
+}
 
 export function JobsStats({ jobs, filter, onChange }: JobsStatsProps) {
   let completed = 0;

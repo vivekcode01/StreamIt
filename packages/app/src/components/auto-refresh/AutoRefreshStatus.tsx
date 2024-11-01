@@ -1,5 +1,5 @@
-import { Loader } from "@/components/Loader";
 import { useAutoRefresh } from "./AutoRefreshContext";
+import { Loader } from "@/components/Loader";
 
 export function AutoRefreshStatus() {
   const { countdown } = useAutoRefresh();

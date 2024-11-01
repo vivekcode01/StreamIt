@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { Alert } from "@/components/ui/alert";
+import { useAuth } from "@/AuthContext";
 import { Editor } from "@/components/Editor";
 import { Loader } from "@/components/Loader";
 import { PlayerView } from "@/components/PlayerView";
+import { Alert } from "@/components/ui/alert";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { useAuth } from "@/AuthContext";
 
 export function PlayerPage() {
   const [schema, setSchema] = useState<object>();

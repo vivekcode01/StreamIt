@@ -1,17 +1,17 @@
-import { TableCell, TableRow } from "@/components/ui/table";
+import SquareArrowOutUpRight from "lucide-react/icons/square-arrow-out-up-right";
 import { useState } from "react";
 import { Loader } from "./Loader";
-import { Button } from "@/components/ui/button";
-import SquareArrowOutUpRight from "lucide-react/icons/square-arrow-out-up-right";
-import { getSizeStr } from "@/lib/helpers";
+import type { StorageFile, StorageFolderItem } from "@superstreamer/api/client";
 import { useAuth } from "@/AuthContext";
-import type { StorageFolderItem, StorageFile } from "@superstreamer/api/client";
+import { Button } from "@/components/ui/button";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { getSizeStr } from "@/lib/helpers";
 
-type StorageRowFileProps = {
+interface StorageRowFileProps {
   name: string;
   item: Extract<StorageFolderItem, { type: "file" }>;
   setFile(file: StorageFile): void;
-};
+}
 
 export function StorageRowFile({ name, item, setFile }: StorageRowFileProps) {
   const [loading, setLoading] = useState(false);

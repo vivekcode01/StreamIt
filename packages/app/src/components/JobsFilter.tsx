@@ -1,13 +1,13 @@
 import { SelectObject } from "./SelectObject";
-import type { Job } from "@superstreamer/api/client";
-import type { JobsFilterData } from "./types";
 import type { SelectObjectItem } from "./SelectObject";
+import type { JobsFilterData } from "./types";
+import type { Job } from "@superstreamer/api/client";
 
-type JobsFilterProps = {
+interface JobsFilterProps {
   allJobs: Job[];
   filter: JobsFilterData;
   onChange(value: Partial<JobsFilterData>): void;
-};
+}
 
 export function JobsFilter({ allJobs, filter, onChange }: JobsFilterProps) {
   const names = getNames(allJobs).map<SelectObjectItem>((name) => ({

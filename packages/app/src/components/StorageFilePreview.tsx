@@ -1,15 +1,15 @@
+import type { StorageFile } from "@superstreamer/api/client";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import type { StorageFile } from "@superstreamer/api/client";
 
-type StoragePreviewProps = {
+interface StoragePreviewProps {
   file: StorageFile | null;
   onClose(): void;
-};
+}
 
 export function StorageFilePreview({ file, onClose }: StoragePreviewProps) {
   return (

@@ -1,13 +1,13 @@
-import { TransitionNavLink } from "./TransitionNavLink";
-import { cn } from "@/lib/utils";
 import { JobState } from "./JobState";
-import { getDurationStr } from "@/lib/helpers";
+import { TransitionNavLink } from "./TransitionNavLink";
 import type { Job } from "@superstreamer/api/client";
+import { getDurationStr } from "@/lib/helpers";
+import { cn } from "@/lib/utils";
 
-type JobTreeItemProps = {
+interface JobTreeItemProps {
   job: Job;
   activeId: string;
-};
+}
 
 export function JobTreeItem({ job, activeId }: JobTreeItemProps) {
   const durationStr = getDurationStr(job.duration);

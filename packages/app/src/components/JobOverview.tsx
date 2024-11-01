@@ -1,7 +1,7 @@
 import { JobTree } from "@/components/JobTree";
 import { JobView } from "@/components/JobView";
-import { getShortId } from "@/lib/helpers";
-import { useJob } from "@/hooks/useJob";
+import { TransitionNavLink } from "@/components/TransitionNavLink";
+import { AutoRefreshStatus } from "@/components/auto-refresh/AutoRefreshStatus";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,12 +10,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { AutoRefreshStatus } from "@/components/auto-refresh/AutoRefreshStatus";
-import { TransitionNavLink } from "@/components/TransitionNavLink";
+import { useJob } from "@/hooks/useJob";
+import { getShortId } from "@/lib/helpers";
 
-type JobOverviewProps = {
+interface JobOverviewProps {
   id: string;
-};
+}
 
 export function JobOverview({ id }: JobOverviewProps) {
   const result = useJob(id);

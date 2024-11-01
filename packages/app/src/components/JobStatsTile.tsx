@@ -1,17 +1,17 @@
-import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
-type JobStatsTileProps = {
+interface JobStatsTileProps {
   value: number;
   className: string;
   onClick: () => void;
   active: boolean;
   tooltip: string;
-};
+}
 
 export function JobStatsTile({
   value,

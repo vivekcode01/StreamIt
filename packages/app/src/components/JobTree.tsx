@@ -1,12 +1,12 @@
-import { cn } from "@/lib/utils";
 import { JobTreeItem } from "./JobTreeItem";
 import type { Job } from "@superstreamer/api/client";
+import { cn } from "@/lib/utils";
 
-type JobTreeProps = {
+interface JobTreeProps {
   job: Job;
   activeId: string;
   depth?: number;
-};
+}
 
 export function JobTree({ job, activeId, depth = 0 }: JobTreeProps) {
   return (

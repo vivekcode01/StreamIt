@@ -1,8 +1,8 @@
 import uniqolor from "uniqolor";
 
-type JobTagProps = {
+interface JobTagProps {
   value: string;
-};
+}
 
 export function ColorTag({ value }: JobTagProps) {
   let { color } = uniqolor(value, {});

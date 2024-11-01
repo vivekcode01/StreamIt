@@ -1,10 +1,10 @@
-import { useAuth } from "@/AuthContext";
-import { useTableFilter } from "@/hooks/useTableFilter";
-import { AssetsTable } from "@/components/AssetsTable";
 import { useSuspenseQueries } from "@tanstack/react-query";
+import { useAuth } from "@/AuthContext";
+import { AssetsTable } from "@/components/AssetsTable";
+import { SelectObject } from "@/components/SelectObject";
 import { TablePagination } from "@/components/TablePagination";
 import { useLoadTransition } from "@/hooks/useLoadTransition";
-import { SelectObject } from "@/components/SelectObject";
+import { useTableFilter } from "@/hooks/useTableFilter";
 
 const PER_PAGE_OPTIONS = [
   { label: "5", value: "5" },

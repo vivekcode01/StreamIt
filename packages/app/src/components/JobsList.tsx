@@ -1,11 +1,11 @@
-import { TransitionNavLink } from "./TransitionNavLink";
 import { JobState } from "./JobState";
-import { getDurationStr, getShortId, getTimeAgo } from "@/lib/helpers";
+import { TransitionNavLink } from "./TransitionNavLink";
 import type { Job } from "@superstreamer/api/client";
+import { getDurationStr, getShortId, getTimeAgo } from "@/lib/helpers";
 
-type JobsListProps = {
+interface JobsListProps {
   jobs: Job[];
-};
+}
 
 export function JobsList({ jobs }: JobsListProps) {
   return (

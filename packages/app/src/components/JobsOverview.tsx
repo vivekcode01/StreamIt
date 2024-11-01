@@ -1,12 +1,12 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { JobsList } from "@/components/JobsList";
-import { JobsFilter } from "@/components/JobsFilter";
-import { useJobsFilter } from "@/hooks/useJobsFilter";
-import { JobsStats } from "@/components/JobsStats";
-import { filterJobs } from "@/lib/jobs-filter";
-import { useAutoRefreshFunction } from "@/components/auto-refresh/AutoRefreshContext";
 import { AutoRefreshStatus } from "./auto-refresh/AutoRefreshStatus";
 import { useAuth } from "@/AuthContext";
+import { JobsFilter } from "@/components/JobsFilter";
+import { JobsList } from "@/components/JobsList";
+import { JobsStats } from "@/components/JobsStats";
+import { useAutoRefreshFunction } from "@/components/auto-refresh/AutoRefreshContext";
+import { useJobsFilter } from "@/hooks/useJobsFilter";
+import { filterJobs } from "@/lib/jobs-filter";
 
 export function JobsOverview() {
   const [filter, setFilter] = useJobsFilter();

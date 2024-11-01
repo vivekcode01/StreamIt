@@ -1,6 +1,6 @@
+import NProgress from "nprogress";
 import ReactDOM from "react-dom/client";
 import { App } from "./App.tsx";
-import NProgress from "nprogress";
 import "./globals.css";
 import "nprogress/nprogress.css";
 

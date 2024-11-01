@@ -1,5 +1,5 @@
-import { Storage } from "@/components/Storage";
 import { useSearchParams } from "react-router-dom";
+import { Storage } from "@/components/Storage";
 
 export function StoragePage() {
   const [searchParams] = useSearchParams();

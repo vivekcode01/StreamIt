@@ -1,10 +1,10 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
-type JobLogProps = {
+interface JobLogProps {
   value: string;
   index: number;
-};
+}
 
 export function JobLog({ value, index }: JobLogProps) {
   const ref = useRef<HTMLDivElement>(null);

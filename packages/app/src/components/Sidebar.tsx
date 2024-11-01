@@ -1,14 +1,14 @@
-import logo from "../assets/logo-mascotte.png";
+import Box from "lucide-react/icons/box";
+import Layers from "lucide-react/icons/layers";
+import Play from "lucide-react/icons/play";
+import Sailboat from "lucide-react/icons/sailboat";
+import Settings2 from "lucide-react/icons/settings-2";
+import Workflow from "lucide-react/icons/workflow";
+import { AccountBadge } from "./AccountBadge";
+import { SidebarNavLink } from "./SidebarNavLink";
 import { SidebarTitle } from "./SidebarTitle";
 import { TransitionNavLink } from "./TransitionNavLink";
-import Workflow from "lucide-react/icons/workflow";
-import Sailboat from "lucide-react/icons/sailboat";
-import Play from "lucide-react/icons/play";
-import Box from "lucide-react/icons/box";
-import Settings2 from "lucide-react/icons/settings-2";
-import Layers from "lucide-react/icons/layers";
-import { SidebarNavLink } from "./SidebarNavLink";
-import { AccountBadge } from "./AccountBadge";
+import logo from "../assets/logo-mascotte.png";
 
 export function Sidebar() {
   return (

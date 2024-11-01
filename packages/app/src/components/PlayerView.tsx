@@ -1,12 +1,12 @@
-import { Player } from "@/components/Player";
-import { PlayerAccordion } from "@/components/PlayerAccordion";
 import { useState } from "react";
 import { PlayerNpmInstall } from "./PlayerNpmInstall";
 import type { Lang, Metadata } from "@superstreamer/player/react";
+import { Player } from "@/components/Player";
+import { PlayerAccordion } from "@/components/PlayerAccordion";
 
-type PlayerViewProps = {
+interface PlayerViewProps {
   masterUrl?: string;
-};
+}
 
 export function PlayerView({ masterUrl }: PlayerViewProps) {
   const [metadata, setMetadata] = useState<Metadata>({

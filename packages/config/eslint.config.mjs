@@ -4,7 +4,7 @@ import eslintJs from "@eslint/js";
 import eslintTs from "typescript-eslint";
 import importPlugin from "eslint-plugin-import";
 
-const tsFiles = ["**/*.ts"];
+const tsFiles = ["**/*.ts", "**/*.tsx"];
 
 const languageOptions = {
   ecmaVersion: 2023,

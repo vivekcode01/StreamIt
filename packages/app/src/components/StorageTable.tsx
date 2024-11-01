@@ -1,3 +1,6 @@
+import { StorageRow } from "./StorageRow";
+import type { StorageFile, StorageFolderItem } from "@superstreamer/api/client";
+import type { UIEventHandler } from "react";
 import {
   Table,
   TableBody,
@@ -5,15 +8,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { StorageRow } from "./StorageRow";
-import type { UIEventHandler } from "react";
-import type { StorageFolderItem, StorageFile } from "@superstreamer/api/client";
 
-type StorageExplorerProps = {
+interface StorageExplorerProps {
   items: StorageFolderItem[];
   onNext(): void;
   setFile(file: StorageFile): void;
-};
+}
 
 export function StorageTable({ items, onNext, setFile }: StorageExplorerProps) {
   const onScroll: UIEventHandler<HTMLDivElement> = (event) => {

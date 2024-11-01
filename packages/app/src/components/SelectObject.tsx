@@ -7,17 +7,17 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-export type SelectObjectItem = {
+export interface SelectObjectItem {
   label: React.ReactNode;
   value?: string;
-};
+}
 
-type SelectObjectProps = {
+interface SelectObjectProps {
   items: SelectObjectItem[];
   value?: string;
   onChange(value?: string): void;
   className?: string;
-};
+}
 
 export function SelectObject({
   items,

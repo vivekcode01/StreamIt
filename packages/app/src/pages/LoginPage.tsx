@@ -1,13 +1,13 @@
-import logo from "../assets/logo-mascotte.png";
-import { cn } from "@/lib/utils";
+import { buildZodFieldConfig } from "@autoform/react";
+import { ZodProvider } from "@autoform/zod";
 import { useEffect, useState } from "react";
 import z from "zod";
+import logo from "../assets/logo-mascotte.png";
+import type { FieldTypes } from "@/components/ui/autoform";
 import { AutoForm } from "@/components/ui/autoform";
-import { ZodProvider } from "@autoform/zod";
-import { buildZodFieldConfig } from "@autoform/react";
 import { Button } from "@/components/ui/button";
 import { useLogin } from "@/hooks/useLogin";
-import type { FieldTypes } from "@/components/ui/autoform";
+import { cn } from "@/lib/utils";
 
 const fieldConfig = buildZodFieldConfig<FieldTypes>();
 

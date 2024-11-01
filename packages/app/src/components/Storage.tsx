@@ -1,14 +1,14 @@
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { StorageTable } from "./StorageTable";
 import { StorageFilePreview } from "./StorageFilePreview";
 import { StoragePathBreadcrumbs } from "./StoragePathBreadcrumbs";
-import { useAuth } from "@/AuthContext";
+import { StorageTable } from "./StorageTable";
 import type { StorageFile } from "@superstreamer/api/client";
+import { useAuth } from "@/AuthContext";
 
-type StorageProps = {
+interface StorageProps {
   path: string;
-};
+}
 
 export function Storage({ path }: StorageProps) {
   const [file, setFile] = useState<StorageFile | null>(null);

@@ -1,14 +1,14 @@
-import { Button } from "@/components/ui/button";
 import ChevronLeft from "lucide-react/icons/chevron-left";
-import ChevronsLeft from "lucide-react/icons/chevrons-left";
 import ChevronRight from "lucide-react/icons/chevron-right";
+import ChevronsLeft from "lucide-react/icons/chevrons-left";
 import ChevronsRight from "lucide-react/icons/chevrons-right";
+import { Button } from "@/components/ui/button";
 
-type TablePaginationProps = {
+interface TablePaginationProps {
   page: number;
   totalPages: number;
   onSelect(page: number): void;
-};
+}
 
 export function TablePagination({
   page,

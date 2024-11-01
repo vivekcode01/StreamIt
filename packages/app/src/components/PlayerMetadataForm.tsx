@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import type { Metadata } from "@superstreamer/player/react";
 import {
   Form,
   FormControl,
@@ -9,12 +10,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import type { Metadata } from "@superstreamer/player/react";
 
-type PlayerMetadataFormProps = {
+interface PlayerMetadataFormProps {
   values: Metadata;
   onSubmit(metadata: Metadata): void;
-};
+}
 export function PlayerMetadataForm({
   values,
   onSubmit,

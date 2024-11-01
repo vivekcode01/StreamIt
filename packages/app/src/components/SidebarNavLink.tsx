@@ -1,11 +1,11 @@
-import { cn } from "@/lib/utils";
 import { TransitionNavLink } from "./TransitionNavLink";
 import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
-type SidebarNavLinkProps = {
+interface SidebarNavLinkProps {
   children: ReactNode;
   to: string;
-};
+}
 
 export function SidebarNavLink({ children, to }: SidebarNavLinkProps) {
   return (

@@ -1,9 +1,9 @@
-import { Progress } from "@/components/ui/progress";
 import type { Job } from "@superstreamer/api/client";
+import { Progress } from "@/components/ui/progress";
 
-type JobProgressProps = {
+interface JobProgressProps {
   progress: Job["progress"];
-};
+}
 
 export function JobProgress({ progress }: JobProgressProps) {
   if (!progress) {

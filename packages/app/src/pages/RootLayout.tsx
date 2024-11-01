@@ -1,7 +1,7 @@
-import { Outlet, useLocation } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
-import { Sidebar } from "@/components/Sidebar";
+import { Outlet, useLocation } from "react-router-dom";
 import { RootLayoutErrorBoundary } from "./RootLayoutErrorBoundary";
+import { Sidebar } from "@/components/Sidebar";
 
 export function RootLayout() {
   const location = useLocation();

@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import type { UserSettings } from "@superstreamer/api/client";
 import {
   Form,
   FormDescription,
@@ -9,7 +10,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useUserSettings } from "@/hooks/useUserSettings";
-import type { UserSettings } from "@superstreamer/api/client";
 
 export function SettingsPage() {
   const { mutation, userSettings } = useUserSettings();

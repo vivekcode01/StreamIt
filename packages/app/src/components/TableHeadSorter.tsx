@@ -1,17 +1,17 @@
-import { TableHead } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import ArrowUp from "lucide-react/icons/arrow-up";
 import ArrowDown from "lucide-react/icons/arrow-down";
+import ArrowUp from "lucide-react/icons/arrow-up";
 import ChevronsUpDown from "lucide-react/icons/chevrons-up-down";
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { TableHead } from "@/components/ui/table";
 
-type TableHeadSorterProps = {
+interface TableHeadSorterProps {
   name: string;
   children: ReactNode;
   orderBy: string;
   direction: string;
   onChange(orderBy: string, duration: string): void;
-};
+}
 
 export function TableHeadSorter({
   name,

@@ -1,22 +1,22 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Suspense } from "react";
 import {
   createBrowserRouter,
   Navigate,
   RouterProvider,
 } from "react-router-dom";
-import { Auth, Guest, AuthProvider } from "./AuthContext";
-import { JobsPage } from "@/pages/JobsPage";
-import { JobPage } from "@/pages/JobPage";
-import { ApiPage } from "@/pages/ApiPage";
-import { RootLayout } from "@/pages/RootLayout";
-import { Suspense } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { PlayerPage } from "./pages/PlayerPage";
-import { StoragePage } from "./pages/StoragePage";
-import { LoginPage } from "./pages/LoginPage";
-import { SettingsPage } from "./pages/SettingsPage";
+import { Auth, AuthProvider, Guest } from "./AuthContext";
 import { AssetsPage } from "./pages/AssetsPage";
+import { LoginPage } from "./pages/LoginPage";
+import { PlayerPage } from "./pages/PlayerPage";
+import { SettingsPage } from "./pages/SettingsPage";
+import { StoragePage } from "./pages/StoragePage";
 import { Loader } from "@/components/Loader";
+import { Toaster } from "@/components/ui/toaster";
+import { ApiPage } from "@/pages/ApiPage";
+import { JobPage } from "@/pages/JobPage";
+import { JobsPage } from "@/pages/JobsPage";
+import { RootLayout } from "@/pages/RootLayout";
 
 const queryClient = new QueryClient({
   defaultOptions: {

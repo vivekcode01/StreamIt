@@ -1,24 +1,25 @@
-import { useState, createContext, useContext, useMemo, useEffect } from "react";
-import { Navigate } from "react-router-dom";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { createApiClient } from "@superstreamer/api/client";
-import type { ReactNode } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { Navigate } from "react-router-dom";
 import type { ApiClient, User } from "@superstreamer/api/client";
+import type { ReactNode } from "react";
 
-type AuthContextValue = {
+interface AuthContextValue {
   token: string | null;
   setToken(value: string | null): void;
   user: User | null;
   api: ApiClient;
-};
+}
 
 export const AuthContext = createContext<AuthContextValue>(
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   {} as AuthContextValue,
 );
 
-type AuthProviderProps = {
+interface AuthProviderProps {
   children: ReactNode;
-};
+}
 
 const LOCAL_STORAGE_KEY = "sprsToken";
 

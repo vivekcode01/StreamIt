@@ -1,6 +1,6 @@
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { FallbackProps } from "react-error-boundary";
 import AlertCircle from "lucide-react/icons/alert-circle";
+import type { FallbackProps } from "react-error-boundary";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function RootLayoutErrorBoundary({ error }: FallbackProps) {
   let message = "An unknown error occured";

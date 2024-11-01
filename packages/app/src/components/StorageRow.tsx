@@ -1,13 +1,13 @@
-import { TransitionNavLink } from "./TransitionNavLink";
-import { TableCell, TableRow } from "@/components/ui/table";
 import Folder from "lucide-react/icons/folder";
 import { StorageRowFile } from "./StorageRowFile";
-import type { StorageFolderItem, StorageFile } from "@superstreamer/api/client";
+import { TransitionNavLink } from "./TransitionNavLink";
+import type { StorageFile, StorageFolderItem } from "@superstreamer/api/client";
+import { TableCell, TableRow } from "@/components/ui/table";
 
-type StorageRowProps = {
+interface StorageRowProps {
   item: StorageFolderItem;
   setFile(file: StorageFile): void;
-};
+}
 
 export function StorageRow({ item, setFile }: StorageRowProps) {
   const chunks = item.path.split("/");

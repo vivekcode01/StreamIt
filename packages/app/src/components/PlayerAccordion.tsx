@@ -1,26 +1,26 @@
+import copy from "copy-to-clipboard";
+import { PlayerMetadataForm } from "./PlayerMetadataForm";
+import { SelectObject } from "./SelectObject";
+import type { SelectObjectItem } from "./SelectObject";
+import type { Lang, Metadata } from "@superstreamer/player/react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/hooks/use-toast";
-import { PlayerMetadataForm } from "./PlayerMetadataForm";
-import copy from "copy-to-clipboard";
-import { SelectObject } from "./SelectObject";
-import type { SelectObjectItem } from "./SelectObject";
-import type { Metadata, Lang } from "@superstreamer/player/react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-type PlayerAccordionProps = {
+interface PlayerAccordionProps {
   masterUrl?: string;
   metadata: Metadata;
   setMetadata(metadata: Metadata): void;
   lang: Lang;
   setLang(lang: Lang): void;
-};
+}
 
 export function PlayerAccordion({
   masterUrl,
@@ -51,6 +51,7 @@ export function PlayerAccordion({
                   (event.target as HTMLInputElement).select();
                 }}
                 readOnly
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
                 onChange={() => {}}
               />
               <Button

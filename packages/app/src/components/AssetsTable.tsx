@@ -1,4 +1,12 @@
-import { Asset, Group } from "@superstreamer/api/client";
+import CircleSlash from "lucide-react/icons/circle-slash";
+import Ellipsis from "lucide-react/icons/ellipsis";
+import FileVideo from "lucide-react/icons/file-video";
+import GroupIcon from "lucide-react/icons/group";
+import { TableHeadSorter } from "./TableHeadSorter";
+import { Button } from "./ui/button";
+import type { TableFilterValue } from "@/hooks/useTableFilter";
+import type { Asset, Group } from "@superstreamer/api/client";
+import { ColorTag } from "@/components/ColorTag";
 import {
   Table,
   TableBody,
@@ -7,22 +15,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ColorTag } from "@/components/ColorTag";
-import { Button } from "./ui/button";
-import Ellipsis from "lucide-react/icons/ellipsis";
-import CircleSlash from "lucide-react/icons/circle-slash";
-import FileVideo from "lucide-react/icons/file-video";
-import GroupIcon from "lucide-react/icons/group";
 import { getTimeAgo } from "@/lib/helpers";
-import { TableHeadSorter } from "./TableHeadSorter";
-import { TableFilterValue } from "@/hooks/useTableFilter";
 
-type AssetsTableProps = {
+interface AssetsTableProps {
   assets: Asset[];
   groups: Group[];
   filter: TableFilterValue;
   onSort(orderBy: string, direction: string): void;
-};
+}
 
 export function AssetsTable({
   assets,
