@@ -1,10 +1,10 @@
 import cn from "clsx";
 import { useRef } from "react";
 import { SqButtonTooltip } from "./SqButtonTooltip";
-import type { MouseEventHandler } from "react";
 import type { LangKey } from "../i18n";
+import type { MouseEventHandler } from "react";
 
-type SqButtonProps = {
+interface SqButtonProps {
   children: React.ReactNode;
   onClick: MouseEventHandler<HTMLButtonElement>;
   onIdle?: () => void;
@@ -13,7 +13,7 @@ type SqButtonProps = {
   disabled?: boolean;
   tooltip?: LangKey;
   tooltipPlacement?: "left" | "right";
-};
+}
 
 export function SqButton({
   children,

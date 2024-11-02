@@ -1,11 +1,11 @@
-import { useFacade, useSelector } from "../..";
 import { SqButton } from "./SqButton";
-import PlayIcon from "../icons/play.svg?react";
+import { useFacade, useSelector } from "../..";
 import PauseIcon from "../icons/pause.svg?react";
+import PlayIcon from "../icons/play.svg?react";
 
-type PlayPauseButtonProps = {
+interface PlayPauseButtonProps {
   nudgeVisible(): void;
-};
+}
 
 export function PlayPauseButton({ nudgeVisible }: PlayPauseButtonProps) {
   const facade = useFacade();

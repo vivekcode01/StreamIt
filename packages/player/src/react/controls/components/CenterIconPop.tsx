@@ -1,7 +1,7 @@
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 import { useSelector } from "../..";
-import playIcon from "../icons/play.svg";
 import pauseIcon from "../icons/pause.svg";
+import playIcon from "../icons/play.svg";
 
 export interface CenterIconPopRef {
   playOrPause(): void;
@@ -47,7 +47,7 @@ export const CenterIconPop = forwardRef<CenterIconPopRef, unknown>((_, ref) => {
   return <div ref={elementRef} />;
 });
 
-type LastNudge = {
+interface LastNudge {
   element: HTMLDivElement;
   timerId: number;
-};
+}

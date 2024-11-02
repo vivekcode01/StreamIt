@@ -1,8 +1,8 @@
-import { createStore } from "zustand";
 import { createContext, useContext, useEffect, useState } from "react";
+import { createStore } from "zustand";
 import { ControllerContext, Events } from "../..";
-import type { ReactNode } from "react";
 import type { Settings } from "../hooks/useAppSettings";
+import type { ReactNode } from "react";
 
 type AppStore = ReturnType<typeof createAppStore>;
 
@@ -19,11 +19,14 @@ export interface AppState {
   setFullscreen(value: boolean): void;
 }
 
-export const StoreContext = createContext<AppStore>({} as AppStore);
+export const StoreContext = createContext<AppStore>(
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  {} as AppStore,
+);
 
-type StoreProviderProps = {
+interface StoreProviderProps {
   children: ReactNode;
-};
+}
 
 export function AppStoreProvider({ children }: StoreProviderProps) {
   const [store] = useState(createAppStore);

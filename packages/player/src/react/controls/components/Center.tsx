@@ -1,12 +1,12 @@
-import { useFacade } from "../..";
-import { CenterIconPop } from "./CenterIconPop";
 import { useRef } from "react";
-import type { MouseEventHandler } from "react";
+import { CenterIconPop } from "./CenterIconPop";
+import { useFacade } from "../..";
 import type { CenterIconPopRef } from "./CenterIconPop";
+import type { MouseEventHandler } from "react";
 
-type CenterProps = {
+interface CenterProps {
   onDoubleClick?: MouseEventHandler<HTMLElement>;
-};
+}
 
 export function Center({ onDoubleClick }: CenterProps) {
   const facade = useFacade();

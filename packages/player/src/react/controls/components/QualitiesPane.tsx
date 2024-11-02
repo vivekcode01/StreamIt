@@ -1,8 +1,9 @@
 import cn from "clsx";
 import { CheckList } from "./CheckList";
 import { Pane } from "./Pane";
-import { Quality, useFacade, useSelector } from "../..";
+import { useFacade, useSelector } from "../..";
 import { useI18n } from "../hooks/useI18n";
+import type { Quality } from "../..";
 import type { CheckListItem } from "./CheckList";
 
 export function QualitiesPane() {

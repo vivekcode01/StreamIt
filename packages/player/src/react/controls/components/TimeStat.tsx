@@ -1,6 +1,6 @@
-import { toHMS } from "../utils";
 import { useSelector } from "../..";
 import { useFakeTime } from "../hooks/useFakeTime";
+import { toHMS } from "../utils";
 
 export function TimeStat() {
   const fakeTime = useFakeTime();

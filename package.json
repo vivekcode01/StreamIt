@@ -3,8 +3,8 @@
   "scripts": {
     "dev": "turbo dev --filter=\"@superstreamer/*\"",
     "build": "turbo build --filter=\"@superstreamer/*\"",
-    "lint": "turbo lint",
-    "test": "turbo test",
+    "lint": "turbo lint --force --continue",
+    "test": "turbo test --force --continue",
     "install-bin": "turbo install-bin"
   },
   "packageManager": "pnpm@8.15.1",

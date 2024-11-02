@@ -1,9 +1,9 @@
 import cn from "clsx";
 
-type SettingsPaneProps = {
+interface SettingsPaneProps {
   children: React.ReactNode;
   active: boolean;
-};
+}
 
 export function SettingsPane({ children, active }: SettingsPaneProps) {
   return (

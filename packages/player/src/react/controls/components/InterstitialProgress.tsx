@@ -1,9 +1,9 @@
 import { InterstitialAdProgress } from "./InterstitialAdProgress";
 import type { Interstitial } from "../..";
 
-type InterstitialProgressProps = {
+interface InterstitialProgressProps {
   interstitial: Interstitial;
-};
+}
 export function InterstitialProgress({
   interstitial,
 }: InterstitialProgressProps) {

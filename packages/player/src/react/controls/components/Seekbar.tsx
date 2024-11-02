@@ -1,9 +1,9 @@
 import cn from "clsx";
-import { Progress } from "./Progress";
 import { InterstitialProgress } from "./InterstitialProgress";
+import { Progress } from "./Progress";
 import { TimeStat } from "./TimeStat";
-import { useAppStore } from "../hooks/useAppStore";
 import { useSelector } from "../..";
+import { useAppStore } from "../hooks/useAppStore";
 
 export function Seekbar() {
   const interstitial = useSelector((facade) => facade.interstitial);

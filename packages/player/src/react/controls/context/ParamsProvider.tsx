@@ -1,13 +1,16 @@
 import { createContext } from "react";
-import type { ReactNode } from "react";
 import type { Lang, Metadata } from "../types";
+import type { ReactNode } from "react";
 
-export type Params = {
+export interface Params {
   metadata?: Metadata;
   lang?: Lang;
-};
+}
 
-export const ParamsContext = createContext<Params>({} as Params);
+export const ParamsContext = createContext<Params>(
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  {} as Params,
+);
 
 type ParamsProviderProps = {
   children: ReactNode;

@@ -1,13 +1,13 @@
 import cn from "clsx";
-import { Settings } from "./Settings";
-import { Center } from "./Center";
 import { BottomControls } from "./BottomControls";
-import { useAppVisible } from "../hooks/useAppVisible";
-import { useAppSettings } from "../hooks/useAppSettings";
-import { useAppFullscreen } from "../hooks/useAppFullscreen";
-import { useVisibleControls } from "../hooks/useVisibleControls";
+import { Center } from "./Center";
 import { Seekbar } from "./Seekbar";
+import { Settings } from "./Settings";
 import { useSelector } from "../..";
+import { useAppFullscreen } from "../hooks/useAppFullscreen";
+import { useAppSettings } from "../hooks/useAppSettings";
+import { useAppVisible } from "../hooks/useAppVisible";
+import { useVisibleControls } from "../hooks/useVisibleControls";
 
 export function Playback() {
   const ready = useSelector((facade) => facade.ready);

@@ -1,10 +1,10 @@
 import cn from "clsx";
 import { useEffect, useLayoutEffect, useRef } from "react";
-import usePrevious from "../hooks/usePrevious";
-import { SettingsPane } from "./SettingsPane";
 import { QualitiesPane } from "./QualitiesPane";
+import { SettingsPane } from "./SettingsPane";
 import { TextAudioPane } from "./TextAudioPane";
 import { useAppStore } from "../hooks/useAppStore";
+import usePrevious from "../hooks/usePrevious";
 import type { SettingsMode } from "../hooks/useAppSettings";
 
 export function Settings() {

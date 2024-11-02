@@ -1,24 +1,24 @@
-import SettingsIcon from "../icons/settings.svg?react";
-import SubtitlesIcon from "../icons/subtitles.svg?react";
-import ForwardIcon from "../icons/forward.svg?react";
+import { FullscreenButton } from "./FullscreenButton";
+import { Label } from "./Label";
+import { PlayPauseButton } from "./PlayPauseButton";
 import { SqButton } from "./SqButton";
 import { VolumeButton } from "./VolumeButton";
-import { Label } from "./Label";
 import { useFacade, useSelector } from "../..";
 import { useAppStore } from "../hooks/useAppStore";
 import { useFakeTime } from "../hooks/useFakeTime";
 import { useSeekTo } from "../hooks/useSeekTo";
 import { useShowTextAudio } from "../hooks/useShowTextAudio";
-import { PlayPauseButton } from "./PlayPauseButton";
-import { FullscreenButton } from "./FullscreenButton";
-import type { MouseEventHandler } from "react";
+import ForwardIcon from "../icons/forward.svg?react";
+import SettingsIcon from "../icons/settings.svg?react";
+import SubtitlesIcon from "../icons/subtitles.svg?react";
 import type { SetAppSettings } from "../hooks/useAppSettings";
+import type { MouseEventHandler } from "react";
 
-type BottomControlsProps = {
+interface BottomControlsProps {
   nudgeVisible(): void;
   setAppSettings: SetAppSettings;
   toggleFullscreen: MouseEventHandler<HTMLElement>;
-};
+}
 
 export function BottomControls({
   nudgeVisible,

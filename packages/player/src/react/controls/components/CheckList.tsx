@@ -1,15 +1,15 @@
 import cn from "clsx";
 
-export type CheckListItem = {
+export interface CheckListItem {
   id: number | null;
   label: React.ReactNode;
   checked: boolean;
-};
+}
 
-type CheckListProps = {
+interface CheckListProps {
   onSelect(id: CheckListItem["id"]): void;
   items: CheckListItem[];
-};
+}
 
 export function CheckList({ items, onSelect }: CheckListProps) {
   return (

@@ -1,12 +1,12 @@
 import cn from "clsx";
-import { useI18n } from "../hooks/useI18n";
 import { useSelector } from "../..";
+import { useI18n } from "../hooks/useI18n";
 import type { LangKey } from "../i18n";
 
-type SqButtonTooltipProps = {
+interface SqButtonTooltipProps {
   value: LangKey;
   placement?: "left" | "right";
-};
+}
 
 export function SqButtonTooltip({ value, placement }: SqButtonTooltipProps) {
   const l = useI18n();

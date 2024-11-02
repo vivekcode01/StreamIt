@@ -1,7 +1,7 @@
-type PaneProps = {
+interface PaneProps {
   title: string;
   children: React.ReactNode;
-};
+}
 
 export function Pane({ title, children }: PaneProps) {
   return (
