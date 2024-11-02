@@ -53,7 +53,7 @@ export function AssetsPage() {
   });
 
   if (filter.page > listQuery.data.totalPages) {
-    updateFilter({ page: 1 });
+    updateFilter({ page: listQuery.data.totalPages });
   }
 
   return (
