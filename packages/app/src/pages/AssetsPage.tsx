@@ -52,6 +52,10 @@ export function AssetsPage() {
     ],
   });
 
+  if (filter.page > listQuery.data.totalPages) {
+    updateFilter({ page: 1 });
+  }
+
   return (
     <div className="p-8">
       <h1 className="mb-8 text-xl font-semibold">Assets</h1>
