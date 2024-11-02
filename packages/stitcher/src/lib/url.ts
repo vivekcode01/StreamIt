@@ -1,5 +1,5 @@
 import * as path from "path";
-import { env } from "./env";
+import { env } from "../env";
 
 const uuidRegex = /^[a-z,0-9,-]{36,36}$/;
 
