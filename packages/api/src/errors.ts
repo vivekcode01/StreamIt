@@ -61,6 +61,8 @@ export const errors = () =>
       DELIBERATE_ERROR: DeliberateError,
     })
     .onError({ as: "global" }, ({ code, error, set }) => {
+      console.error(error);
+
       if (code === "DELIBERATE_ERROR") {
         set.status = statusMap[error.type];
         return {
