@@ -1,5 +1,5 @@
 import { JobStatsTile } from "./JobStatsTile";
-import type { JobsFilterData } from "./types";
+import type { JobsFilterData } from "@/hooks/useJobsFilter";
 import type { Job } from "@superstreamer/api/client";
 import { TooltipProvider } from "@/components/ui/tooltip";
 

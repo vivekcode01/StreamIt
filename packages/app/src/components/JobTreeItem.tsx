@@ -1,6 +1,6 @@
-import { JobState } from "./JobState";
-import { TransitionNavLink } from "./TransitionNavLink";
 import type { Job } from "@superstreamer/api/client";
+import { JobState } from "@/components/JobState";
+import { LoadNavLink } from "@/components/LoadNavLink";
 import { getDurationStr } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +13,7 @@ export function JobTreeItem({ job, activeId }: JobTreeItemProps) {
   const durationStr = getDurationStr(job.duration);
 
   return (
-    <TransitionNavLink
+    <LoadNavLink
       to={`/jobs/${job.id}`}
       className={cn(
         "px-3 py-2 flex gap-3 items-center rounded-lg text-muted-foreground transition-all hover:text-primary text-sm",
@@ -23,6 +23,6 @@ export function JobTreeItem({ job, activeId }: JobTreeItemProps) {
       <JobState state={job.state} />
       {job.name}
       {durationStr ? <span className="text-xs">{durationStr}</span> : null}
-    </TransitionNavLink>
+    </LoadNavLink>
   );
 }

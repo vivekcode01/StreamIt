@@ -1,10 +1,10 @@
 import SquareArrowOutUpRight from "lucide-react/icons/square-arrow-out-up-right";
 import { useState } from "react";
-import { Loader } from "./Loader";
 import type { StorageFile, StorageFolderItem } from "@superstreamer/api/client";
-import { useAuth } from "@/AuthContext";
+import { Loader } from "@/components/Loader";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { useAuth } from "@/hooks/useAuth";
 import { getSizeStr } from "@/lib/helpers";
 
 interface StorageRowFileProps {

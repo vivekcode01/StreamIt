@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "@/AuthContext";
 import { Editor } from "@/components/Editor";
 import { Loader } from "@/components/Loader";
 import { PlayerView } from "@/components/PlayerView";
@@ -9,6 +8,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { useAuth } from "@/hooks/useAuth";
 
 export function PlayerPage() {
   const [schema, setSchema] = useState<object>();

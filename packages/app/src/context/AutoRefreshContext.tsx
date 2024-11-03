@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+
 import {
   createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -9,15 +10,12 @@ import {
 import type { ReactNode } from "react";
 import { useUserSettings } from "@/hooks/useUserSettings";
 
-type AutoRefreshListener = () => void;
-
 interface AutoRefreshContextValue {
   countdown: number | null;
-  add(listener: AutoRefreshListener): () => void;
+  add(listener: () => void): () => void;
 }
 
-const AutoRefreshContext = createContext<AutoRefreshContextValue>(
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+export const AutoRefreshContext = createContext<AutoRefreshContextValue>(
   {} as AutoRefreshContextValue,
 );
 
@@ -32,10 +30,10 @@ export function AutoRefreshProvider({ children }: AutoRefreshProviderProps) {
   const [countdown, setCountdown] = useState(
     userSettings.autoRefresh ? COUNTDOWN_INTERVAL : null,
   );
-  const [listeners] = useState(() => new Set<AutoRefreshListener>());
+  const [listeners] = useState(() => new Set<() => void>());
 
   const add = useCallback(
-    (listener: AutoRefreshListener) => {
+    (listener: () => void) => {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
@@ -75,16 +73,4 @@ export function AutoRefreshProvider({ children }: AutoRefreshProviderProps) {
       {children}
     </AutoRefreshContext.Provider>
   );
-}
-
-export function useAutoRefresh() {
-  return useContext(AutoRefreshContext);
-}
-
-export function useAutoRefreshFunction(listener: AutoRefreshListener) {
-  const { add } = useAutoRefresh();
-
-  useEffect(() => {
-    return add(listener);
-  }, [add]);
 }

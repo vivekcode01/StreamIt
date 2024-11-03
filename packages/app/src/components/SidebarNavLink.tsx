@@ -1,5 +1,5 @@
-import { TransitionNavLink } from "./TransitionNavLink";
 import type { ReactNode } from "react";
+import { LoadNavLink } from "@/components/LoadNavLink";
 import { cn } from "@/lib/utils";
 
 interface SidebarNavLinkProps {
@@ -9,7 +9,7 @@ interface SidebarNavLinkProps {
 
 export function SidebarNavLink({ children, to }: SidebarNavLinkProps) {
   return (
-    <TransitionNavLink
+    <LoadNavLink
       to={to}
       className={({ isActive }) => {
         return cn(
@@ -19,6 +19,6 @@ export function SidebarNavLink({ children, to }: SidebarNavLinkProps) {
       }}
     >
       {children}
-    </TransitionNavLink>
+    </LoadNavLink>
   );
 }

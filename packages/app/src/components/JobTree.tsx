@@ -1,5 +1,5 @@
-import { JobTreeItem } from "./JobTreeItem";
 import type { Job } from "@superstreamer/api/client";
+import { JobTreeItem } from "@/components/JobTreeItem";
 import { cn } from "@/lib/utils";
 
 interface JobTreeProps {

@@ -1,6 +1,6 @@
-import { StorageRow } from "./StorageRow";
 import type { StorageFile, StorageFolderItem } from "@superstreamer/api/client";
 import type { UIEventHandler } from "react";
+import { StorageRow } from "@/components/StorageRow";
 import {
   Table,
   TableBody,

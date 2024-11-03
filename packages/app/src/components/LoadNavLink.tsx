@@ -2,22 +2,18 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
 import { useLoadTransition } from "@/hooks/useLoadTransition";
 
-interface TransitionNavLinkState {
+interface LoadNavLinkState {
   isPending: boolean;
   isActive: boolean;
 }
 
-interface TransitionNavLinkProps {
+interface LoadNavLinkProps {
   to: string;
   children: ReactNode;
-  className?: string | ((state: TransitionNavLinkState) => void);
+  className?: string | ((state: LoadNavLinkState) => void);
 }
 
-export function TransitionNavLink({
-  to,
-  children,
-  className,
-}: TransitionNavLinkProps) {
+export function LoadNavLink({ to, children, className }: LoadNavLinkProps) {
   const [isPending, startTransition] = useLoadTransition();
   const navigate = useNavigate();
   const location = useLocation();

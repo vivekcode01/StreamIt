@@ -1,18 +1,18 @@
 import { useCallback, useState } from "react";
-import { useAuth } from "@/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
-interface Credentials {
+interface AuthCredentials {
   username: string;
   password: string;
 }
 
-export function useLogin() {
+export function useAuthLogin() {
   const { api, setToken } = useAuth();
 
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const login = useCallback(async (credentials: Credentials) => {
+  const login = useCallback(async (credentials: AuthCredentials) => {
     setError(false);
     setLoading(true);
 

@@ -1,11 +1,10 @@
 import AlertCircle from "lucide-react/icons/alert-circle";
-import { JobLogs } from "./JobLogs";
-import { JobProgress } from "./JobProgress";
-import { JsonHighlight } from "./JsonHighlight";
 import type { Job } from "@superstreamer/api/client";
+import { JobLogs } from "@/components/JobLogs";
+import { JobProgress } from "@/components/JobProgress";
+import { JsonHighlight } from "@/components/JsonHighlight";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { getDurationStr } from "@/lib/helpers";
-import { getTimeAgo } from "@/lib/helpers";
+import { getDurationStr, getTimeAgo } from "@/lib/helpers";
 
 interface JobViewProps {
   job: Job;

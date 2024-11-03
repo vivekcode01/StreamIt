@@ -1,16 +1,10 @@
 import { useSuspenseQueries } from "@tanstack/react-query";
-import { useAuth } from "@/AuthContext";
 import { AssetsTable } from "@/components/AssetsTable";
 import { SelectObject } from "@/components/SelectObject";
 import { TablePagination } from "@/components/TablePagination";
+import { useAuth } from "@/hooks/useAuth";
 import { useLoadTransition } from "@/hooks/useLoadTransition";
 import { useTableFilter } from "@/hooks/useTableFilter";
-
-const PER_PAGE_OPTIONS = [
-  { label: "5", value: "5" },
-  { label: "20", value: "20" },
-  { label: "50", value: "50" },
-];
 
 export function AssetsPage() {
   const { filter, updateFilter } = useTableFilter({
@@ -56,6 +50,8 @@ export function AssetsPage() {
     updateFilter({ page: listQuery.data.totalPages });
   }
 
+  const rowsPerPage = [5, 20, 50].map((value) => ({ value }));
+
   return (
     <div className="p-8">
       <h1 className="mb-8 text-xl font-semibold">Assets</h1>
@@ -74,13 +70,10 @@ export function AssetsPage() {
           Rows per page
           <SelectObject
             className="h-8 max-w-[65px]"
-            items={PER_PAGE_OPTIONS}
-            value={filter.perPage.toString()}
+            items={rowsPerPage}
+            value={filter.perPage}
             onChange={(perPage) => {
-              if (perPage === undefined) {
-                return;
-              }
-              startTransition(() => updateFilter({ perPage: +perPage }));
+              startTransition(() => updateFilter({ perPage }));
             }}
           />
         </div>

@@ -1,7 +1,7 @@
 import { useCallback } from "react";
-import { useAuth } from "@/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
-export function useLogout() {
+export function useAuthLogout() {
   const { setToken } = useAuth();
 
   const logout = useCallback(() => {

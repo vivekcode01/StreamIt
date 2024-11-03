@@ -1,8 +1,8 @@
 import copy from "copy-to-clipboard";
-import { PlayerMetadataForm } from "./PlayerMetadataForm";
-import { SelectObject } from "./SelectObject";
-import type { SelectObjectItem } from "./SelectObject";
+import type { SelectObjectItem } from "@/components/SelectObject";
 import type { Lang, Metadata } from "@superstreamer/player/react";
+import { PlayerMetadataForm } from "@/components/PlayerMetadataForm";
+import { SelectObject } from "@/components/SelectObject";
 import {
   Accordion,
   AccordionContent,
@@ -31,7 +31,7 @@ export function PlayerAccordion({
 }: PlayerAccordionProps) {
   const { toast } = useToast();
 
-  const languages: SelectObjectItem[] = [
+  const languages: SelectObjectItem<string>[] = [
     { value: "nld", label: "Nederlands" },
     { value: "eng", label: "English" },
   ];
@@ -51,8 +51,6 @@ export function PlayerAccordion({
                   (event.target as HTMLInputElement).select();
                 }}
                 readOnly
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
-                onChange={() => {}}
               />
               <Button
                 disabled={!masterUrl}

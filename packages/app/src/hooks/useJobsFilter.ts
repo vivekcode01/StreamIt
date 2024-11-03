@@ -1,5 +1,11 @@
 import { useSearchParams } from "react-router-dom";
-import type { JobsFilterData } from "@/components/types";
+import type { Job } from "@superstreamer/api/client";
+
+export interface JobsFilterData {
+  tag: string | null;
+  name: string | null;
+  state: Job["state"] | null;
+}
 
 export function useJobsFilter() {
   const [searchParams, setSearchParams] = useSearchParams({});
@@ -17,11 +23,11 @@ export function useJobsFilter() {
   };
 
   const data: JobsFilterData = {
-    tag: searchParams.get("tag") ?? undefined,
-    name: searchParams.get("name") ?? undefined,
-    state: (searchParams.get("state") ?? undefined) as
+    tag: searchParams.get("tag") ?? null,
+    name: searchParams.get("name") ?? null,
+    state: (searchParams.get("state") ?? null) as
       | JobsFilterData["state"]
-      | undefined,
+      | null,
   };
   return [data, updateParams] as const;
 }

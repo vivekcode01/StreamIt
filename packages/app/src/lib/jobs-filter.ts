@@ -1,4 +1,4 @@
-import type { JobsFilterData } from "@/components/types";
+import type { JobsFilterData } from "@/hooks/useJobsFilter";
 import type { Job } from "@superstreamer/api/client";
 
 export function filterJobs(jobs: Job[], filter: JobsFilterData) {

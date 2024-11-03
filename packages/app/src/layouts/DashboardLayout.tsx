@@ -1,9 +1,9 @@
 import { ErrorBoundary } from "react-error-boundary";
 import { Outlet, useLocation } from "react-router-dom";
-import { RootLayoutErrorBoundary } from "./RootLayoutErrorBoundary";
+import { DashboardErrorBoundary } from "@/components/DashboardErrorBoundary";
 import { Sidebar } from "@/components/Sidebar";
 
-export function RootLayout() {
+export function DashboardLayout() {
   const location = useLocation();
 
   return (
@@ -15,7 +15,7 @@ export function RootLayout() {
         <main className="flex flex-col grow">
           <ErrorBoundary
             key={location.pathname}
-            FallbackComponent={RootLayoutErrorBoundary}
+            FallbackComponent={DashboardErrorBoundary}
           >
             <Outlet />
           </ErrorBoundary>

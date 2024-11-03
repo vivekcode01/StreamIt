@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "@/AuthContext";
 import { SelectObject } from "@/components/SelectObject";
+import { useAuth } from "@/hooks/useAuth";
 
 export function ApiPage() {
   const navigate = useNavigate();

@@ -6,7 +6,7 @@ import logo from "../assets/logo-mascotte.png";
 import type { FieldTypes } from "@/components/ui/autoform";
 import { AutoForm } from "@/components/ui/autoform";
 import { Button } from "@/components/ui/button";
-import { useLogin } from "@/hooks/useLogin";
+import { useAuthLogin } from "@/hooks/useAuthLogin";
 import { cn } from "@/lib/utils";
 
 const fieldConfig = buildZodFieldConfig<FieldTypes>();
@@ -26,7 +26,7 @@ const schemaProvider = new ZodProvider(
 
 export function LoginPage() {
   const [show, setShow] = useState(false);
-  const { login, error, loading } = useLogin();
+  const { login, error, loading } = useAuthLogin();
 
   useEffect(() => {
     if (show) {

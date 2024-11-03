@@ -1,10 +1,10 @@
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { StorageFilePreview } from "./StorageFilePreview";
-import { StoragePathBreadcrumbs } from "./StoragePathBreadcrumbs";
-import { StorageTable } from "./StorageTable";
 import type { StorageFile } from "@superstreamer/api/client";
-import { useAuth } from "@/AuthContext";
+import { StorageFilePreview } from "@/components/StorageFilePreview";
+import { StoragePathBreadcrumbs } from "@/components/StoragePathBreadcrumbs";
+import { StorageTable } from "@/components/StorageTable";
+import { useAuth } from "@/hooks/useAuth";
 
 interface StorageProps {
   path: string;

@@ -1,6 +1,6 @@
 import House from "lucide-react/icons/house";
 import { Fragment } from "react";
-import { TransitionNavLink } from "./TransitionNavLink";
+import { LoadNavLink } from "@/components/LoadNavLink";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,9 +25,9 @@ export function StoragePathBreadcrumbs({ path }: StoragePathBreadcrumbsProps) {
             <Fragment key={path}>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <TransitionNavLink to={`/storage?path=${path}`}>
+                  <LoadNavLink to={`/storage?path=${path}`}>
                     {index ? name : <House className="w-4 h-4" />}
-                  </TransitionNavLink>
+                  </LoadNavLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator>/</BreadcrumbSeparator>

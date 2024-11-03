@@ -4,17 +4,17 @@ import Play from "lucide-react/icons/play";
 import Sailboat from "lucide-react/icons/sailboat";
 import Settings2 from "lucide-react/icons/settings-2";
 import Workflow from "lucide-react/icons/workflow";
-import { AccountBadge } from "./AccountBadge";
-import { SidebarNavLink } from "./SidebarNavLink";
-import { SidebarTitle } from "./SidebarTitle";
-import { TransitionNavLink } from "./TransitionNavLink";
-import logo from "../assets/logo-mascotte.png";
+import logo from "@/assets/logo-mascotte.png";
+import { LoadNavLink } from "@/components/LoadNavLink";
+import { SidebarNavLink } from "@/components/SidebarNavLink";
+import { SidebarTitle } from "@/components/SidebarTitle";
+import { UserBadge } from "@/components/UserBadge";
 
 export function Sidebar() {
   return (
     <div className="flex h-full max-h-screen flex-col gap-2">
       <div className="flex h-14 items-center border-b px-4">
-        <TransitionNavLink to="/" className="flex items-center gap-2">
+        <LoadNavLink to="/" className="flex items-center gap-2">
           <img src={logo} className="w-6" />
           <div className="relative">
             <span className="font-medium text-sm">Superstreamer</span>
@@ -22,7 +22,7 @@ export function Sidebar() {
               {__VERSION__}
             </span>
           </div>
-        </TransitionNavLink>
+        </LoadNavLink>
       </div>
       <div className="flex-1 flex-col flex">
         <SidebarTitle className="my-4">Manage</SidebarTitle>
@@ -60,7 +60,7 @@ export function Sidebar() {
         </nav>
         <div className="grow" />
         <div className="p-4">
-          <AccountBadge />
+          <UserBadge />
         </div>
       </div>
     </div>

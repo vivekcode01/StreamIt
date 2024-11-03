@@ -1,6 +1,6 @@
-import { JobState } from "./JobState";
-import { TransitionNavLink } from "./TransitionNavLink";
 import type { Job } from "@superstreamer/api/client";
+import { JobState } from "@/components/JobState";
+import { LoadNavLink } from "@/components/LoadNavLink";
 import { getDurationStr, getShortId, getTimeAgo } from "@/lib/helpers";
 
 interface JobsListProps {
@@ -12,7 +12,7 @@ export function JobsList({ jobs }: JobsListProps) {
     <ul>
       {jobs.map((job) => (
         <li key={job.id} className="mb-2">
-          <TransitionNavLink
+          <LoadNavLink
             to={`/jobs/${job.id}`}
             className="px-4 h-20 flex items-center border border-border rounded-md hover:shadow-sm transition-shadow hover:bg-muted/50"
           >
@@ -35,7 +35,7 @@ export function JobsList({ jobs }: JobsListProps) {
                 </div>
               </div>
             </div>
-          </TransitionNavLink>
+          </LoadNavLink>
         </li>
       ))}
     </ul>

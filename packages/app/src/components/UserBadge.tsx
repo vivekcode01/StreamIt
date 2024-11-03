@@ -1,4 +1,3 @@
-import { useUser } from "@/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -8,10 +7,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLogout } from "@/hooks/useLogout";
+import { useAuthLogout } from "@/hooks/useAuthLogout";
+import { useUser } from "@/hooks/useUser";
 
-export function AccountBadge() {
-  const logout = useLogout();
+export function UserBadge() {
+  const logout = useAuthLogout();
   const { username } = useUser();
 
   return (

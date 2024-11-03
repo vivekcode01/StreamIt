@@ -4,7 +4,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import type { UserSettings } from "@superstreamer/api/client";
-import { useAuth } from "@/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 export function useUserSettings() {
   const { api } = useAuth();

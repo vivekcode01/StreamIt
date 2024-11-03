@@ -1,8 +1,8 @@
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import type { Job } from "@superstreamer/api/client";
-import { useAuth } from "@/AuthContext";
-import { useAutoRefreshFunction } from "@/components/auto-refresh/AutoRefreshContext";
+import { useAuth } from "@/hooks/useAuth";
+import { useAutoRefreshFunction } from "@/hooks/useAutoRefreshFunction";
 
 export function useJob(id: string) {
   const queryClient = useQueryClient();

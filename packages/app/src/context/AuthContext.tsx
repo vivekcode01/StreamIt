@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+
 import { createApiClient } from "@superstreamer/api/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { createContext, useEffect, useMemo, useState } from "react";
 import type { ApiClient, User } from "@superstreamer/api/client";
 import type { ReactNode } from "react";
 
@@ -13,7 +14,6 @@ interface AuthContextValue {
 }
 
 export const AuthContext = createContext<AuthContextValue>(
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   {} as AuthContextValue,
 );
 
@@ -73,26 +73,4 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [token, setToken, user, api]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-  return useContext(AuthContext);
-}
-
-export function useUser() {
-  const { user } = useAuth();
-  if (!user) {
-    throw new Error("Not authenticated when calling useUser");
-  }
-  return user;
-}
-
-export function Auth(props: { children: ReactNode }) {
-  const { user } = useContext(AuthContext);
-  return user ? props.children : <Navigate to="/login" />;
-}
-
-export function Guest(props: { children: ReactNode }) {
-  const { user } = useContext(AuthContext);
-  return user ? <Navigate to="/" /> : props.children;
 }

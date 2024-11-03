@@ -1,7 +1,7 @@
-import { SelectObject } from "./SelectObject";
-import type { SelectObjectItem } from "./SelectObject";
-import type { JobsFilterData } from "./types";
+import type { SelectObjectItem } from "@/components/SelectObject";
+import type { JobsFilterData } from "@/hooks/useJobsFilter";
 import type { Job } from "@superstreamer/api/client";
+import { SelectObject } from "@/components/SelectObject";
 
 interface JobsFilterProps {
   allJobs: Job[];
@@ -10,12 +10,14 @@ interface JobsFilterProps {
 }
 
 export function JobsFilter({ allJobs, filter, onChange }: JobsFilterProps) {
-  const names = getNames(allJobs).map<SelectObjectItem>((name) => ({
-    value: name,
-    label: name,
-  }));
+  const names = getNames(allJobs).map<SelectObjectItem<string | null>>(
+    (name) => ({
+      value: name,
+      label: name,
+    }),
+  );
 
-  names.unshift({ value: undefined, label: "All names" });
+  names.unshift({ value: null, label: "All names" });
 
   return (
     <div className="flex gap-2">
