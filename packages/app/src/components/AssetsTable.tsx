@@ -60,7 +60,6 @@ export function AssetsTable({
           >
             Created
           </TableHeadSorter>
-          <TableHead />
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -85,13 +84,6 @@ export function AssetsTable({
               </TableCell>
               <TableCell className="text-nowrap">
                 {getTimeAgo(asset.createdAt)}
-              </TableCell>
-              <TableCell className="py-0">
-                <div className="flex justify-center">
-                  <Button size="icon" variant="ghost">
-                    <Ellipsis className="w-4 h-4" />
-                  </Button>
-                </div>
               </TableCell>
             </TableRow>
           );
