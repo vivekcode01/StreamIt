@@ -39,7 +39,7 @@ export async function getJobs(filter: {
   page: number;
   perPage: number;
   sortKey: "name" | "duration" | "createdAt";
-  sortDirection: "ascending" | "descending";
+  sortDir: "asc" | "desc";
 }) {
   let items: Job[] = [];
 
@@ -58,27 +58,19 @@ export async function getJobs(filter: {
   }
 
   if (filter.sortKey === "createdAt") {
-    items.sort((a, b) =>
-      filter.sortDirection === "ascending"
-        ? b.createdAt - a.createdAt
-        : a.createdAt - b.createdAt,
-    );
+    items.sort((a, b) => a.createdAt - b.createdAt);
   }
 
   if (filter.sortKey === "name") {
-    items.sort((a, b) =>
-      filter.sortDirection === "ascending"
-        ? b.name.localeCompare(a.name)
-        : a.name.localeCompare(b.name),
-    );
+    items.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   if (filter.sortKey === "duration") {
-    items.sort((a, b) =>
-      filter.sortDirection === "ascending"
-        ? (b.duration ?? 0) - (a.duration ?? 0)
-        : (a.duration ?? 0) - (b.duration ?? 0),
-    );
+    items.sort((a, b) => (a.duration ?? 0) - (b.duration ?? 0));
+  }
+
+  if (filter.sortDir === "desc") {
+    items = items.reverse();
   }
 
   const totalPages = Math.ceil(items.length / filter.perPage);

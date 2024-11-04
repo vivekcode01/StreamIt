@@ -5,8 +5,8 @@ import { useUser } from "./useUser";
 export const assetsFilterSchema = z.object({
   page: z.coerce.number().default(1),
   perPage: z.coerce.number().default(20),
-  sortKey: z.enum(["createdAt", "name"]).default("createdAt"),
-  sortDirection: z.enum(["ascending", "descending"]).default("ascending"),
+  sortKey: z.enum(["createdAt", "playables", "name"]).default("createdAt"),
+  sortDir: z.enum(["asc", "desc"]).default("asc"),
 });
 
 export type AssetsFilter = z.infer<typeof assetsFilterSchema>;

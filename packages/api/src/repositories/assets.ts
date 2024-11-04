@@ -8,10 +8,15 @@ export async function createAsset(fields: AssetInsert) {
 export async function getAssets(filter: {
   page: number;
   perPage: number;
-  sortKey: "name" | "createdAt";
-  sortDirection: "ascending" | "descending";
+  sortKey: "name" | "playables" | "createdAt";
+  sortDir: "asc" | "desc";
 }) {
-  const orderBy = filter.sortKey === "name" ? "id" : "createdAt";
+  let orderBy: "id" | "createdAt" | "playables";
+  if (filter.sortKey === "name") {
+    orderBy = "id";
+  } else {
+    orderBy = filter.sortKey;
+  }
 
   const items = await db
     .selectFrom("assets")
@@ -20,12 +25,12 @@ export async function getAssets(filter: {
       "assets.id",
       "assets.groupId",
       "assets.createdAt",
-      fn.count<number>("playables.assetId").as("playablesCount"),
+      fn.count<number>("playables.assetId").as("playables"),
     ])
     .groupBy("assets.id")
     .limit(filter.perPage)
     .offset((filter.page - 1) * filter.perPage)
-    .orderBy(orderBy, filter.sortDirection === "ascending" ? "asc" : "desc")
+    .orderBy(orderBy, filter.sortDir)
     .execute();
 
   const { count } = await db

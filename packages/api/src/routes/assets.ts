@@ -19,11 +19,12 @@ export const assets = new Elysia()
       query: t.Object({
         page: t.Number(),
         perPage: t.Number(),
-        sortKey: t.Union([t.Literal("name"), t.Literal("createdAt")]),
-        sortDirection: t.Union([
-          t.Literal("ascending"),
-          t.Literal("descending"),
+        sortKey: t.Union([
+          t.Literal("name"),
+          t.Literal("playables"),
+          t.Literal("createdAt"),
         ]),
+        sortDir: t.Union([t.Literal("asc"), t.Literal("desc")]),
       }),
       response: {
         200: t.Object({

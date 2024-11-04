@@ -38,7 +38,9 @@ function RouteComponent() {
       ]}
       {...data}
       filter={filter}
-      navigate={navigate}
+      onFilterChange={(search) => {
+        navigate({ search });
+      }}
       mapRow={(job) => [
         <Link to={`/jobs/${job.id}`}>
           {job.id}

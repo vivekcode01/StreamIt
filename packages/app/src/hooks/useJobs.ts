@@ -6,7 +6,7 @@ export const jobsFilterSchema = z.object({
   page: z.coerce.number().default(1),
   perPage: z.coerce.number().default(20),
   sortKey: z.enum(["createdAt", "duration", "name"]).default("createdAt"),
-  sortDirection: z.enum(["ascending", "descending"]).default("ascending"),
+  sortDir: z.enum(["asc", "desc"]).default("asc"),
 });
 
 export type JobsFilter = z.infer<typeof jobsFilterSchema>;

@@ -94,7 +94,7 @@ export const AssetSchema = t.Object(
     groupId: t.Nullable(t.Number()),
     name: t.String(),
     createdAt: t.Date(),
-    playablesCount: t.Number(),
+    playables: t.Number(),
   },
   {
     $id: "#/components/schemas/Asset",

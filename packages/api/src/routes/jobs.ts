@@ -198,10 +198,7 @@ export const jobs = new Elysia()
           t.Literal("duration"),
           t.Literal("createdAt"),
         ]),
-        sortDirection: t.Union([
-          t.Literal("ascending"),
-          t.Literal("descending"),
-        ]),
+        sortDir: t.Union([t.Literal("asc"), t.Literal("desc")]),
       }),
       response: {
         200: t.Object({

@@ -9,7 +9,6 @@ import {
 } from "@nextui-org/table";
 import { useState } from "react";
 import type { SortDescriptor } from "@nextui-org/table";
-import type { UseNavigateResult } from "@tanstack/react-router";
 import type { ReactNode } from "@tanstack/react-router";
 
 export interface Column {
@@ -22,7 +21,7 @@ export interface Filter {
   page: number;
   perPage: number;
   sortKey: string | number;
-  sortDirection: "ascending" | "descending";
+  sortDir: "asc" | "desc";
 }
 
 interface FullTableProps<T, F extends Filter> {
@@ -30,7 +29,7 @@ interface FullTableProps<T, F extends Filter> {
   items: T[];
   mapRow(props: T): ReactNode[];
   filter?: F;
-  navigate?: UseNavigateResult<"">;
+  onFilterChange?(filter: F): void;
   totalPages?: number;
 }
 
@@ -39,22 +38,18 @@ export function FullTable<T, F extends Filter>({
   items,
   mapRow,
   filter,
-  navigate,
+  onFilterChange,
   totalPages,
 }: FullTableProps<T, F>) {
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: filter?.sortKey,
-    direction: filter?.sortDirection,
+    direction: filter?.sortDir === "asc" ? "ascending" : "descending",
   });
 
   const updateFilter = (value: Record<string, string | number | undefined>) => {
-    if (!filter) {
-      return;
+    if (onFilterChange && filter) {
+      onFilterChange({ ...filter, ...value });
     }
-    navigate?.({
-      // @ts-expect-error Value is typed
-      search: { ...filter, ...value },
-    });
   };
 
   return (
@@ -63,7 +58,10 @@ export function FullTable<T, F extends Filter>({
         sortDescriptor={sortDescriptor ?? undefined}
         onSortChange={(sd) => {
           setSortDescriptor(sd);
-          updateFilter({ sortKey: sd.column, sortDirection: sd.direction });
+          updateFilter({
+            sortKey: sd.column,
+            sortDir: sd.direction === "ascending" ? "asc" : "desc",
+          });
         }}
       >
         <TableHeader columns={columns}>

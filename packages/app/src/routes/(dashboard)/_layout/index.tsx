@@ -26,8 +26,9 @@ function Index() {
           allowsSorting: true,
         },
         {
-          id: "playablesCount",
+          id: "playables",
           label: "Playables",
+          allowsSorting: true,
         },
         {
           id: "createdAt",
@@ -37,9 +38,11 @@ function Index() {
       ]}
       {...data}
       filter={filter}
-      navigate={navigate}
+      onFilterChange={(search) => {
+        navigate({ search });
+      }}
       mapRow={(item) => {
-        return [item.name, item.playablesCount, item.createdAt];
+        return [item.name, item.playables, item.createdAt];
       }}
     />
   );
