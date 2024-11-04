@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { authUser } from "./token";
-import { getAssets, getAssetsCount, getGroups } from "../repositories/assets";
+import { getAssets, getGroups } from "../repositories/assets";
 import { AssetSchema } from "../types";
 
 export const assets = new Elysia()
@@ -8,16 +8,7 @@ export const assets = new Elysia()
   .get(
     "/assets",
     async ({ query }) => {
-      const assets = await getAssets(query);
-
-      const count = await getAssetsCount();
-      const totalPages = Math.ceil(count / query.perPage);
-
-      return {
-        page: query.page,
-        totalPages,
-        assets,
-      };
+      return await getAssets(query);
     },
     {
       detail: {
@@ -28,14 +19,16 @@ export const assets = new Elysia()
       query: t.Object({
         page: t.Number(),
         perPage: t.Number(),
-        orderBy: t.String(),
-        direction: t.String(),
+        sortKey: t.Union([t.Literal("name"), t.Literal("createdAt")]),
+        sortDirection: t.Union([
+          t.Literal("ascending"),
+          t.Literal("descending"),
+        ]),
       }),
       response: {
         200: t.Object({
-          page: t.Number(),
           totalPages: t.Number(),
-          assets: t.Array(AssetSchema),
+          items: t.Array(AssetSchema),
         }),
       },
     },

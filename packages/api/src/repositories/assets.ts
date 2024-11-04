@@ -5,24 +5,15 @@ export async function createAsset(fields: AssetInsert) {
   return await db.insertInto("assets").values(fields).executeTakeFirstOrThrow();
 }
 
-export async function getAssetsCount() {
-  const { count } = await db
-    .selectFrom("assets")
-    .select((eb) => eb.fn.count<number>("id").as("count"))
-    .executeTakeFirstOrThrow();
-  return count;
-}
-
 export async function getAssets(filter: {
   page: number;
   perPage: number;
-  orderBy: string;
-  direction: string;
+  sortKey: "name" | "createdAt";
+  sortDirection: "ascending" | "descending";
 }) {
-  const orderBy = mapOrderBy(filter.orderBy);
-  const direction = mapDirection(filter.direction);
+  const orderBy = filter.sortKey === "name" ? "id" : "createdAt";
 
-  const assets = await db
+  const items = await db
     .selectFrom("assets")
     .leftJoin("playables", "playables.assetId", "assets.id")
     .select(({ fn }) => [
@@ -34,15 +25,22 @@ export async function getAssets(filter: {
     .groupBy("assets.id")
     .limit(filter.perPage)
     .offset((filter.page - 1) * filter.perPage)
-    .orderBy(orderBy, direction)
+    .orderBy(orderBy, filter.sortDirection === "ascending" ? "asc" : "desc")
     .execute();
 
-  return assets.map((asset) => {
-    return {
+  const { count } = await db
+    .selectFrom("assets")
+    .select((eb) => eb.fn.count<number>("id").as("count"))
+    .executeTakeFirstOrThrow();
+  const totalPages = Math.ceil(count / filter.perPage);
+
+  return {
+    items: items.map((asset) => ({
       ...asset,
       name: asset.id,
-    };
-  });
+    })),
+    totalPages,
+  };
 }
 
 export async function getGroups() {
@@ -70,18 +68,4 @@ export async function createPlayable(fields: PlayableInsert) {
     .insertInto("playables")
     .values(fields)
     .executeTakeFirstOrThrow();
-}
-
-function mapOrderBy(orderBy: string) {
-  if (orderBy === "name") {
-    return "id";
-  }
-  return "createdAt";
-}
-
-function mapDirection(direction: string) {
-  if (direction === "asc" || direction === "desc") {
-    return direction;
-  }
-  return "desc";
 }

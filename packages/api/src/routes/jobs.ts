@@ -182,16 +182,32 @@ export const jobs = new Elysia()
   )
   .get(
     "/jobs",
-    async () => {
-      return await getJobs();
+    async ({ query }) => {
+      return await getJobs(query);
     },
     {
       detail: {
         summary: "Get all jobs",
         tags: ["Jobs"],
       },
+      query: t.Object({
+        page: t.Number(),
+        perPage: t.Number(),
+        sortKey: t.Union([
+          t.Literal("name"),
+          t.Literal("duration"),
+          t.Literal("createdAt"),
+        ]),
+        sortDirection: t.Union([
+          t.Literal("ascending"),
+          t.Literal("descending"),
+        ]),
+      }),
       response: {
-        200: t.Array(JobSchema),
+        200: t.Object({
+          totalPages: t.Number(),
+          items: t.Array(JobSchema),
+        }),
       },
     },
   )

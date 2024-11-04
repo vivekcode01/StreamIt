@@ -1,11 +1,28 @@
-import NProgress from "nprogress";
+import { NextUIProvider } from "@nextui-org/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { Suspense } from "react";
 import ReactDOM from "react-dom/client";
-import { App } from "@/App.tsx";
-import "@/globals.css";
-import "nprogress/nprogress.css";
+import { routeTree } from "./routeTree.gen";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(<App />);
+import "./globals.css";
 
-NProgress.configure({
-  showSpinner: false,
-});
+const router = createRouter({ routeTree });
+
+const queryClient = new QueryClient();
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <NextUIProvider>
+    <Suspense>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </Suspense>
+  </NextUIProvider>,
+);
