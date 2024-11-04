@@ -1,7 +1,6 @@
 import { Elysia, t } from "elysia";
 import { authUser } from "./token";
-import { getAssets, getAssetsCount } from "../repositories/assets";
-import { getGroups } from "../repositories/groups";
+import { getAssets, getAssetsCount, getGroups } from "../repositories/assets";
 import { AssetSchema } from "../types";
 
 export const assets = new Elysia()

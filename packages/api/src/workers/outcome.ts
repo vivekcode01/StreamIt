@@ -1,7 +1,6 @@
 import { addToQueue, DEFAULT_PACKAGE_NAME, packageQueue } from "bolt";
 import { createAsset } from "../repositories/assets";
-import { getOrCreateGroup } from "../repositories/groups";
-import { createPlayable } from "../repositories/playables";
+import { createPlayable, getOrCreateGroup } from "../repositories/assets";
 import type { OutcomeData, WorkerCallback } from "bolt";
 
 export const outcomeCallback: WorkerCallback<OutcomeData> = async ({ job }) => {

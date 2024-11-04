@@ -1,5 +1,5 @@
 import { db } from "../db";
-import type { AssetInsert } from "../db/types";
+import type { AssetInsert, PlayableInsert } from "../db/types";
 
 export async function createAsset(fields: AssetInsert) {
   return await db.insertInto("assets").values(fields).executeTakeFirstOrThrow();
@@ -43,6 +43,33 @@ export async function getAssets(filter: {
       name: asset.id,
     };
   });
+}
+
+export async function getGroups() {
+  return await db.selectFrom("groups").select(["id", "name"]).execute();
+}
+
+export async function getOrCreateGroup(name: string) {
+  let group = await db
+    .selectFrom("groups")
+    .select(["id", "name"])
+    .where("name", "=", name)
+    .executeTakeFirst();
+  if (!group) {
+    group = await db
+      .insertInto("groups")
+      .values({ name })
+      .returning(["id", "name"])
+      .executeTakeFirstOrThrow();
+  }
+  return group;
+}
+
+export async function createPlayable(fields: PlayableInsert) {
+  return await db
+    .insertInto("playables")
+    .values(fields)
+    .executeTakeFirstOrThrow();
 }
 
 function mapOrderBy(orderBy: string) {
