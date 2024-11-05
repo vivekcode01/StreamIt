@@ -18,37 +18,41 @@ function RouteComponent() {
   }
 
   return (
-    <FullTable
-      columns={[
-        {
-          id: "name",
-          label: "Name",
-          allowsSorting: true,
-        },
-        {
-          id: "duration",
-          label: "Duration",
-          allowsSorting: true,
-        },
-        {
-          id: "createdAt",
-          label: "Created",
-          allowsSorting: true,
-        },
-      ]}
-      {...data}
-      filter={filter}
-      onFilterChange={(search) => {
-        navigate({ search });
-      }}
-      mapRow={(job) => [
-        <Link to={`/jobs/${job.id}`}>
-          {job.id}
-          <div>{job.name}</div>
-        </Link>,
-        job.duration,
-        job.createdAt,
-      ]}
-    />
+    <div className="p-8">
+      <FullTable
+        columns={[
+          {
+            id: "name",
+            label: "Name",
+            allowsSorting: true,
+          },
+
+          {
+            id: "duration",
+            label: "Duration",
+            allowsSorting: true,
+          },
+          {
+            id: "createdAt",
+            label: "Created",
+            allowsSorting: true,
+          },
+        ]}
+        {...data}
+        filter={filter}
+        onFilterChange={(search) => {
+          navigate({ search });
+        }}
+        mapRow={(job) => [
+          <Link to={`/jobs/${job.id}`}>
+            {job.state}
+            {job.id}
+            <div>{job.name}</div>
+          </Link>,
+          job.duration,
+          job.createdAt,
+        ]}
+      />
+    </div>
   );
 }

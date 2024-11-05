@@ -19,11 +19,13 @@
   },
   "dependencies": {
     "@nextui-org/react": "^2.4.8",
+    "@nextui-org/use-infinite-scroll": "^2.1.5",
     "@superstreamer/api": "workspace:*",
     "@tanstack/react-query": "^5.51.21",
     "@tanstack/react-router": "^1.78.3",
     "@tanstack/router-plugin": "^1.78.3",
     "@tanstack/router-zod-adapter": "^1.78.3",
+    "clsx": "^2.1.1",
     "jotai": "^2.10.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

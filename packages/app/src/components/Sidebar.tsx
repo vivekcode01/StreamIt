@@ -1,4 +1,3 @@
-import { Button } from "@nextui-org/react";
 import { Link } from "@tanstack/react-router";
 
 export function Sidebar() {
@@ -22,16 +21,18 @@ export function Sidebar() {
   ];
 
   return (
-    <div>
-      <div className="flex flex-col gap-2">
-        {links.map((link) => {
-          return (
-            <Button key={link.to} as={Link} variant="flat" to={link.to}>
-              {link.name}
-            </Button>
-          );
-        })}
-      </div>
+    <div className="flex flex-col gap-2">
+      {links.map((link) => {
+        return (
+          <Link
+            key={link.to}
+            to={link.to}
+            activeProps={{ className: "text-primary" }}
+          >
+            {link.name}
+          </Link>
+        );
+      })}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Pagination } from "@nextui-org/react";
+import { Pagination, Spinner } from "@nextui-org/react";
 import {
   Table,
   TableBody,
@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@nextui-org/table";
+import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { useState } from "react";
 import type { SortDescriptor } from "@nextui-org/table";
 import type { ReactNode } from "@tanstack/react-router";
@@ -15,6 +16,7 @@ export interface Column {
   id: string;
   label: string;
   allowsSorting?: boolean;
+  className?: string;
 }
 
 export interface Filter {
@@ -30,6 +32,8 @@ interface FullTableProps<T, F extends Filter> {
   mapRow(props: T): ReactNode[];
   filter?: F;
   onFilterChange?(filter: F): void;
+  hasMore?: boolean;
+  onLoadMore?(): void;
   totalPages?: number;
 }
 
@@ -39,11 +43,18 @@ export function FullTable<T, F extends Filter>({
   mapRow,
   filter,
   onFilterChange,
+  hasMore,
+  onLoadMore,
   totalPages,
 }: FullTableProps<T, F>) {
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: filter?.sortKey,
     direction: filter?.sortDir === "asc" ? "ascending" : "descending",
+  });
+
+  const [loaderRef, scrollerRef] = useInfiniteScroll({
+    onLoadMore,
+    hasMore,
   });
 
   const updateFilter = (value: Record<string, string | number | undefined>) => {
@@ -53,8 +64,9 @@ export function FullTable<T, F extends Filter>({
   };
 
   return (
-    <div>
+    <>
       <Table
+        baseRef={scrollerRef}
         sortDescriptor={sortDescriptor ?? undefined}
         onSortChange={(sd) => {
           setSortDescriptor(sd);
@@ -63,10 +75,15 @@ export function FullTable<T, F extends Filter>({
             sortDir: sd.direction === "ascending" ? "asc" : "desc",
           });
         }}
+        bottomContent={hasMore ? <Spinner ref={loaderRef} /> : null}
       >
         <TableHeader columns={columns}>
           {(column) => (
-            <TableColumn key={column.id} allowsSorting={column.allowsSorting}>
+            <TableColumn
+              key={column.id}
+              allowsSorting={column.allowsSorting}
+              className={column.className}
+            >
               {column.label}
             </TableColumn>
           )}
@@ -110,6 +127,6 @@ export function FullTable<T, F extends Filter>({
           />
         </div>
       ) : null}
-    </div>
+    </>
   );
 }

@@ -17,6 +17,8 @@ import { Route as AuthLayoutImport } from './routes/auth/_layout'
 import { Route as dashboardLayoutImport } from './routes/(dashboard)/_layout'
 import { Route as dashboardLayoutIndexImport } from './routes/(dashboard)/_layout/index'
 import { Route as AuthLayoutSignInImport } from './routes/auth/_layout/sign-in'
+import { Route as dashboardLayoutStorageImport } from './routes/(dashboard)/_layout/storage'
+import { Route as dashboardLayoutFileImport } from './routes/(dashboard)/_layout/file'
 import { Route as dashboardLayoutJobsIndexImport } from './routes/(dashboard)/_layout/jobs/index'
 import { Route as dashboardLayoutJobsIdImport } from './routes/(dashboard)/_layout/jobs/$id'
 
@@ -58,6 +60,18 @@ const AuthLayoutSignInRoute = AuthLayoutSignInImport.update({
   id: '/sign-in',
   path: '/sign-in',
   getParentRoute: () => AuthLayoutRoute,
+} as any)
+
+const dashboardLayoutStorageRoute = dashboardLayoutStorageImport.update({
+  id: '/storage',
+  path: '/storage',
+  getParentRoute: () => dashboardLayoutRoute,
+} as any)
+
+const dashboardLayoutFileRoute = dashboardLayoutFileImport.update({
+  id: '/file',
+  path: '/file',
+  getParentRoute: () => dashboardLayoutRoute,
 } as any)
 
 const dashboardLayoutJobsIndexRoute = dashboardLayoutJobsIndexImport.update({
@@ -104,6 +118,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLayoutImport
       parentRoute: typeof AuthRoute
     }
+    '/(dashboard)/_layout/file': {
+      id: '/(dashboard)/_layout/file'
+      path: '/file'
+      fullPath: '/file'
+      preLoaderRoute: typeof dashboardLayoutFileImport
+      parentRoute: typeof dashboardLayoutImport
+    }
+    '/(dashboard)/_layout/storage': {
+      id: '/(dashboard)/_layout/storage'
+      path: '/storage'
+      fullPath: '/storage'
+      preLoaderRoute: typeof dashboardLayoutStorageImport
+      parentRoute: typeof dashboardLayoutImport
+    }
     '/auth/_layout/sign-in': {
       id: '/auth/_layout/sign-in'
       path: '/sign-in'
@@ -138,12 +166,16 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface dashboardLayoutRouteChildren {
+  dashboardLayoutFileRoute: typeof dashboardLayoutFileRoute
+  dashboardLayoutStorageRoute: typeof dashboardLayoutStorageRoute
   dashboardLayoutIndexRoute: typeof dashboardLayoutIndexRoute
   dashboardLayoutJobsIdRoute: typeof dashboardLayoutJobsIdRoute
   dashboardLayoutJobsIndexRoute: typeof dashboardLayoutJobsIndexRoute
 }
 
 const dashboardLayoutRouteChildren: dashboardLayoutRouteChildren = {
+  dashboardLayoutFileRoute: dashboardLayoutFileRoute,
+  dashboardLayoutStorageRoute: dashboardLayoutStorageRoute,
   dashboardLayoutIndexRoute: dashboardLayoutIndexRoute,
   dashboardLayoutJobsIdRoute: dashboardLayoutJobsIdRoute,
   dashboardLayoutJobsIndexRoute: dashboardLayoutJobsIndexRoute,
@@ -190,6 +222,8 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 export interface FileRoutesByFullPath {
   '/': typeof dashboardLayoutIndexRoute
   '/auth': typeof AuthLayoutRouteWithChildren
+  '/file': typeof dashboardLayoutFileRoute
+  '/storage': typeof dashboardLayoutStorageRoute
   '/auth/sign-in': typeof AuthLayoutSignInRoute
   '/jobs/$id': typeof dashboardLayoutJobsIdRoute
   '/jobs': typeof dashboardLayoutJobsIndexRoute
@@ -197,6 +231,8 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/auth': typeof AuthLayoutRouteWithChildren
+  '/file': typeof dashboardLayoutFileRoute
+  '/storage': typeof dashboardLayoutStorageRoute
   '/auth/sign-in': typeof AuthLayoutSignInRoute
   '/': typeof dashboardLayoutIndexRoute
   '/jobs/$id': typeof dashboardLayoutJobsIdRoute
@@ -209,6 +245,8 @@ export interface FileRoutesById {
   '/(dashboard)/_layout': typeof dashboardLayoutRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/auth/_layout': typeof AuthLayoutRouteWithChildren
+  '/(dashboard)/_layout/file': typeof dashboardLayoutFileRoute
+  '/(dashboard)/_layout/storage': typeof dashboardLayoutStorageRoute
   '/auth/_layout/sign-in': typeof AuthLayoutSignInRoute
   '/(dashboard)/_layout/': typeof dashboardLayoutIndexRoute
   '/(dashboard)/_layout/jobs/$id': typeof dashboardLayoutJobsIdRoute
@@ -217,15 +255,31 @@ export interface FileRoutesById {
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/auth/sign-in' | '/jobs/$id' | '/jobs'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/file'
+    | '/storage'
+    | '/auth/sign-in'
+    | '/jobs/$id'
+    | '/jobs'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/auth/sign-in' | '/' | '/jobs/$id' | '/jobs'
+  to:
+    | '/auth'
+    | '/file'
+    | '/storage'
+    | '/auth/sign-in'
+    | '/'
+    | '/jobs/$id'
+    | '/jobs'
   id:
     | '__root__'
     | '/(dashboard)'
     | '/(dashboard)/_layout'
     | '/auth'
     | '/auth/_layout'
+    | '/(dashboard)/_layout/file'
+    | '/(dashboard)/_layout/storage'
     | '/auth/_layout/sign-in'
     | '/(dashboard)/_layout/'
     | '/(dashboard)/_layout/jobs/$id'
@@ -267,6 +321,8 @@ export const routeTree = rootRoute
       "filePath": "(dashboard)/_layout.tsx",
       "parent": "/(dashboard)",
       "children": [
+        "/(dashboard)/_layout/file",
+        "/(dashboard)/_layout/storage",
         "/(dashboard)/_layout/",
         "/(dashboard)/_layout/jobs/$id",
         "/(dashboard)/_layout/jobs/"
@@ -284,6 +340,14 @@ export const routeTree = rootRoute
       "children": [
         "/auth/_layout/sign-in"
       ]
+    },
+    "/(dashboard)/_layout/file": {
+      "filePath": "(dashboard)/_layout/file.tsx",
+      "parent": "/(dashboard)/_layout"
+    },
+    "/(dashboard)/_layout/storage": {
+      "filePath": "(dashboard)/_layout/storage.tsx",
+      "parent": "/(dashboard)/_layout"
     },
     "/auth/_layout/sign-in": {
       "filePath": "auth/_layout/sign-in.tsx",
