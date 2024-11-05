@@ -23,6 +23,8 @@ export function useStorage(path: string) {
     getNextPageParam: (lastPage) => {
       return lastPage?.cursor ? { cursor: lastPage.cursor } : undefined;
     },
+    gcTime: 0,
+    staleTime: 0,
   });
 
   return { data, fetchNextPage, hasNextPage };

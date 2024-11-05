@@ -1,4 +1,5 @@
 import { Pagination, Spinner } from "@nextui-org/react";
+import { Select, SelectItem, SelectSection } from "@nextui-org/select";
 import {
   Table,
   TableBody,
@@ -103,21 +104,21 @@ export function FullTable<T, F extends Filter>({
       </Table>
       {filter && totalPages !== undefined ? (
         <div className="flex items-center gap-4 mt-4">
-          <label className="flex items-center text-default-400 text-small">
-            Rows per page:
-            <select
-              className="bg-transparent outline-none text-default-400 text-small"
-              onChange={(event) => {
-                const perPage = Number(event.target.value);
-                updateFilter({ perPage });
-              }}
-              defaultValue={filter.perPage.toString()}
-            >
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="30">30</option>
-            </select>
-          </label>
+          <Select
+            label="Rows per page"
+            className="max-w-[140px]"
+            selectionMode="single"
+            size="sm"
+            selectedKeys={[filter.perPage.toString()]}
+            onSelectionChange={(values) => {
+              if (values.currentKey) {
+                updateFilter({ perPage: +values.currentKey });
+              }
+            }}
+            items={[{ key: "10" }, { key: "20" }, { key: "30" }]}
+          >
+            {(item) => <SelectItem key={item.key}>{item.key}</SelectItem>}
+          </Select>
           <Pagination
             total={totalPages}
             initialPage={filter.page}
