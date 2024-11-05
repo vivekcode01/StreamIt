@@ -1,20 +1,20 @@
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useNavigate,
+  useRouter,
+} from "@tanstack/react-router";
+import { useAuth } from "../../../auth";
 import { Form } from "../../../components/Form";
-import { useAuth } from "../../../hooks/useAuth";
-import { useUser } from "../../../hooks/useUser";
 
 export const Route = createFileRoute("/auth/_layout/sign-in")({
   component: Index,
 });
 
 function Index() {
+  const router = useRouter();
+  const navigate = useNavigate();
   const { signIn } = useAuth();
-  const { user } = useUser();
-
-  if (user) {
-    return <Navigate to="/" />;
-  }
 
   return (
     <Card className="p-4">
@@ -37,6 +37,8 @@ function Index() {
           }}
           onSubmit={async (values) => {
             await signIn(values.username, values.password);
+            await router.invalidate();
+            await navigate({ to: "/" });
           }}
         />
       </CardBody>

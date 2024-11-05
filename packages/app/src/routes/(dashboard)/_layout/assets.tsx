@@ -1,23 +1,22 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 import { z } from "zod";
-import { Format } from "../../../../components/Format";
-import { FullTable } from "../../../../components/FullTable";
-import { JobState } from "../../../../components/JobState";
+import { Format } from "../../../components/Format";
+import { FullTable } from "../../../components/FullTable";
 
-export const Route = createFileRoute("/(dashboard)/_layout/jobs/")({
+export const Route = createFileRoute("/(dashboard)/_layout/assets")({
   component: RouteComponent,
   validateSearch: zodSearchValidator(
     z.object({
       page: z.coerce.number().default(1),
       perPage: z.coerce.number().default(20),
-      sortKey: z.enum(["createdAt", "duration", "name"]).default("createdAt"),
+      sortKey: z.enum(["createdAt", "playables", "name"]).default("createdAt"),
       sortDir: z.enum(["asc", "desc"]).default("desc"),
     }),
   ),
   loaderDeps: ({ search }) => ({ ...search }),
   loader: async ({ deps, context }) => {
-    return await context.auth.api.jobs.get({ query: deps });
+    return await context.auth.api.assets.get({ query: deps });
   },
 });
 
@@ -35,19 +34,13 @@ function RouteComponent() {
       <FullTable
         columns={[
           {
-            id: "state",
-            label: "",
-            className: "w-4",
-          },
-          {
             id: "name",
             label: "Name",
             allowsSorting: true,
           },
-
           {
-            id: "duration",
-            label: "Duration",
+            id: "playables",
+            label: "Playables",
             allowsSorting: true,
           },
           {
@@ -64,12 +57,8 @@ function RouteComponent() {
         mapRow={(item) => ({
           key: item.id,
           cells: [
-            <JobState job={item} />,
-            <Link to={`/jobs/${item.id}`}>
-              <div className="font-medium">{item.name}</div>
-              <Format className="text-xs" format="short-id" value={item.id} />
-            </Link>,
-            <Format format="duration" value={item.duration} />,
+            item.name,
+            item.playables,
             <Format format="date" value={item.createdAt} />,
           ],
         })}

@@ -1,5 +1,5 @@
 import { Pagination, Spinner } from "@nextui-org/react";
-import { Select, SelectItem, SelectSection } from "@nextui-org/select";
+import { Select, SelectItem } from "@nextui-org/select";
 import {
   Table,
   TableBody,
@@ -30,7 +30,7 @@ export interface Filter {
 interface FullTableProps<T, F extends Filter> {
   columns: Column[];
   items: T[];
-  mapRow(props: T): ReactNode[];
+  mapRow(props: T): { key: string | number; cells: ReactNode[] };
   filter?: F;
   onFilterChange?(filter: F): void;
   hasMore?: boolean;
@@ -55,7 +55,6 @@ export function FullTable<T, F extends Filter>({
 
   const [loaderRef, scrollerRef] = useInfiniteScroll({
     onLoadMore,
-    hasMore,
   });
 
   const updateFilter = (value: Record<string, string | number | undefined>) => {
@@ -90,10 +89,10 @@ export function FullTable<T, F extends Filter>({
           )}
         </TableHeader>
         <TableBody>
-          {items.map((item, index) => {
-            const cells = mapRow(item);
+          {items.map((item) => {
+            const { cells, key } = mapRow(item);
             return (
-              <TableRow key={index}>
+              <TableRow key={key}>
                 {cells.map((cell, index) => {
                   return <TableCell key={index}>{cell}</TableCell>;
                 })}

@@ -19,6 +19,8 @@ import { Route as dashboardLayoutIndexImport } from './routes/(dashboard)/_layou
 import { Route as AuthLayoutSignInImport } from './routes/auth/_layout/sign-in'
 import { Route as dashboardLayoutStorageImport } from './routes/(dashboard)/_layout/storage'
 import { Route as dashboardLayoutFileImport } from './routes/(dashboard)/_layout/file'
+import { Route as dashboardLayoutAssetsImport } from './routes/(dashboard)/_layout/assets'
+import { Route as dashboardLayoutApiImport } from './routes/(dashboard)/_layout/api'
 import { Route as dashboardLayoutJobsIndexImport } from './routes/(dashboard)/_layout/jobs/index'
 import { Route as dashboardLayoutJobsIdImport } from './routes/(dashboard)/_layout/jobs/$id'
 
@@ -74,6 +76,18 @@ const dashboardLayoutFileRoute = dashboardLayoutFileImport.update({
   getParentRoute: () => dashboardLayoutRoute,
 } as any)
 
+const dashboardLayoutAssetsRoute = dashboardLayoutAssetsImport.update({
+  id: '/assets',
+  path: '/assets',
+  getParentRoute: () => dashboardLayoutRoute,
+} as any)
+
+const dashboardLayoutApiRoute = dashboardLayoutApiImport.update({
+  id: '/api',
+  path: '/api',
+  getParentRoute: () => dashboardLayoutRoute,
+} as any)
+
 const dashboardLayoutJobsIndexRoute = dashboardLayoutJobsIndexImport.update({
   id: '/jobs/',
   path: '/jobs/',
@@ -117,6 +131,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth'
       preLoaderRoute: typeof AuthLayoutImport
       parentRoute: typeof AuthRoute
+    }
+    '/(dashboard)/_layout/api': {
+      id: '/(dashboard)/_layout/api'
+      path: '/api'
+      fullPath: '/api'
+      preLoaderRoute: typeof dashboardLayoutApiImport
+      parentRoute: typeof dashboardLayoutImport
+    }
+    '/(dashboard)/_layout/assets': {
+      id: '/(dashboard)/_layout/assets'
+      path: '/assets'
+      fullPath: '/assets'
+      preLoaderRoute: typeof dashboardLayoutAssetsImport
+      parentRoute: typeof dashboardLayoutImport
     }
     '/(dashboard)/_layout/file': {
       id: '/(dashboard)/_layout/file'
@@ -166,6 +194,8 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface dashboardLayoutRouteChildren {
+  dashboardLayoutApiRoute: typeof dashboardLayoutApiRoute
+  dashboardLayoutAssetsRoute: typeof dashboardLayoutAssetsRoute
   dashboardLayoutFileRoute: typeof dashboardLayoutFileRoute
   dashboardLayoutStorageRoute: typeof dashboardLayoutStorageRoute
   dashboardLayoutIndexRoute: typeof dashboardLayoutIndexRoute
@@ -174,6 +204,8 @@ interface dashboardLayoutRouteChildren {
 }
 
 const dashboardLayoutRouteChildren: dashboardLayoutRouteChildren = {
+  dashboardLayoutApiRoute: dashboardLayoutApiRoute,
+  dashboardLayoutAssetsRoute: dashboardLayoutAssetsRoute,
   dashboardLayoutFileRoute: dashboardLayoutFileRoute,
   dashboardLayoutStorageRoute: dashboardLayoutStorageRoute,
   dashboardLayoutIndexRoute: dashboardLayoutIndexRoute,
@@ -222,6 +254,8 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 export interface FileRoutesByFullPath {
   '/': typeof dashboardLayoutIndexRoute
   '/auth': typeof AuthLayoutRouteWithChildren
+  '/api': typeof dashboardLayoutApiRoute
+  '/assets': typeof dashboardLayoutAssetsRoute
   '/file': typeof dashboardLayoutFileRoute
   '/storage': typeof dashboardLayoutStorageRoute
   '/auth/sign-in': typeof AuthLayoutSignInRoute
@@ -231,6 +265,8 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/auth': typeof AuthLayoutRouteWithChildren
+  '/api': typeof dashboardLayoutApiRoute
+  '/assets': typeof dashboardLayoutAssetsRoute
   '/file': typeof dashboardLayoutFileRoute
   '/storage': typeof dashboardLayoutStorageRoute
   '/auth/sign-in': typeof AuthLayoutSignInRoute
@@ -245,6 +281,8 @@ export interface FileRoutesById {
   '/(dashboard)/_layout': typeof dashboardLayoutRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/auth/_layout': typeof AuthLayoutRouteWithChildren
+  '/(dashboard)/_layout/api': typeof dashboardLayoutApiRoute
+  '/(dashboard)/_layout/assets': typeof dashboardLayoutAssetsRoute
   '/(dashboard)/_layout/file': typeof dashboardLayoutFileRoute
   '/(dashboard)/_layout/storage': typeof dashboardLayoutStorageRoute
   '/auth/_layout/sign-in': typeof AuthLayoutSignInRoute
@@ -258,6 +296,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/api'
+    | '/assets'
     | '/file'
     | '/storage'
     | '/auth/sign-in'
@@ -266,6 +306,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/api'
+    | '/assets'
     | '/file'
     | '/storage'
     | '/auth/sign-in'
@@ -278,6 +320,8 @@ export interface FileRouteTypes {
     | '/(dashboard)/_layout'
     | '/auth'
     | '/auth/_layout'
+    | '/(dashboard)/_layout/api'
+    | '/(dashboard)/_layout/assets'
     | '/(dashboard)/_layout/file'
     | '/(dashboard)/_layout/storage'
     | '/auth/_layout/sign-in'
@@ -321,6 +365,8 @@ export const routeTree = rootRoute
       "filePath": "(dashboard)/_layout.tsx",
       "parent": "/(dashboard)",
       "children": [
+        "/(dashboard)/_layout/api",
+        "/(dashboard)/_layout/assets",
         "/(dashboard)/_layout/file",
         "/(dashboard)/_layout/storage",
         "/(dashboard)/_layout/",
@@ -340,6 +386,14 @@ export const routeTree = rootRoute
       "children": [
         "/auth/_layout/sign-in"
       ]
+    },
+    "/(dashboard)/_layout/api": {
+      "filePath": "(dashboard)/_layout/api.tsx",
+      "parent": "/(dashboard)/_layout"
+    },
+    "/(dashboard)/_layout/assets": {
+      "filePath": "(dashboard)/_layout/assets.tsx",
+      "parent": "/(dashboard)/_layout"
     },
     "/(dashboard)/_layout/file": {
       "filePath": "(dashboard)/_layout/file.tsx",

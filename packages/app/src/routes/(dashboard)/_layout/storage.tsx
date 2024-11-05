@@ -1,8 +1,12 @@
+import { BreadcrumbItem, Breadcrumbs } from "@nextui-org/breadcrumbs";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
+import { House } from "lucide-react";
 import z from "zod";
+import { useAuth } from "../../../auth";
 import { FullTable } from "../../../components/FullTable";
-import { useStorage } from "../../../hooks/useStorage";
+import { useInfinite } from "../../../hooks/useInfinite";
+import type { ApiClient } from "@superstreamer/api/client";
 
 export const Route = createFileRoute("/(dashboard)/_layout/storage")({
   component: RouteComponent,
@@ -11,16 +15,34 @@ export const Route = createFileRoute("/(dashboard)/_layout/storage")({
       path: z.string().default("/"),
     }),
   ),
+  loaderDeps: ({ search }) => ({ ...search }),
+  loader: async ({ deps, context }) => {
+    return await getFolderItems(context.auth.api, deps.path, "");
+  },
 });
 
 function RouteComponent() {
-  const { path } = Route.useSearch();
-  const { data, fetchNextPage, hasNextPage } = useStorage(path);
+  const deps = Route.useLoaderDeps();
+  const result = Route.useLoaderData();
+  const { api } = useAuth();
 
-  const items = data.pages.flatMap((page) => page.items);
+  const { hasMore, items, loadMore } = useInfinite(result, async (cursor) => {
+    return await getFolderItems(api, deps.path, cursor);
+  });
+
+  const paths = parsePathInPaths(deps.path);
 
   return (
-    <div className="flex h-full p-8">
+    <div className="flex flex-col h-full p-8">
+      <Breadcrumbs>
+        {paths.map(({ name, path }) => (
+          <BreadcrumbItem>
+            <Link to={Route.fullPath} search={{ path }}>
+              {name || <House className="w-4 h-4" />}
+            </Link>
+          </BreadcrumbItem>
+        ))}
+      </Breadcrumbs>
       <FullTable
         columns={[
           {
@@ -34,8 +56,9 @@ function RouteComponent() {
           },
         ]}
         items={items}
-        mapRow={(item) => {
-          return [
+        mapRow={(item) => ({
+          key: item.path,
+          cells: [
             item.type,
             <Link
               to={item.type === "folder" ? Route.fullPath : "/file"}
@@ -43,11 +66,42 @@ function RouteComponent() {
             >
               {item.path}
             </Link>,
-          ];
-        }}
-        hasMore={hasNextPage}
-        onLoadMore={fetchNextPage}
+          ],
+        })}
+        hasMore={hasMore}
+        onLoadMore={loadMore}
       />
     </div>
   );
+}
+
+async function getFolderItems(api: ApiClient, path: string, cursor: string) {
+  const { data } = await api.storage.folder.get({
+    query: {
+      path,
+      cursor,
+      take: 30,
+    },
+  });
+  if (!data) {
+    throw new Error("Failed data");
+  }
+  return data;
+}
+
+function parsePathInPaths(path: string) {
+  let prevPath = "";
+
+  const paths = path.split("/").map((part) => {
+    const result = {
+      name: part,
+      path: prevPath + part + "/",
+    };
+    prevPath += part + "/";
+    return result;
+  });
+
+  paths.pop();
+
+  return paths;
 }

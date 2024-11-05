@@ -1,7 +1,13 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/auth/_layout")({
   component: LayoutComponent,
+  beforeLoad: ({ context }) => {
+    if (context.auth.token) {
+      throw redirect({ to: "/" });
+    }
+  },
 });
 
 function LayoutComponent() {

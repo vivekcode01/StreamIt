@@ -1,15 +1,19 @@
 import { NextUIProvider } from "@nextui-org/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
-import { Suspense } from "react";
 import ReactDOM from "react-dom/client";
+import { AuthProvider, useAuth } from "./auth";
 import { routeTree } from "./routeTree.gen";
 
 import "./globals.css";
 
-const router = createRouter({ routeTree });
-
-const queryClient = new QueryClient();
+const router = createRouter({
+  routeTree,
+  defaultPreload: false,
+  context: {
+    // This will be set after we wrap the app in an AuthProvider
+    auth: undefined!,
+  },
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -19,10 +23,13 @@ declare module "@tanstack/react-router" {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <NextUIProvider>
-    <Suspense>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </Suspense>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </NextUIProvider>,
 );
+
+function App() {
+  const auth = useAuth();
+  return <RouterProvider router={router} context={{ auth }} />;
+}

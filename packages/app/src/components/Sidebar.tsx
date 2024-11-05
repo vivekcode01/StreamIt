@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 export function Sidebar() {
   const links = [
     {
-      to: "/",
+      to: "/assets",
       name: "Assets",
     },
     {
