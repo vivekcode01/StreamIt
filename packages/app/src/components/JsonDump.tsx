@@ -8,7 +8,12 @@ export function JsonDump({ data }: JsonDumpProps) {
   }
 
   if (typeof data === "string") {
-    data = JSON.parse(data);
+    try {
+      data = JSON.parse(data);
+    } catch {
+      return null;
+    }
   }
+
   return <pre className="text-xs">{JSON.stringify(data, null, 2)}</pre>;
 }

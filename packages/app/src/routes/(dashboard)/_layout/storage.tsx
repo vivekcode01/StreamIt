@@ -1,12 +1,13 @@
 import { BreadcrumbItem, Breadcrumbs } from "@nextui-org/breadcrumbs";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
-import { House } from "lucide-react";
+import { File, Folder, House } from "lucide-react";
 import z from "zod";
 import { useAuth } from "../../../auth";
+import { Format } from "../../../components/Format";
 import { FullTable } from "../../../components/FullTable";
 import { useInfinite } from "../../../hooks/useInfinite";
-import type { ApiClient } from "@superstreamer/api/client";
+import type { ApiClient, StorageFolderItem } from "@superstreamer/api/client";
 
 export const Route = createFileRoute("/(dashboard)/_layout/storage")({
   component: RouteComponent,
@@ -34,38 +35,45 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col h-full p-8">
-      <Breadcrumbs>
+      <Breadcrumbs className="mb-4 h-4 flex items-center">
         {paths.map(({ name, path }) => (
-          <BreadcrumbItem>
+          <BreadcrumbItem key={path}>
             <Link to={Route.fullPath} search={{ path }}>
-              {name || <House className="w-4 h-4" />}
+              {name || <House className="w-3 h-3" />}
             </Link>
           </BreadcrumbItem>
         ))}
       </Breadcrumbs>
       <FullTable
+        classNames={{
+          base: "grow",
+          wrapper: "grow basis-0",
+        }}
         columns={[
           {
             id: "type",
-            label: "Type",
-            className: "w-8",
+            label: "",
+            className: "w-4",
           },
           {
             id: "path",
             label: "Path",
+          },
+          {
+            id: "size",
+            label: "Size",
           },
         ]}
         items={items}
         mapRow={(item) => ({
           key: item.path,
           cells: [
-            item.type,
-            <Link
-              to={item.type === "folder" ? Route.fullPath : "/file"}
-              search={{ path: item.path }}
-            >
-              {item.path}
-            </Link>,
+            <Icon item={item} />,
+            <Item item={item} />,
+            <Format
+              format="size"
+              value={item.type === "file" ? item.size : null}
+            />,
           ],
         })}
         hasMore={hasMore}
@@ -104,4 +112,26 @@ function parsePathInPaths(path: string) {
   paths.pop();
 
   return paths;
+}
+
+function Item({ item }: { item: StorageFolderItem }) {
+  const chunks = item.path.split("/");
+  const name = chunks[chunks.length - (item.type === "file" ? 1 : 2)];
+  return (
+    <Link
+      to={item.type === "folder" ? Route.fullPath : "/file"}
+      search={{ path: item.path }}
+    >
+      {name}
+    </Link>
+  );
+}
+
+function Icon({ item }: { item: StorageFolderItem }) {
+  if (item.type === "file") {
+    return <File className="w-4 h-4" />;
+  }
+  if (item.type === "folder") {
+    return <Folder className="w-4 h-4" />;
+  }
 }

@@ -8,14 +8,14 @@ JsTimeAgo.addDefaultLocale(en);
 const timeAgo = new JsTimeAgo("en-US");
 
 type FormatProps = { className?: string } & (
-  | { format: "date"; value?: Date | number }
-  | { format: "size"; value?: number }
-  | { format: "duration"; value?: number }
-  | { format: "short-id"; value?: string }
+  | { format: "date"; value?: Date | number | null }
+  | { format: "size"; value?: number | null }
+  | { format: "duration"; value?: number | null }
+  | { format: "short-id"; value?: string | null }
 );
 
 export function Format({ className, format, value }: FormatProps) {
-  if (value === undefined) {
+  if (value === undefined || value === null) {
     return null;
   }
 

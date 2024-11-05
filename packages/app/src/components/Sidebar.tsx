@@ -15,8 +15,16 @@ export function Sidebar() {
       name: "Storage",
     },
     {
+      to: "/player",
+      name: "Player",
+    },
+    {
       to: "/api",
       name: "API",
+    },
+    {
+      to: "/stitcher-api",
+      name: "Stitcher API",
     },
   ];
 

@@ -17,10 +17,8 @@ import {
   AssetSchema,
   GroupSchema,
   JobSchema,
-  StorageFileSchema,
   StorageFolderSchema,
   UserSchema,
-  UserSettingsSchema,
 } from "./types";
 
 // Import workers and they'll start running immediately.
@@ -89,13 +87,11 @@ const app = new Elysia()
   )
   .model({
     User: UserSchema,
-    UserSettings: UserSettingsSchema,
     LangCode: LangCodeSchema,
     VideoCodec: VideoCodecSchema,
     AudioCodec: AudioCodecSchema,
     Job: JobSchema,
     StorageFolder: StorageFolderSchema,
-    StorageFile: StorageFileSchema,
     Asset: AssetSchema,
     Group: GroupSchema,
   })

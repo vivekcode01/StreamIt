@@ -10,7 +10,7 @@ import {
 } from "@nextui-org/table";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { useState } from "react";
-import type { SortDescriptor } from "@nextui-org/table";
+import type { SortDescriptor, TableProps } from "@nextui-org/table";
 import type { ReactNode } from "@tanstack/react-router";
 
 export interface Column {
@@ -28,6 +28,7 @@ export interface Filter {
 }
 
 interface FullTableProps<T, F extends Filter> {
+  classNames?: TableProps["classNames"];
   columns: Column[];
   items: T[];
   mapRow(props: T): { key: string | number; cells: ReactNode[] };
@@ -39,6 +40,7 @@ interface FullTableProps<T, F extends Filter> {
 }
 
 export function FullTable<T, F extends Filter>({
+  classNames,
   columns,
   items,
   mapRow,
@@ -66,6 +68,7 @@ export function FullTable<T, F extends Filter>({
   return (
     <>
       <Table
+        classNames={classNames}
         baseRef={scrollerRef}
         sortDescriptor={sortDescriptor ?? undefined}
         onSortChange={(sd) => {

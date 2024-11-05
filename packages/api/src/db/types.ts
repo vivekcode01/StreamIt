@@ -11,7 +11,6 @@ export interface UsersTable {
   id: Generated<number>;
   username: string;
   password: string;
-  autoRefresh: boolean;
 }
 
 export type UserUpdate = Updateable<UsersTable>;

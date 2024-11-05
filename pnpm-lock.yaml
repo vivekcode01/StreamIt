@@ -32,6 +32,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.623.0
         version: 3.623.0
+      '@aws-sdk/s3-request-presigner':
+        specifier: ^3.679.0
+        version: 3.679.0
       '@elysiajs/bearer':
         specifier: ^1.1.2
         version: 1.1.2(elysia@1.1.20(@sinclair/typebox@0.33.16)(openapi-types@12.1.3)(typescript@5.6.3))
@@ -96,6 +99,9 @@ importers:
       '@superstreamer/api':
         specifier: workspace:*
         version: link:../api
+      '@superstreamer/player':
+        specifier: workspace:*
+        version: link:../player
       '@tanstack/react-router':
         specifier: ^1.78.3
         version: 1.78.3(@tanstack/router-generator@1.78.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

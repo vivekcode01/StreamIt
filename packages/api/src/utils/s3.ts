@@ -1,6 +1,7 @@
 import { GetObjectCommand, ListObjectsCommand, S3 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "../env";
-import type { StorageFile, StorageFolder, StorageFolderItem } from "../types";
+import type { StorageFolder, StorageFolderItem } from "../types";
 
 const client = new S3({
   endpoint: env.S3_ENDPOINT,
@@ -49,7 +50,6 @@ export async function getStorageFolder(
       type: "file",
       path: `/${content.Key}`,
       size: content.Size ?? 0,
-      canPreview: canFilePreview(content.Key),
     });
   });
 
@@ -59,33 +59,27 @@ export async function getStorageFolder(
   };
 }
 
-export async function getStorageFile(path: string): Promise<StorageFile> {
+export async function getStorageFileUrl(path: string) {
   path = path.substring(1);
+  const command = new GetObjectCommand({
+    Bucket: env.S3_BUCKET,
+    Key: path,
+  });
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore https://github.com/aws/aws-sdk-js-v3/issues/4451
+  const url = await getSignedUrl(client, command, {
+    expiresIn: 60 * 15,
+  });
+  return url;
+}
 
-  if (!canFilePreview(path)) {
-    throw new Error("File cannot be previewed");
-  }
-
-  const response = await client.send(
+export async function getStorageFilePayload(path: string) {
+  path = path.substring(1);
+  const command = await client.send(
     new GetObjectCommand({
       Bucket: env.S3_BUCKET,
       Key: path,
     }),
   );
-
-  if (!response.Body) {
-    throw new Error("Missing body");
-  }
-
-  return {
-    path,
-    size: 0,
-    data: await response.Body.transformToString("utf-8"),
-  };
-}
-
-function canFilePreview(name: string): boolean {
-  return (
-    name.endsWith(".vtt") || name.endsWith(".m3u8") || name.endsWith(".json")
-  );
+  return await command.Body!.transformToString("utf-8");
 }

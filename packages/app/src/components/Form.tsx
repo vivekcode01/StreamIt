@@ -1,7 +1,9 @@
 import { Button, Input } from "@nextui-org/react";
+import cn from "clsx";
 import { useForm } from "react-hook-form";
 
 interface FormProps<T extends FieldRecord> {
+  className?: string;
   fields: T;
   onSubmit(values: FieldMap<T>): void | Promise<void>;
   submit?: string;
@@ -18,6 +20,7 @@ type FieldMap<T extends FieldRecord = FieldRecord> = {
 };
 
 export function Form<T extends FieldRecord>({
+  className,
   fields,
   onSubmit,
   submit,
@@ -37,7 +40,7 @@ export function Form<T extends FieldRecord>({
         // @ts-expect-error Explicitly mapped
         onSubmit(values);
       })}
-      className="flex flex-col gap-4"
+      className={cn("flex flex-col gap-4", className)}
       autoComplete="off"
     >
       {entries.map(([name, field]) => {

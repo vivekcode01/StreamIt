@@ -33,7 +33,6 @@ export const StorageFolderItemSchema = t.Union(
       type: t.Literal("file"),
       path: t.String(),
       size: t.Number({ description: "Size in bytes" }),
-      canPreview: t.Boolean(),
     }),
     t.Object({
       type: t.Literal("folder"),
@@ -44,17 +43,6 @@ export const StorageFolderItemSchema = t.Union(
 );
 
 export type StorageFolderItem = Static<typeof StorageFolderItemSchema>;
-
-export const StorageFileSchema = t.Object(
-  {
-    path: t.String(),
-    size: t.Number({ description: "Size in bytes" }),
-    data: t.String(),
-  },
-  { $id: "#/components/schemas/StorageFile" },
-);
-
-export type StorageFile = Static<typeof StorageFileSchema>;
 
 export const StorageFolderSchema = t.Object(
   {
@@ -75,17 +63,6 @@ export const UserSchema = t.Object(
 );
 
 export type User = Static<typeof UserSchema>;
-
-export const UserSettingsSchema = t.Object(
-  {
-    autoRefresh: t.Boolean(),
-  },
-  {
-    $id: "#/components/schemas/UserSettings",
-  },
-);
-
-export type UserSettings = Static<typeof UserSettingsSchema>;
 
 export const AssetSchema = t.Object(
   {
