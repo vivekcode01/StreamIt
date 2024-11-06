@@ -6,12 +6,8 @@ import {
   packageQueue,
   transcodeQueue,
 } from "bolt";
+import { AudioCodec, VideoCodec } from "bolt";
 import { Elysia, t } from "elysia";
-import {
-  AudioCodecSchema,
-  LangCodeSchema,
-  VideoCodecSchema,
-} from "shared/typebox";
 import { authUser } from "./token";
 import { DeliberateError } from "../errors";
 import { getJob, getJobLogs, getJobs } from "../repositories/jobs";
@@ -54,7 +50,7 @@ export const jobs = new Elysia()
                 description:
                   "The source path, starting with http(s):// or s3://",
               }),
-              language: t.Optional(LangCodeSchema),
+              language: t.Optional(t.String()),
               channels: t.Optional(t.Number()),
             }),
             t.Object({
@@ -63,7 +59,7 @@ export const jobs = new Elysia()
                 description:
                   "The source path, starting with http(s):// or s3://",
               }),
-              language: LangCodeSchema,
+              language: t.String(),
             }),
           ]),
           {
@@ -76,7 +72,7 @@ export const jobs = new Elysia()
           t.Union([
             t.Object({
               type: t.Literal("video"),
-              codec: VideoCodecSchema,
+              codec: t.Enum(VideoCodec),
               height: t.Number(),
               bitrate: t.Optional(t.Number({ description: "Bitrate in bps" })),
               framerate: t.Optional(
@@ -85,14 +81,14 @@ export const jobs = new Elysia()
             }),
             t.Object({
               type: t.Literal("audio"),
-              codec: AudioCodecSchema,
+              codec: t.Enum(AudioCodec),
               bitrate: t.Optional(t.Number({ description: "Bitrate in bps" })),
-              language: t.Optional(LangCodeSchema),
+              language: t.Optional(t.String()),
               channels: t.Optional(t.Number()),
             }),
             t.Object({
               type: t.Literal("text"),
-              language: LangCodeSchema,
+              language: t.String(),
             }),
           ]),
           {
@@ -153,7 +149,7 @@ export const jobs = new Elysia()
         assetId: t.String({
           format: "uuid",
         }),
-        language: t.Optional(LangCodeSchema),
+        language: t.Optional(t.String()),
         segmentSize: t.Optional(
           t.Number({
             description:
@@ -182,16 +178,29 @@ export const jobs = new Elysia()
   )
   .get(
     "/jobs",
-    async () => {
-      return await getJobs();
+    async ({ query }) => {
+      return await getJobs(query);
     },
     {
       detail: {
         summary: "Get all jobs",
         tags: ["Jobs"],
       },
+      query: t.Object({
+        page: t.Number(),
+        perPage: t.Number(),
+        sortKey: t.Union([
+          t.Literal("name"),
+          t.Literal("duration"),
+          t.Literal("createdAt"),
+        ]),
+        sortDir: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      }),
       response: {
-        200: t.Array(JobSchema),
+        200: t.Object({
+          totalPages: t.Number(),
+          items: t.Array(JobSchema),
+        }),
       },
     },
   )

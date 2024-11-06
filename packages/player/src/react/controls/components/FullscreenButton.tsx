@@ -1,7 +1,7 @@
 import { SqButton } from "./SqButton";
 import { useAppStore } from "../hooks/useAppStore";
-import FullscreenExitIcon from "../icons/fullscreen-exit.svg?react";
-import FullscreenIcon from "../icons/fullscreen.svg?react";
+import FullscreenExitIcon from "../icons/fullscreen-exit.svg";
+import FullscreenIcon from "../icons/fullscreen.svg";
 import type { MouseEventHandler } from "react";
 
 interface FullscreenButtonProps {

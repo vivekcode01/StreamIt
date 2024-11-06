@@ -8,9 +8,9 @@ import { useAppStore } from "../hooks/useAppStore";
 import { useFakeTime } from "../hooks/useFakeTime";
 import { useSeekTo } from "../hooks/useSeekTo";
 import { useShowTextAudio } from "../hooks/useShowTextAudio";
-import ForwardIcon from "../icons/forward.svg?react";
-import SettingsIcon from "../icons/settings.svg?react";
-import SubtitlesIcon from "../icons/subtitles.svg?react";
+import ForwardIcon from "../icons/forward.svg";
+import SettingsIcon from "../icons/settings.svg";
+import SubtitlesIcon from "../icons/subtitles.svg";
 import type { SetAppSettings } from "../hooks/useAppSettings";
 import type { MouseEventHandler } from "react";
 

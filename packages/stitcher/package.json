@@ -4,9 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "bun --watch ./runtime/local.ts",
-    "build": "tsc -b && bun build ./runtime/local.ts --target=bun --outdir=./dist",
+    "build": "bun build ./runtime/local.ts --target=bun --outdir=./dist",
     "test": "bun test",
-    "lint": "eslint",
+   "lint": "tsc && eslint",
     "dev:cloudflare": "wrangler dev runtime/cloudflare.ts",
     "deploy:cloudflare": "wrangler deploy --minify runtime/cloudflare.ts"
   },
@@ -16,12 +16,12 @@
     "@types/hh-mm-ss": "^1.2.3",
     "@types/lru-cache": "^7.10.10",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^22.1.0",
+    "@types/node": "^22.9.0",
     "@types/uuid": "^10.0.0",
     "config": "workspace:*",
-    "eslint": "^9.13.0",
+    "eslint": "^9.14.0",
     "typescript": "^5.6.3",
-    "wrangler": "^3.83.0"
+    "wrangler": "^3.84.1"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.1.1",
@@ -29,9 +29,9 @@
     "@superstreamer/api": "workspace:*",
     "@xmldom/xmldom": "^0.8.10",
     "dom-parser": "^1.1.5",
-    "elysia": "^1.1.20",
+    "elysia": "^1.1.24",
     "hh-mm-ss": "^1.2.0",
-    "lru-cache": "^11.0.1",
+    "lru-cache": "^11.0.2",
     "luxon": "^3.5.0",
     "redis": "^4.7.0",
     "shared": "workspace:*",

@@ -1,7 +1,12 @@
 import { Elysia, t } from "elysia";
 import { authUser } from "./token";
+import { DeliberateError } from "../errors";
 import { StorageFileSchema, StorageFolderSchema } from "../types";
-import { getStorageFile, getStorageFolder } from "../utils/s3";
+import {
+  getStorageFilePayload,
+  getStorageFileUrl,
+  getStorageFolder,
+} from "../utils/s3";
 
 export const storage = new Elysia()
   .use(authUser)
@@ -30,12 +35,32 @@ export const storage = new Elysia()
   .get(
     "/storage/file",
     async ({ query }) => {
-      return await getStorageFile(query.path);
+      const ext = query.path.split(".").pop();
+      switch (ext) {
+        case "m4v":
+        case "m4a":
+        case "mp4":
+        case "mkv":
+          return {
+            mode: "url",
+            url: await getStorageFileUrl(query.path),
+            type: "video",
+          };
+        case "m3u8":
+        case "json":
+        case "vtt":
+          return {
+            mode: "payload",
+            payload: await getStorageFilePayload(query.path),
+          };
+        default:
+          throw new DeliberateError({ type: "ERR_STORAGE_NO_FILE_PREVIEW" });
+      }
     },
     {
       detail: {
-        summary: "Get a storage file",
-        description: "Get a single file from storage with raw data.",
+        summary: "Get a file",
+        description: "Get a fle from your S3 storage by path.",
         tags: ["Storage"],
       },
       query: t.Object({

@@ -1,11 +1,6 @@
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@matvp91/elysia-swagger";
 import { Elysia, t } from "elysia";
-import {
-  AudioCodecSchema,
-  LangCodeSchema,
-  VideoCodecSchema,
-} from "shared/typebox";
 import { env } from "./env";
 import { errors } from "./errors";
 import { assets } from "./routes/assets";
@@ -20,11 +15,13 @@ import {
   StorageFileSchema,
   StorageFolderSchema,
   UserSchema,
-  UserSettingsSchema,
 } from "./types";
 
 // Import workers and they'll start running immediately.
 import "./workers";
+
+// Run migrations on start.
+import "./db/migrate";
 
 export type App = typeof app;
 
@@ -44,18 +41,22 @@ const app = new Elysia()
         },
         tags: [
           {
-            name: "User",
-            description:
-              "Methods related to user actions, including authentication and personal settings updates.",
-          },
-          {
             name: "Jobs",
             description:
               "Handle tasks related to jobs, including video processing and job status monitoring.",
           },
           {
+            name: "Assets",
+            description: "Inspect assets.",
+          },
+          {
             name: "Storage",
             description: "Anything related to your configured S3 bucket.",
+          },
+          {
+            name: "User",
+            description:
+              "Methods related to user actions, including authentication and personal settings updates.",
           },
         ],
         components: {
@@ -88,22 +89,18 @@ const app = new Elysia()
     }),
   )
   .model({
-    User: UserSchema,
-    UserSettings: UserSettingsSchema,
-    LangCode: LangCodeSchema,
-    VideoCodec: VideoCodecSchema,
-    AudioCodec: AudioCodecSchema,
     Job: JobSchema,
     StorageFolder: StorageFolderSchema,
     StorageFile: StorageFileSchema,
     Asset: AssetSchema,
     Group: GroupSchema,
+    User: UserSchema,
   })
-  .use(token)
-  .use(user)
   .use(jobs)
   .use(storage)
-  .use(assets);
+  .use(assets)
+  .use(token)
+  .use(user);
 
 app.on("stop", () => {
   process.exit(0);

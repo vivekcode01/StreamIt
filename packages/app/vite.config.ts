@@ -1,5 +1,4 @@
-import path from "path";
-import { fileURLToPath } from "url";
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { parseEnv } from "shared/env";
 import { defineConfig } from "vite";
@@ -8,17 +7,34 @@ import type { Plugin } from "vite";
 // When we inject new PUBLIC_ variables, make sure to add them
 // in src/globals.d.ts too. All of these are optional because we
 // can inject them through SSI.
-const env = parseEnv((t) => ({
-  PUBLIC_API_ENDPOINT: t.Optional(t.String()),
-  PUBLIC_STITCHER_ENDPOINT: t.Optional(t.String()),
+const env = parseEnv((z) => ({
+  PUBLIC_API_ENDPOINT: z.string().optional(),
+  PUBLIC_STITCHER_ENDPOINT: z.string().optional(),
 }));
 
-const MANUAL_CHUNKS = [
-  "hls.js",
-  "monaco-editor",
-  "radix-ui",
-  "react-syntax-highlighter",
-];
+// https://vitejs.dev/config/
+export default defineConfig(({ mode }) => {
+  return {
+    plugins: [TanStackRouterVite(), react(), ssiEnvPlugin(env, mode)],
+    define: {
+      __VERSION__: JSON.stringify(process.env.npm_package_version),
+    },
+    clearScreen: false,
+    server: {
+      port: 52000,
+      hmr: false,
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          assetFileNames: "[name]-[hash][extname]",
+          chunkFileNames: "[name]-[hash].js",
+          entryFileNames: "[name]-[hash].js",
+        },
+      },
+    },
+  };
+});
 
 function ssiEnvPlugin(values: Record<string, string>, mode: string) {
   return {
@@ -37,38 +53,3 @@ function ssiEnvPlugin(values: Record<string, string>, mode: string) {
     },
   } satisfies Plugin;
 }
-
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
-  return {
-    plugins: [react(), ssiEnvPlugin(env, mode)],
-    resolve: {
-      alias: {
-        "@": path.resolve(__dirname, "./src"),
-        "lucide-react/icons": fileURLToPath(
-          new URL(
-            "./node_modules/lucide-react/dist/esm/icons",
-            import.meta.url,
-          ),
-        ),
-      },
-    },
-    define: {
-      __VERSION__: JSON.stringify(process.env.npm_package_version),
-    },
-    clearScreen: false,
-    server: {
-      port: 52000,
-      hmr: false,
-    },
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks: (id) => {
-            return MANUAL_CHUNKS.find((chunk) => id.includes(chunk));
-          },
-        },
-      },
-    },
-  };
-});

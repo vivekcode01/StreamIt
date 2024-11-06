@@ -1,10 +1,10 @@
 import cn from "clsx";
 import { useRef, useState } from "react";
 import { SqButton } from "./SqButton";
-import Volume0Icon from "../icons/volume-0.svg?react";
-import Volume1Icon from "../icons/volume-1.svg?react";
-import Volume2Icon from "../icons/volume-2.svg?react";
-import VolumeMutedIcon from "../icons/volume-muted.svg?react";
+import Volume0Icon from "../icons/volume-0.svg";
+import Volume1Icon from "../icons/volume-1.svg";
+import Volume2Icon from "../icons/volume-2.svg";
+import VolumeMutedIcon from "../icons/volume-muted.svg";
 import type { CSSProperties, ReactEventHandler } from "react";
 
 const rangeStyle: CSSProperties = {

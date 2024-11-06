@@ -19,7 +19,7 @@ const jwtUser = jwt({
       name: t.String(),
     }),
   ]),
-  secret: env.JWT_SECRET,
+  secret: env.SUPER_SECRET,
 });
 
 export const authUser = new Elysia()

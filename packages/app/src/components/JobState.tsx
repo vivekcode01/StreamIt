@@ -1,36 +1,27 @@
-import Check from "lucide-react/icons/check";
-import CircleDotDashed from "lucide-react/icons/circle-dot-dashed";
-import Loader from "lucide-react/icons/loader";
-import X from "lucide-react/icons/x";
+import cn from "clsx";
+import {
+  CircleCheck,
+  CircleDashed,
+  CircleDotDashed,
+  CircleX,
+} from "lucide-react";
 import type { Job } from "@superstreamer/api/client";
-import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 
-export function JobState({ state }: { state: Job["state"] }) {
-  if (state === "completed") {
-    return createCircle("bg-emerald-200 text-emerald-800", Check);
-  }
-  if (state === "failed") {
-    return createCircle("bg-red-200 text-red-800", X);
-  }
-  if (state === "running") {
-    return createCircle("bg-blue-200 text-blue-800", Loader, "animate-spin");
-  }
-  return createCircle("bg-violet-200 text-violet-800", CircleDotDashed);
+interface JobStateProps {
+  job: Job;
 }
 
-function createCircle(
-  className: string,
-  Icon: React.FC<{ className?: string }>,
-  iconClassName?: string,
-) {
-  return (
-    <div
-      className={cn(
-        className,
-        "w-6 h-6 rounded-full flex items-center justify-center",
-      )}
-    >
-      <Icon className={cn("w-3 h-3", iconClassName)} />
-    </div>
-  );
+export function JobState({ job }: JobStateProps) {
+  const className = "w-4 h-4";
+
+  const iconMap: Record<Job["state"], ReactNode> = {
+    running: (
+      <CircleDashed className={cn(className, "animate-spin text-sky-500")} />
+    ),
+    failed: <CircleX className={cn(className, "text-red-500")} />,
+    completed: <CircleCheck className={cn(className, "text-green-500")} />,
+    waiting: <CircleDotDashed className={cn(className, "text-indigo-500")} />,
+  };
+  return iconMap[job.state];
 }

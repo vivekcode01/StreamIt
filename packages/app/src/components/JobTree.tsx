@@ -1,27 +1,38 @@
+import { Link } from "@tanstack/react-router";
+import cn from "clsx";
+import { JobState } from "./JobState";
 import type { Job } from "@superstreamer/api/client";
-import { JobTreeItem } from "@/components/JobTreeItem";
-import { cn } from "@/lib/utils";
 
 interface JobTreeProps {
-  job: Job;
-  activeId: string;
+  activeJob: Job;
+  jobs: Job[];
   depth?: number;
 }
 
-export function JobTree({ job, activeId, depth = 0 }: JobTreeProps) {
+export function JobTree({ activeJob, jobs, depth = 0 }: JobTreeProps) {
   return (
-    <div className={cn(depth && "ml-4")}>
-      <JobTreeItem job={job} activeId={activeId} />
-      <ul>
-        {job.children.map((childJob) => (
+    <div className={cn(depth !== 0 && "ml-4")}>
+      {jobs.map((job) => (
+        <div>
+          <div className="flex gap-2 items-center">
+            <JobState job={job} />
+            <Link
+              to={`/jobs/${job.id}`}
+              className={cn(
+                "text-sm py-1 block",
+                job === activeJob && "text-primary",
+              )}
+            >
+              {job.name}
+            </Link>
+          </div>
           <JobTree
-            key={childJob.id}
-            job={childJob}
-            activeId={activeId}
+            activeJob={activeJob}
+            jobs={job.children}
             depth={depth + 1}
           />
-        ))}
-      </ul>
+        </div>
+      ))}
     </div>
   );
 }

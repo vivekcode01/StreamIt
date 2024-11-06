@@ -35,8 +35,13 @@ function formatIdPair(id: string): [Queue, string] {
   return [findQueueByName(queueName), id];
 }
 
-export async function getJobs(): Promise<Job[]> {
-  const result: Job[] = [];
+export async function getJobs(filter: {
+  page: number;
+  perPage: number;
+  sortKey: "name" | "duration" | "createdAt";
+  sortDir: "asc" | "desc";
+}) {
+  let items: Job[] = [];
 
   for (const queue of allQueus) {
     const jobs = await queue.getJobs();
@@ -47,14 +52,35 @@ export async function getJobs(): Promise<Job[]> {
       }
       const foundJob = await getJob(job.id, false);
       if (foundJob) {
-        result.push(foundJob);
+        items.push(foundJob);
       }
     }
   }
 
-  result.sort((a, b) => b.createdOn - a.createdOn);
+  if (filter.sortKey === "createdAt") {
+    items.sort((a, b) => a.createdAt - b.createdAt);
+  }
 
-  return result;
+  if (filter.sortKey === "name") {
+    items.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  if (filter.sortKey === "duration") {
+    items.sort((a, b) => (a.duration ?? 0) - (b.duration ?? 0));
+  }
+
+  if (filter.sortDir === "desc") {
+    items = items.reverse();
+  }
+
+  const totalPages = Math.ceil(items.length / filter.perPage);
+  const index = (filter.page - 1) * filter.perPage;
+  items = items.slice(index, index + filter.perPage);
+
+  return {
+    items,
+    totalPages,
+  };
 }
 
 export async function getJob(
@@ -141,22 +167,22 @@ async function formatJobNode(node: JobNode): Promise<Job> {
 
   const jobChildren = await Promise.all((children ?? []).map(formatJobNode));
 
-  let processedOn = job.processedOn;
-  if (processedOn) {
+  let processedAt = job.processedOn;
+  if (processedAt) {
     for (const jobChild of jobChildren) {
       if (
-        jobChild.processedOn &&
-        processedOn !== undefined &&
-        jobChild.processedOn < processedOn
+        jobChild.processedAt &&
+        processedAt !== undefined &&
+        jobChild.processedAt < processedAt
       ) {
-        processedOn = jobChild.processedOn;
+        processedAt = jobChild.processedAt;
       }
     }
   }
 
   const duration =
-    state === "completed" && processedOn && job.finishedOn
-      ? job.finishedOn - processedOn
+    state === "completed" && processedAt && job.finishedOn
+      ? job.finishedOn - processedAt
       : undefined;
 
   let progress: Record<string, number> | undefined;
@@ -170,9 +196,9 @@ async function formatJobNode(node: JobNode): Promise<Job> {
     state,
     progress,
     duration,
-    processedOn: job.processedOn,
-    finishedOn: job.finishedOn,
-    createdOn: job.timestamp,
+    processedAt: job.processedOn,
+    finishedAt: job.finishedOn,
+    createdAt: job.timestamp,
     inputData: JSON.stringify(job.data),
     outputData: job.returnvalue ? JSON.stringify(job.returnvalue) : undefined,
     failedReason,

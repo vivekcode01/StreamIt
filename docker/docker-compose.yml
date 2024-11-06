@@ -2,28 +2,33 @@ version: "3"
 
 volumes:
   superstreamer_redis_data:
+  superstreamer_postgres_data:
 
 services:
   superstreamer-app:
-    image: "superstreamerapp/app:latest"
+    image: "superstreamerapp/app:alpha"
     ports:
       - 52000:52000
-    env_file: config.env
+    environment:
+      - PUBLIC_API_ENDPOINT=http://localhost:52001
+      - PUBLIC_STITCHER_ENDPOINT=http://localhost:52002
 
   superstreamer-api:
-    image: "superstreamerapp/api:latest"
+    image: "superstreamerapp/api:alpha"
     restart: always
     ports:
       - 52001:52001
     depends_on:
+      - superstreamer-postgres
       - superstreamer-redis
     env_file: config.env
     environment:
       - REDIS_HOST=superstreamer-redis
       - REDIS_PORT=6379
+      - DATABASE_URI=postgresql://postgres:sprs@superstreamer-postgres/sprs
 
   superstreamer-stitcher:
-    image: "superstreamerapp/stitcher:latest"
+    image: "superstreamerapp/stitcher:alpha"
     restart: always
     ports:
       - 52002:52002
@@ -35,7 +40,7 @@ services:
       - REDIS_PORT=6379
 
   superstreamer-artisan:
-    image: "superstreamerapp/artisan:latest"
+    image: "superstreamerapp/artisan:alpha"
     restart: always
     depends_on:
       - superstreamer-redis
@@ -52,3 +57,16 @@ services:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
     volumes:
       - superstreamer_redis_data:/data
+
+  superstreamer-postgres:
+    image: "postgres:latest"
+    restart: always
+    stop_signal: SIGINT
+    ports:
+      - "5432:5432"
+    volumes:
+      - superstreamer_postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_INITDB_ARGS=--data-checksums
+      - POSTGRES_DB=sprs
+      - POSTGRES_PASSWORD=sprs

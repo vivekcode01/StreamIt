@@ -1,7 +1,6 @@
 import { Queue } from "bullmq";
 import { connection } from "./env";
 import type { Input, PartialInput, PartialStream, Stream } from "./types";
-import type { LangCode } from "shared/typebox";
 
 export interface TranscodeData {
   assetId: string;
@@ -18,7 +17,7 @@ export const transcodeQueue = new Queue<TranscodeData>("transcode", {
 
 export interface PackageData {
   assetId: string;
-  language?: LangCode;
+  language?: string;
   segmentSize?: number;
   name: string;
 }

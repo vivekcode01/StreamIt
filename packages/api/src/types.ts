@@ -13,14 +13,13 @@ export const JobSchema = t.Recursive(
         t.Literal("completed"),
       ]),
       progress: t.Optional(t.Record(t.String(), t.Number())),
-      createdOn: t.Number(),
-      processedOn: t.Optional(t.Number()),
-      finishedOn: t.Optional(t.Number()),
+      createdAt: t.Number(),
+      processedAt: t.Optional(t.Number()),
+      finishedAt: t.Optional(t.Number()),
       duration: t.Optional(t.Number()),
       inputData: t.String(),
       outputData: t.Optional(t.String()),
       failedReason: t.Optional(t.String()),
-      tag: t.Optional(t.String()),
       children: t.Array(This),
     }),
   { $id: "#/components/schemas/Job" },
@@ -34,7 +33,6 @@ export const StorageFolderItemSchema = t.Union(
       type: t.Literal("file"),
       path: t.String(),
       size: t.Number({ description: "Size in bytes" }),
-      canPreview: t.Boolean(),
     }),
     t.Object({
       type: t.Literal("folder"),
@@ -46,17 +44,6 @@ export const StorageFolderItemSchema = t.Union(
 
 export type StorageFolderItem = Static<typeof StorageFolderItemSchema>;
 
-export const StorageFileSchema = t.Object(
-  {
-    path: t.String(),
-    size: t.Number({ description: "Size in bytes" }),
-    data: t.String(),
-  },
-  { $id: "#/components/schemas/StorageFile" },
-);
-
-export type StorageFile = Static<typeof StorageFileSchema>;
-
 export const StorageFolderSchema = t.Object(
   {
     cursor: t.Optional(t.String()),
@@ -66,6 +53,20 @@ export const StorageFolderSchema = t.Object(
 );
 
 export type StorageFolder = Static<typeof StorageFolderSchema>;
+
+export const StorageFileSchema = t.Union([
+  t.Object({
+    mode: t.Literal("url"),
+    type: t.Union([t.Literal("video")]),
+    url: t.String(),
+  }),
+  t.Object({
+    mode: t.Literal("payload"),
+    payload: t.String(),
+  }),
+]);
+
+export type StorageFile = Static<typeof StorageFileSchema>;
 
 export const UserSchema = t.Object(
   {
@@ -77,24 +78,13 @@ export const UserSchema = t.Object(
 
 export type User = Static<typeof UserSchema>;
 
-export const UserSettingsSchema = t.Object(
-  {
-    autoRefresh: t.Boolean(),
-  },
-  {
-    $id: "#/components/schemas/UserSettings",
-  },
-);
-
-export type UserSettings = Static<typeof UserSettingsSchema>;
-
 export const AssetSchema = t.Object(
   {
     id: t.String({ format: "uuid" }),
     groupId: t.Nullable(t.Number()),
     name: t.String(),
     createdAt: t.Date(),
-    playablesCount: t.Number(),
+    playables: t.Number(),
   },
   {
     $id: "#/components/schemas/Asset",
