@@ -1,11 +1,6 @@
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@matvp91/elysia-swagger";
 import { Elysia, t } from "elysia";
-import {
-  AudioCodecSchema,
-  LangCodeSchema,
-  VideoCodecSchema,
-} from "shared/typebox";
 import { env } from "./env";
 import { errors } from "./errors";
 import { assets } from "./routes/assets";
@@ -91,9 +86,6 @@ const app = new Elysia()
   )
   .model({
     User: UserSchema,
-    LangCode: LangCodeSchema,
-    VideoCodec: VideoCodecSchema,
-    AudioCodec: AudioCodecSchema,
     Job: JobSchema,
     StorageFolder: StorageFolderSchema,
     StorageFile: StorageFileSchema,
