@@ -13,6 +13,6 @@ export const env = parseEnv((t) => ({
   S3_ACCESS_KEY: t.String(),
   S3_SECRET_KEY: t.String(),
   S3_BUCKET: t.String(),
-  DATABASE: t.String({ default: ":memory:" }),
-  JWT_SECRET: t.String(),
+  DATABASE_URI: t.String(),
+  SUPER_SECRET: t.String(),
 }));

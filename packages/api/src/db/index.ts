@@ -5,7 +5,7 @@ import type { KyselyDatabase } from "./types.ts";
 
 export const db = new Kysely<KyselyDatabase>({
   dialect: new PostgresDialect({
-    pool: new Pool({ connectionString: env.DATABASE }),
+    pool: new Pool({ connectionString: env.DATABASE_URI }),
   }),
 });
 
