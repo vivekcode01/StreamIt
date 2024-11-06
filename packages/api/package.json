@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "bun run ./scripts/dev.ts",
     "build": "bun run ./scripts/build.ts",
-    "lint": "eslint"
+    "lint": "tsc && eslint"
   },
   "devDependencies": {
     "@types/bun": "latest",

@@ -1,4 +1,5 @@
 import { DOMParser } from "@xmldom/xmldom";
+import { AudioCodec, VideoCodec } from "bolt";
 import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
 import { api } from "./lib/api-client";
@@ -68,17 +69,17 @@ async function scheduleForPackage(adMedia: AdMedia) {
     streams: [
       {
         type: "video",
-        codec: "h264",
+        codec: VideoCodec.h264,
         height: 720,
       },
       {
         type: "video",
-        codec: "h264",
+        codec: VideoCodec.h264,
         height: 480,
       },
       {
         type: "audio",
-        codec: "aac",
+        codec: AudioCodec.aac,
         language: "eng",
       },
     ],

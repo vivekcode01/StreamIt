@@ -9,7 +9,7 @@
     "./assert": "./src/assert.ts"
   },
   "scripts": {
-    "lint": "eslint"
+    "lint": "tsc && eslint"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.32.34",

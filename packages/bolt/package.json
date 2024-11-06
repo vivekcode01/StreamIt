@@ -5,7 +5,7 @@
   "type": "module",
   "main": "./src/index.ts",
   "scripts": {
-    "lint": "eslint"
+    "lint": "tsc && eslint"
   },
   "devDependencies": {
     "@types/bun": "latest",

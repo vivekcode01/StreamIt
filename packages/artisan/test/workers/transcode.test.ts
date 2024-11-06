@@ -1,4 +1,5 @@
 import "bun";
+import { AudioCodec, VideoCodec } from "bolt";
 import { describe, expect, test } from "bun:test";
 import {
   getMatches,
@@ -73,7 +74,7 @@ describe("merge stream", () => {
     const stream = mergeStream(
       {
         type: "video",
-        codec: "h264",
+        codec: VideoCodec.h264,
         height: 720,
       },
       {
@@ -89,7 +90,7 @@ describe("merge stream", () => {
     const stream = mergeStream(
       {
         type: "video",
-        codec: "h264",
+        codec: VideoCodec.h264,
         height: 1080,
       },
       {
@@ -106,7 +107,7 @@ describe("merge stream", () => {
     const stream = mergeStream(
       {
         type: "video",
-        codec: "h264",
+        codec: VideoCodec.h264,
         height: 480,
       },
       {
@@ -123,7 +124,7 @@ describe("merge stream", () => {
     const stream = mergeStream(
       {
         type: "audio",
-        codec: "aac",
+        codec: AudioCodec.aac,
       },
       {
         type: "audio",
@@ -142,34 +143,34 @@ describe("get list of matches", () => {
       [
         {
           type: "video",
-          codec: "hevc",
+          codec: VideoCodec.hevc,
           height: 1080,
         },
         {
           type: "video",
-          codec: "h264",
+          codec: VideoCodec.h264,
           height: 720,
         },
         {
           type: "audio",
-          codec: "eac3",
+          codec: AudioCodec.eac3,
           channels: 100,
           bitrate: 1_000_000,
         },
         {
           type: "audio",
-          codec: "ac3",
+          codec: AudioCodec.ac3,
           channels: 6,
         },
         {
           type: "audio",
-          codec: "aac",
+          codec: AudioCodec.aac,
           channels: 2,
           language: "eng",
         },
         {
           type: "audio",
-          codec: "aac",
+          codec: AudioCodec.aac,
           language: "nld",
         },
       ],
