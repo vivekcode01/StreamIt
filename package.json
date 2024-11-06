@@ -2,7 +2,7 @@
   "name": "superstreamer",
   "scripts": {
     "dev": "bun run --filter=\"@superstreamer/*\" dev",
-    "build": "bun run --filter=\"@superstreamer/*\" build",
+    "build": "bun run ./scripts/build.ts",
     "lint": "bun run --filter=\"*\" lint",
     "test": "bun run --filter=\"*\" test",
     "install-bin": "bun run --filter=\"@superstreamer/*\" install-bin"
