@@ -1,11 +1,6 @@
-import {$} from 'bun';
+import {$} from "bun";
 
-await Promise.all([
-  // Build api for the api client.
-  $`bun run --filter="@superstreamer/api" build`,
-  // Build player for app.
-  $`bun run --filter="@superstreamer/player" build`,
-])
+import "./pre-build";
 
 await Promise.all([
   $`bun run --filter="@superstreamer/app" build`,

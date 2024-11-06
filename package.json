@@ -3,8 +3,8 @@
   "scripts": {
     "dev": "bun run --filter=\"@superstreamer/*\" dev",
     "build": "bun run ./scripts/build.ts",
-    "lint": "bun run --filter=\"*\" lint",
-    "test": "bun run --filter=\"*\" test",
+    "lint": "bun run ./scripts/lint.ts",
+    "test": "bun run ./scripts/test.ts",
     "install-bin": "bun run --filter=\"@superstreamer/*\" install-bin"
   },
   "devDependencies": {
