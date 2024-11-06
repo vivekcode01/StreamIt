@@ -19,6 +19,7 @@ interface ApiErrorCode {
   ERR_USER_INVALID_TOKEN_TYPE: {
     only: "service" | "user";
   };
+  ERR_STORAGE_NO_FILE_PREVIEW: never;
 }
 
 const statusMap: Record<keyof ApiErrorCode, number> = {
@@ -28,6 +29,7 @@ const statusMap: Record<keyof ApiErrorCode, number> = {
   ERR_UNAUTHORIZED: 401,
   ERR_USER_INVALID_CREDENTIALS: 401,
   ERR_USER_INVALID_TOKEN_TYPE: 401,
+  ERR_STORAGE_NO_FILE_PREVIEW: 400,
 };
 
 export type ApiError<T extends keyof ApiErrorCode = keyof ApiErrorCode> = {

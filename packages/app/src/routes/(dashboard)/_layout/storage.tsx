@@ -2,8 +2,10 @@ import { BreadcrumbItem, Breadcrumbs } from "@nextui-org/breadcrumbs";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 import { File, Folder, House } from "lucide-react";
+import { useState } from "react";
 import z from "zod";
 import { useAuth } from "../../../auth";
+import { FilePreview } from "../../../components/FilePreview";
 import { Format } from "../../../components/Format";
 import { FullTable } from "../../../components/FullTable";
 import { useInfinite } from "../../../hooks/useInfinite";
@@ -26,17 +28,18 @@ function RouteComponent() {
   const deps = Route.useLoaderDeps();
   const result = Route.useLoaderData();
   const { api } = useAuth();
+  const [previewPath, setPreviewPath] = useState<string | null>(null);
 
   const { hasMore, items, loadMore } = useInfinite(result, async (cursor) => {
     return await getFolderItems(api, deps.path, cursor);
   });
 
-  const paths = parsePathInPaths(deps.path);
+  const breadcrumbs = parseBreadcrumbs(deps.path);
 
   return (
     <div className="flex flex-col h-full p-8">
       <Breadcrumbs className="mb-4 h-4 flex items-center">
-        {paths.map(({ name, path }) => (
+        {breadcrumbs.map(({ name, path }) => (
           <BreadcrumbItem key={path}>
             <Link to={Route.fullPath} search={{ path }}>
               {name || <House className="w-3 h-3" />}
@@ -69,7 +72,7 @@ function RouteComponent() {
           key: item.path,
           cells: [
             <Icon item={item} />,
-            <Item item={item} />,
+            <Item item={item} setPreviewPath={setPreviewPath} />,
             <Format
               format="size"
               value={item.type === "file" ? item.size : null}
@@ -78,6 +81,12 @@ function RouteComponent() {
         })}
         hasMore={hasMore}
         onLoadMore={loadMore}
+      />
+      <FilePreview
+        path={previewPath}
+        onClose={() => {
+          setPreviewPath(null);
+        }}
       />
     </div>
   );
@@ -97,7 +106,7 @@ async function getFolderItems(api: ApiClient, path: string, cursor: string) {
   return data;
 }
 
-function parsePathInPaths(path: string) {
+function parseBreadcrumbs(path: string) {
   let prevPath = "";
 
   const paths = path.split("/").map((part) => {
@@ -114,24 +123,43 @@ function parsePathInPaths(path: string) {
   return paths;
 }
 
-function Item({ item }: { item: StorageFolderItem }) {
+function Item({
+  item,
+  setPreviewPath,
+}: {
+  item: StorageFolderItem;
+  setPreviewPath(value: string): void;
+}) {
   const chunks = item.path.split("/");
-  const name = chunks[chunks.length - (item.type === "file" ? 1 : 2)];
-  return (
-    <Link
-      to={item.type === "folder" ? Route.fullPath : "/file"}
-      search={{ path: item.path }}
-    >
-      {name}
-    </Link>
-  );
+
+  if (item.type === "folder") {
+    const name = chunks[chunks.length - 2];
+    return (
+      <Link to={Route.fullPath} search={{ path: item.path }}>
+        {name}
+      </Link>
+    );
+  }
+
+  if (item.type === "file") {
+    const name = chunks[chunks.length - 1];
+    return (
+      <button
+        onClick={() => {
+          setPreviewPath(item.path);
+        }}
+      >
+        {name}
+      </button>
+    );
+  }
 }
 
 function Icon({ item }: { item: StorageFolderItem }) {
-  if (item.type === "file") {
-    return <File className="w-4 h-4" />;
-  }
   if (item.type === "folder") {
     return <Folder className="w-4 h-4" />;
+  }
+  if (item.type === "file") {
+    return <File className="w-4 h-4" />;
   }
 }

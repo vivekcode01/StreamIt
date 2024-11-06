@@ -1,6 +1,10 @@
 import { Elysia, t } from "elysia";
 import { authUser } from "./token";
-import { getAssets, getGroups } from "../repositories/assets";
+import {
+  assetsFilterSchema,
+  getAssets,
+  getGroups,
+} from "../repositories/assets";
 import { AssetSchema } from "../types";
 
 export const assets = new Elysia()
@@ -16,16 +20,7 @@ export const assets = new Elysia()
         tags: ["Assets"],
       },
 
-      query: t.Object({
-        page: t.Number(),
-        perPage: t.Number(),
-        sortKey: t.Union([
-          t.Literal("name"),
-          t.Literal("playables"),
-          t.Literal("createdAt"),
-        ]),
-        sortDir: t.Union([t.Literal("asc"), t.Literal("desc")]),
-      }),
+      query: assetsFilterSchema,
       response: {
         200: t.Object({
           totalPages: t.Number(),

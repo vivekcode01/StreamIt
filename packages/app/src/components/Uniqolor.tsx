@@ -1,13 +1,13 @@
 import uniqolor from "uniqolor";
 
-interface JobTagProps {
+interface UniqolorProps {
   value: string;
 }
 
-export function ColorTag({ value }: JobTagProps) {
+export function Uniqolor({ value }: UniqolorProps) {
   let { color } = uniqolor(value, {});
 
-  if (value === "none") {
+  if (value === "default") {
     color = "#cccccc";
   }
 

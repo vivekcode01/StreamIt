@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { authUser } from "./token";
-import { StorageFolderSchema } from "../types";
+import { DeliberateError } from "../errors";
+import { StorageFileSchema, StorageFolderSchema } from "../types";
 import {
   getStorageFilePayload,
   getStorageFileUrl,
@@ -40,13 +41,20 @@ export const storage = new Elysia()
         case "m4a":
         case "mp4":
         case "mkv":
-          return { url: await getStorageFileUrl(query.path) };
+          return {
+            mode: "url",
+            url: await getStorageFileUrl(query.path),
+            type: "video",
+          };
         case "m3u8":
         case "json":
         case "vtt":
-          return { payload: await getStorageFilePayload(query.path) };
+          return {
+            mode: "payload",
+            payload: await getStorageFilePayload(query.path),
+          };
         default:
-          return {};
+          throw new DeliberateError({ type: "ERR_STORAGE_NO_FILE_PREVIEW" });
       }
     },
     {
@@ -59,10 +67,7 @@ export const storage = new Elysia()
         path: t.String(),
       }),
       response: {
-        200: t.Object({
-          url: t.Optional(t.String()),
-          payload: t.Optional(t.String()),
-        }),
+        200: StorageFileSchema,
       },
     },
   );

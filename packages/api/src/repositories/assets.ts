@@ -1,17 +1,28 @@
+import { t } from "elysia";
 import { db } from "../db";
 import type { AssetInsert, PlayableInsert } from "../db/types";
+import type { Static } from "elysia";
+
+export const assetsFilterSchema = t.Object({
+  page: t.Number(),
+  perPage: t.Number(),
+  sortKey: t.Union([
+    t.Literal("name"),
+    t.Literal("playables"),
+    t.Literal("groupId"),
+    t.Literal("createdAt"),
+  ]),
+  sortDir: t.Union([t.Literal("asc"), t.Literal("desc")]),
+});
+
+type AssetsFilter = Static<typeof assetsFilterSchema>;
 
 export async function createAsset(fields: AssetInsert) {
   return await db.insertInto("assets").values(fields).executeTakeFirstOrThrow();
 }
 
-export async function getAssets(filter: {
-  page: number;
-  perPage: number;
-  sortKey: "name" | "playables" | "createdAt";
-  sortDir: "asc" | "desc";
-}) {
-  let orderBy: "id" | "createdAt" | "playables";
+export async function getAssets(filter: AssetsFilter) {
+  let orderBy: "id" | "playables" | "groupId" | "createdAt";
   if (filter.sortKey === "name") {
     orderBy = "id";
   } else {

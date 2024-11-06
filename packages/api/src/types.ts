@@ -54,6 +54,20 @@ export const StorageFolderSchema = t.Object(
 
 export type StorageFolder = Static<typeof StorageFolderSchema>;
 
+export const StorageFileSchema = t.Union([
+  t.Object({
+    mode: t.Literal("url"),
+    type: t.Union([t.Literal("video")]),
+    url: t.String(),
+  }),
+  t.Object({
+    mode: t.Literal("payload"),
+    payload: t.String(),
+  }),
+]);
+
+export type StorageFile = Static<typeof StorageFileSchema>;
+
 export const UserSchema = t.Object(
   {
     id: t.Number(),

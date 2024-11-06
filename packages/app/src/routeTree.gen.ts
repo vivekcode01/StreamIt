@@ -20,7 +20,6 @@ import { Route as AuthLayoutSignInImport } from './routes/auth/_layout/sign-in'
 import { Route as dashboardLayoutStorageImport } from './routes/(dashboard)/_layout/storage'
 import { Route as dashboardLayoutStitcherApiImport } from './routes/(dashboard)/_layout/stitcher-api'
 import { Route as dashboardLayoutPlayerImport } from './routes/(dashboard)/_layout/player'
-import { Route as dashboardLayoutFileImport } from './routes/(dashboard)/_layout/file'
 import { Route as dashboardLayoutAssetsImport } from './routes/(dashboard)/_layout/assets'
 import { Route as dashboardLayoutApiImport } from './routes/(dashboard)/_layout/api'
 import { Route as dashboardLayoutJobsIndexImport } from './routes/(dashboard)/_layout/jobs/index'
@@ -83,12 +82,6 @@ const dashboardLayoutStitcherApiRoute = dashboardLayoutStitcherApiImport.update(
 const dashboardLayoutPlayerRoute = dashboardLayoutPlayerImport.update({
   id: '/player',
   path: '/player',
-  getParentRoute: () => dashboardLayoutRoute,
-} as any)
-
-const dashboardLayoutFileRoute = dashboardLayoutFileImport.update({
-  id: '/file',
-  path: '/file',
   getParentRoute: () => dashboardLayoutRoute,
 } as any)
 
@@ -162,13 +155,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof dashboardLayoutAssetsImport
       parentRoute: typeof dashboardLayoutImport
     }
-    '/(dashboard)/_layout/file': {
-      id: '/(dashboard)/_layout/file'
-      path: '/file'
-      fullPath: '/file'
-      preLoaderRoute: typeof dashboardLayoutFileImport
-      parentRoute: typeof dashboardLayoutImport
-    }
     '/(dashboard)/_layout/player': {
       id: '/(dashboard)/_layout/player'
       path: '/player'
@@ -226,7 +212,6 @@ declare module '@tanstack/react-router' {
 interface dashboardLayoutRouteChildren {
   dashboardLayoutApiRoute: typeof dashboardLayoutApiRoute
   dashboardLayoutAssetsRoute: typeof dashboardLayoutAssetsRoute
-  dashboardLayoutFileRoute: typeof dashboardLayoutFileRoute
   dashboardLayoutPlayerRoute: typeof dashboardLayoutPlayerRoute
   dashboardLayoutStitcherApiRoute: typeof dashboardLayoutStitcherApiRoute
   dashboardLayoutStorageRoute: typeof dashboardLayoutStorageRoute
@@ -238,7 +223,6 @@ interface dashboardLayoutRouteChildren {
 const dashboardLayoutRouteChildren: dashboardLayoutRouteChildren = {
   dashboardLayoutApiRoute: dashboardLayoutApiRoute,
   dashboardLayoutAssetsRoute: dashboardLayoutAssetsRoute,
-  dashboardLayoutFileRoute: dashboardLayoutFileRoute,
   dashboardLayoutPlayerRoute: dashboardLayoutPlayerRoute,
   dashboardLayoutStitcherApiRoute: dashboardLayoutStitcherApiRoute,
   dashboardLayoutStorageRoute: dashboardLayoutStorageRoute,
@@ -290,7 +274,6 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthLayoutRouteWithChildren
   '/api': typeof dashboardLayoutApiRoute
   '/assets': typeof dashboardLayoutAssetsRoute
-  '/file': typeof dashboardLayoutFileRoute
   '/player': typeof dashboardLayoutPlayerRoute
   '/stitcher-api': typeof dashboardLayoutStitcherApiRoute
   '/storage': typeof dashboardLayoutStorageRoute
@@ -303,7 +286,6 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthLayoutRouteWithChildren
   '/api': typeof dashboardLayoutApiRoute
   '/assets': typeof dashboardLayoutAssetsRoute
-  '/file': typeof dashboardLayoutFileRoute
   '/player': typeof dashboardLayoutPlayerRoute
   '/stitcher-api': typeof dashboardLayoutStitcherApiRoute
   '/storage': typeof dashboardLayoutStorageRoute
@@ -321,7 +303,6 @@ export interface FileRoutesById {
   '/auth/_layout': typeof AuthLayoutRouteWithChildren
   '/(dashboard)/_layout/api': typeof dashboardLayoutApiRoute
   '/(dashboard)/_layout/assets': typeof dashboardLayoutAssetsRoute
-  '/(dashboard)/_layout/file': typeof dashboardLayoutFileRoute
   '/(dashboard)/_layout/player': typeof dashboardLayoutPlayerRoute
   '/(dashboard)/_layout/stitcher-api': typeof dashboardLayoutStitcherApiRoute
   '/(dashboard)/_layout/storage': typeof dashboardLayoutStorageRoute
@@ -338,7 +319,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/api'
     | '/assets'
-    | '/file'
     | '/player'
     | '/stitcher-api'
     | '/storage'
@@ -350,7 +330,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/api'
     | '/assets'
-    | '/file'
     | '/player'
     | '/stitcher-api'
     | '/storage'
@@ -366,7 +345,6 @@ export interface FileRouteTypes {
     | '/auth/_layout'
     | '/(dashboard)/_layout/api'
     | '/(dashboard)/_layout/assets'
-    | '/(dashboard)/_layout/file'
     | '/(dashboard)/_layout/player'
     | '/(dashboard)/_layout/stitcher-api'
     | '/(dashboard)/_layout/storage'
@@ -413,7 +391,6 @@ export const routeTree = rootRoute
       "children": [
         "/(dashboard)/_layout/api",
         "/(dashboard)/_layout/assets",
-        "/(dashboard)/_layout/file",
         "/(dashboard)/_layout/player",
         "/(dashboard)/_layout/stitcher-api",
         "/(dashboard)/_layout/storage",
@@ -441,10 +418,6 @@ export const routeTree = rootRoute
     },
     "/(dashboard)/_layout/assets": {
       "filePath": "(dashboard)/_layout/assets.tsx",
-      "parent": "/(dashboard)/_layout"
-    },
-    "/(dashboard)/_layout/file": {
-      "filePath": "(dashboard)/_layout/file.tsx",
       "parent": "/(dashboard)/_layout"
     },
     "/(dashboard)/_layout/player": {

@@ -3,6 +3,9 @@ import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 import { z } from "zod";
 import { Format } from "../../../components/Format";
 import { FullTable } from "../../../components/FullTable";
+import { Uniqolor } from "../../../components/Uniqolor";
+import type { Group } from "@superstreamer/api/client";
+import type { Asset } from "@superstreamer/api/client";
 
 export const Route = createFileRoute("/(dashboard)/_layout/assets")({
   component: RouteComponent,
@@ -10,22 +13,27 @@ export const Route = createFileRoute("/(dashboard)/_layout/assets")({
     z.object({
       page: z.coerce.number().default(1),
       perPage: z.coerce.number().default(20),
-      sortKey: z.enum(["createdAt", "playables", "name"]).default("createdAt"),
+      sortKey: z
+        .enum(["createdAt", "playables", "groupId", "name"])
+        .default("createdAt"),
       sortDir: z.enum(["asc", "desc"]).default("desc"),
     }),
   ),
   loaderDeps: ({ search }) => ({ ...search }),
   loader: async ({ deps, context }) => {
-    return await context.auth.api.assets.get({ query: deps });
+    return {
+      assets: await context.auth.api.assets.get({ query: deps }),
+      groups: await context.auth.api.groups.get(),
+    };
   },
 });
 
 function RouteComponent() {
   const navigate = useNavigate({ from: Route.fullPath });
-  const { data } = Route.useLoaderData();
+  const { assets, groups } = Route.useLoaderData();
   const filter = Route.useLoaderDeps();
 
-  if (!data) {
+  if (!assets.data || !groups.data) {
     return null;
   }
 
@@ -44,12 +52,17 @@ function RouteComponent() {
             allowsSorting: true,
           },
           {
+            id: "groupId",
+            label: "Group",
+            allowsSorting: true,
+          },
+          {
             id: "createdAt",
             label: "Created",
             allowsSorting: true,
           },
         ]}
-        {...data}
+        {...assets.data}
         filter={filter}
         onFilterChange={(search) => {
           navigate({ search });
@@ -59,10 +72,19 @@ function RouteComponent() {
           cells: [
             item.name,
             item.playables,
+            <GroupTag groups={groups.data} asset={item} />,
             <Format format="date" value={item.createdAt} />,
           ],
         })}
       />
     </div>
   );
+}
+
+function GroupTag({ groups, asset }: { groups: Group[]; asset: Asset }) {
+  const group = groups.find((group) => group.id === asset.groupId);
+  if (!group) {
+    return <Uniqolor value="default" />;
+  }
+  return <Uniqolor value={group.name} />;
 }

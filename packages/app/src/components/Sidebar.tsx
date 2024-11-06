@@ -29,18 +29,24 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col">
+      <img src="/logo.png" className="w-8 mb-4" />
       {links.map((link) => {
-        return (
-          <Link
-            key={link.to}
-            to={link.to}
-            activeProps={{ className: "text-primary" }}
-          >
-            {link.name}
-          </Link>
-        );
+        return <ActiveLink key={link.to} to={link.to} name={link.name} />;
       })}
     </div>
+  );
+}
+
+function ActiveLink({ to, name }: { to: string; name: string }) {
+  return (
+    <Link
+      className="w-full px-4 py-2 rounded-lg text-sm"
+      key={to}
+      to={to}
+      activeProps={{ className: "bg-gray-200" }}
+    >
+      {name}
+    </Link>
   );
 }

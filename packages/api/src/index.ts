@@ -17,6 +17,7 @@ import {
   AssetSchema,
   GroupSchema,
   JobSchema,
+  StorageFileSchema,
   StorageFolderSchema,
   UserSchema,
 } from "./types";
@@ -92,6 +93,7 @@ const app = new Elysia()
     AudioCodec: AudioCodecSchema,
     Job: JobSchema,
     StorageFolder: StorageFolderSchema,
+    StorageFile: StorageFileSchema,
     Asset: AssetSchema,
     Group: GroupSchema,
   })
