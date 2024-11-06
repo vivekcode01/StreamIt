@@ -3,7 +3,9 @@
   "version": "1.1.0",
   "type": "module",
   "scripts": {
-    "dev": "NODE_OPTIONS=\"--import tsx/esm\" pnpm exec vite"
+    "dev": "NODE_OPTIONS=\"--import tsx/esm\" pnpm exec vite",
+    "build": "tsc -b && NODE_OPTIONS=\"--import tsx/esm\" pnpm exec vite build",
+    "lint": "eslint"
   },
   "devDependencies": {
     "@types/javascript-time-ago": "^2.0.8",

@@ -6,13 +6,13 @@ volumes:
 
 services:
   superstreamer-app:
-    image: "superstreamerapp/app:latest"
+    image: "superstreamerapp/app:alpha"
     ports:
       - 52000:52000
     env_file: config.env
 
   superstreamer-api:
-    image: "superstreamerapp/api:latest"
+    image: "superstreamerapp/api:alpha"
     restart: always
     ports:
       - 52001:52001
@@ -26,7 +26,7 @@ services:
       - DATABASE_URI=postgresql://sprs:sprs@superstreamer-postgres/sprs
 
   superstreamer-stitcher:
-    image: "superstreamerapp/stitcher:latest"
+    image: "superstreamerapp/stitcher:alpha"
     restart: always
     ports:
       - 52002:52002
@@ -38,7 +38,7 @@ services:
       - REDIS_PORT=6379
 
   superstreamer-artisan:
-    image: "superstreamerapp/artisan:latest"
+    image: "superstreamerapp/artisan:alpha"
     restart: always
     depends_on:
       - superstreamer-redis
@@ -57,7 +57,7 @@ services:
       - superstreamer_redis_data:/data
 
   superstreamer-postgres:
-    image: "postgres:17"
+    image: "postgres"
     restart: always
     stop_signal: SIGINT
     volumes:

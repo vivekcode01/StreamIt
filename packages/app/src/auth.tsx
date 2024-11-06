@@ -1,5 +1,5 @@
 import { createApiClient } from "@superstreamer/api/client";
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useMemo } from "react";
 import { flushSync } from "react-dom";
 import useLocalStorageState from "use-local-storage-state";
 import type { ApiClient } from "@superstreamer/api/client";
