@@ -12,7 +12,6 @@
   },
   "workspaces": [
     "packages/*",
-    "extern/*",
-    "docs"
+    "extern/*"
   ]
 }
