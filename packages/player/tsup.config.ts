@@ -8,7 +8,7 @@ export default defineConfig({
   },
   splitting: false,
   sourcemap: true,
-  clean: true,
+  clean: false,
   dts: true,
   format: "esm",
   esbuildPlugins: [svgr()],

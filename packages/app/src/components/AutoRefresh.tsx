@@ -13,22 +13,23 @@ export function AutoRefresh({
 }: AutoRefreshProps) {
   const router = useRouter();
   const [enabled, setEnabled] = useState(defaultEnabled);
-  const [time, setTime] = useState<number>(0);
+  const [time, setTime] = useState<number>(interval);
 
   useEffect(() => {
     if (!enabled) {
       return;
     }
-    if (time === -1) {
-      setTime(interval);
+
+    if (time === 0) {
       router.invalidate();
     }
-    const intervalId = window.setTimeout(() => {
-      setTime((old) => old - 1);
+
+    const timerId = window.setTimeout(() => {
+      setTime((old) => (old === 0 ? interval : old - 1));
     }, 1000);
 
     return () => {
-      clearInterval(intervalId);
+      clearTimeout(timerId);
     };
   }, [enabled, interval, time]);
 
