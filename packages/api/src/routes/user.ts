@@ -1,4 +1,4 @@
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { authUser } from "./token";
 import { getUser } from "../repositories/users";
 import { UserSchema } from "../types";
