@@ -1,7 +1,7 @@
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 import { useSelector } from "../..";
-import pauseIcon from "../icons/pause.svg";
-import playIcon from "../icons/play.svg";
+// import pauseIcon from "../icons/pause.svg";
+// import playIcon from "../icons/play.svg";
 
 export interface CenterIconPopRef {
   playOrPause(): void;
@@ -39,7 +39,7 @@ export const CenterIconPop = forwardRef<CenterIconPopRef, unknown>((_, ref) => {
   useImperativeHandle(ref, () => {
     return {
       playOrPause() {
-        pushEl(playhead === "pause" ? playIcon : pauseIcon);
+        // pushEl(playhead === "pause" ? playIcon : pauseIcon);
       },
     };
   }, [playhead, pushEl]);
