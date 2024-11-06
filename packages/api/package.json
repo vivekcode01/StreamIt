@@ -3,34 +3,48 @@
   "version": "1.1.0",
   "type": "module",
   "exports": {
-    "./client": "./client.ts"
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "default": "./dist/client.js"
+    }
   },
   "scripts": {
-    "dev": "bun --watch ./src/index.ts",
-    "build": "tsc -b && bun build ./src/index.ts --target=bun --outdir=./dist",
+    "dev": "bun run ./scripts/dev.ts",
+    "build": "bun run ./scripts/build.ts",
     "lint": "eslint"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/pg": "^8.11.10",
     "config": "workspace:*",
-    "eslint": "^9.13.0",
+    "eslint": "^9.14.0",
+    "tsup": "^8.3.5",
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.623.0",
-    "@aws-sdk/s3-request-presigner": "^3.679.0",
+    "@aws-sdk/client-s3": "^3.685.0",
+    "@aws-sdk/s3-request-presigner": "^3.685.0",
     "@elysiajs/bearer": "^1.1.2",
     "@elysiajs/cors": "^1.1.1",
     "@elysiajs/eden": "^1.1.3",
-    "@elysiajs/jwt": "^1.1.1",
+    "@elysiajs/jwt": "1.1.0",
     "@matvp91/elysia-swagger": "^2.0.0",
     "bolt": "workspace:*",
-    "bullmq": "^5.12.0",
-    "elysia": "^1.1.20",
+    "bullmq": "^5.25.0",
+    "elysia": "^1.1.24",
     "jose": "^5.9.6",
     "kysely": "^0.27.4",
     "pg": "^8.13.1",
     "shared": "workspace:*"
+  },
+  "tsup": {
+    "entry": {
+      "client": "./client/index.ts"
+    },
+    "format": "esm",
+    "splitting": false,
+    "sourcemap": true,
+    "clean": true,
+    "dts": true
   }
 }

@@ -1,12 +1,12 @@
 import { parseEnv } from "shared/env";
 
-export const env = parseEnv((t) => ({
+export const env = parseEnv((z) => ({
   // config.env
-  S3_ENDPOINT: t.String(),
-  S3_REGION: t.String(),
-  S3_ACCESS_KEY: t.String(),
-  S3_SECRET_KEY: t.String(),
-  S3_BUCKET: t.String(),
-  REDIS_HOST: t.String(),
-  REDIS_PORT: t.Number(),
+  S3_ENDPOINT: z.string(),
+  S3_REGION: z.string(),
+  S3_ACCESS_KEY: z.string(),
+  S3_SECRET_KEY: z.string(),
+  S3_BUCKET: z.string(),
+  REDIS_HOST: z.string(),
+  REDIS_PORT: z.coerce.number(),
 }));

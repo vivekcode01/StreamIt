@@ -1,6 +1,6 @@
 import cn from "clsx";
 import { useFacade, useSelector } from "../..";
-import PlayIcon from "../icons/play.svg?react";
+import PlayIcon from "../icons/play.svg";
 
 export function Start() {
   const facade = useFacade();

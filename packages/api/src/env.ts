@@ -1,18 +1,18 @@
 import { parseEnv } from "shared/env";
 
-export const env = parseEnv((t) => ({
+export const env = parseEnv((z) => ({
   // process
-  PORT: t.Number({ default: 52001 }),
-  HOST: t.String({ default: "0.0.0.0" }),
+  PORT: z.coerce.number().default(52001),
+  HOST: z.string().default("0.0.0.0"),
 
   // config.env
-  REDIS_HOST: t.String(),
-  REDIS_PORT: t.Number(),
-  S3_ENDPOINT: t.String(),
-  S3_REGION: t.String(),
-  S3_ACCESS_KEY: t.String(),
-  S3_SECRET_KEY: t.String(),
-  S3_BUCKET: t.String(),
-  DATABASE_URI: t.String(),
-  SUPER_SECRET: t.String(),
+  REDIS_HOST: z.string(),
+  REDIS_PORT: z.coerce.number(),
+  S3_ENDPOINT: z.string(),
+  S3_REGION: z.string(),
+  S3_ACCESS_KEY: z.string(),
+  S3_SECRET_KEY: z.string(),
+  S3_BUCKET: z.string(),
+  DATABASE_URI: z.string(),
+  SUPER_SECRET: z.string(),
 }));

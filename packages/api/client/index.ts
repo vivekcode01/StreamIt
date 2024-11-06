@@ -1,9 +1,9 @@
 import { treaty } from "@elysiajs/eden";
 import { SignJWT } from "jose";
-import type { App } from "./src";
+import type { App } from "../src";
 
 // API types are public by definition, we'll re-export them all.
-export type * from "./src/types";
+export type * from "../src/types";
 
 export type ApiClient = ReturnType<typeof createApiClient>;
 

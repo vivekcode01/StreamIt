@@ -1,7 +1,7 @@
 import { SqButton } from "./SqButton";
 import { useFacade, useSelector } from "../..";
-import PauseIcon from "../icons/pause.svg?react";
-import PlayIcon from "../icons/play.svg?react";
+import PauseIcon from "../icons/pause.svg";
+import PlayIcon from "../icons/play.svg";
 
 interface PlayPauseButtonProps {
   nudgeVisible(): void;

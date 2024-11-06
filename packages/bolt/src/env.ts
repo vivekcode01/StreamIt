@@ -1,9 +1,9 @@
 import { parseEnv } from "shared/env";
 
-const env = parseEnv((t) => ({
+const env = parseEnv((z) => ({
   // config.env
-  REDIS_HOST: t.String(),
-  REDIS_PORT: t.Number(),
+  REDIS_HOST: z.string(),
+  REDIS_PORT: z.coerce.number(),
 }));
 
 export const connection = {

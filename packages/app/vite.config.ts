@@ -7,9 +7,9 @@ import type { Plugin } from "vite";
 // When we inject new PUBLIC_ variables, make sure to add them
 // in src/globals.d.ts too. All of these are optional because we
 // can inject them through SSI.
-const env = parseEnv((t) => ({
-  PUBLIC_API_ENDPOINT: t.Optional(t.String()),
-  PUBLIC_STITCHER_ENDPOINT: t.Optional(t.String()),
+const env = parseEnv((z) => ({
+  PUBLIC_API_ENDPOINT: z.string().optional(),
+  PUBLIC_STITCHER_ENDPOINT: z.string().optional(),
 }));
 
 // https://vitejs.dev/config/

@@ -1,7 +1,6 @@
 import { Kind, Type as t, TypeRegistry } from "@sinclair/typebox";
 import { by639_2T } from "iso-language-codes";
 import type { SchemaOptions, Static } from "@sinclair/typebox";
-import type { AssertError } from "@sinclair/typebox/value";
 
 TypeRegistry.Set("StringEnum", (schema: { enum: string[] }, value: unknown) => {
   return typeof value === "string" && schema.enum.includes(value);
@@ -37,9 +36,3 @@ AudioCodecSchema.description = "Supported audio codecs.";
 AudioCodecSchema.$id = "#/components/schemas/AudioCodec";
 
 export type AudioCodec = Static<typeof AudioCodecSchema>;
-
-export function formatFails(error: AssertError) {
-  return Array.from(error.Errors()).map((fail) => {
-    return `${fail.path.substring(1)}: ${fail.value} (${fail.message})`;
-  });
-}

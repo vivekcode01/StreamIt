@@ -24,6 +24,8 @@ import {
 
 // Import workers and they'll start running immediately.
 import "./workers";
+
+// Run migrations on start.
 import "./db/migrate";
 
 export type App = typeof app;

@@ -9,12 +9,16 @@ CREATE SCHEMA public;
 */
 
 async function migrateToLatest() {
+  const migrationFolder = path.join(import.meta.dir, "migrations");
+
+  console.log("Reading migrations from folder", migrationFolder);
+
   const migrator = new Migrator({
     db,
     provider: new FileMigrationProvider({
       fs,
       path,
-      migrationFolder: path.join(__dirname, "migrations"),
+      migrationFolder,
     }),
   });
 
@@ -35,8 +39,6 @@ async function migrateToLatest() {
   }
 
   console.log(`Ran ${results?.length ?? 0} migrations`);
-
-  await db.destroy();
 }
 
 migrateToLatest();

@@ -9,7 +9,9 @@ services:
     image: "superstreamerapp/app:alpha"
     ports:
       - 52000:52000
-    env_file: config.env
+    environment:
+      - PUBLIC_API_ENDPOINT=http://localhost:52001
+      - PUBLIC_STITCHER_ENDPOINT=http://localhost:52002
 
   superstreamer-api:
     image: "superstreamerapp/api:alpha"
