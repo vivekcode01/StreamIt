@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 import { z } from "zod";
+import { AutoRefresh } from "../../../../components/AutoRefresh";
 import { Format } from "../../../../components/Format";
 import { FullTable } from "../../../../components/FullTable";
 import { JobState } from "../../../../components/JobState";
@@ -32,6 +33,9 @@ function RouteComponent() {
 
   return (
     <div className="p-8">
+      <div className="mb-4">
+        <AutoRefresh interval={5} defaultEnabled />
+      </div>
       <FullTable
         columns={[
           {
