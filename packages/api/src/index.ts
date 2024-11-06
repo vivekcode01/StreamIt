@@ -41,18 +41,22 @@ const app = new Elysia()
         },
         tags: [
           {
-            name: "User",
-            description:
-              "Methods related to user actions, including authentication and personal settings updates.",
-          },
-          {
             name: "Jobs",
             description:
               "Handle tasks related to jobs, including video processing and job status monitoring.",
           },
           {
+            name: "Assets",
+            description: "Inspect assets.",
+          },
+          {
             name: "Storage",
             description: "Anything related to your configured S3 bucket.",
+          },
+          {
+            name: "User",
+            description:
+              "Methods related to user actions, including authentication and personal settings updates.",
           },
         ],
         components: {
@@ -85,18 +89,18 @@ const app = new Elysia()
     }),
   )
   .model({
-    User: UserSchema,
     Job: JobSchema,
     StorageFolder: StorageFolderSchema,
     StorageFile: StorageFileSchema,
     Asset: AssetSchema,
     Group: GroupSchema,
+    User: UserSchema,
   })
-  .use(token)
-  .use(user)
   .use(jobs)
   .use(storage)
-  .use(assets);
+  .use(assets)
+  .use(token)
+  .use(user);
 
 app.on("stop", () => {
   process.exit(0);

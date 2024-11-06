@@ -18,7 +18,7 @@ function Index() {
 
   return (
     <Card className="p-4">
-      <CardHeader className="font-bold text-2xl">Welcome</CardHeader>
+      <CardHeader className="font-bold text-lg">Sign in</CardHeader>
       <CardBody>
         <Form
           submit="Sign in"
