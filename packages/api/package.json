@@ -32,7 +32,6 @@
     "bolt": "workspace:*",
     "bullmq": "^5.25.0",
     "elysia": "^1.1.24",
-    "jose": "^5.9.6",
     "kysely": "^0.27.4",
     "pg": "^8.13.1",
     "shared": "workspace:*"
