@@ -1,4 +1,5 @@
 import { WaitingChildrenError, Worker } from "bullmq";
+import { formatError } from "pretty-print-error";
 import { assert } from "shared/assert";
 import { connection } from "./env";
 import { WorkerDir } from "./lib/worker-dir";
@@ -16,10 +17,18 @@ export function runWorkers(
   const workers = definitions.map((definition) => {
     const { name, callback } = definition;
     const processor = createWorkerProcessor(callback);
-    return new Worker(name, processor, {
+
+    const worker = new Worker(name, processor, {
       connection,
       autorun: false,
     });
+
+    worker.on("error", (failedReason) => {
+      // Pretty print the error for debug reasons.
+      console.log(formatError(failedReason));
+    });
+
+    return worker;
   });
 
   const gracefulShutdown = async () => {
@@ -27,7 +36,9 @@ export function runWorkers(
       if (!worker.isRunning()) {
         continue;
       }
-      await worker.close();
+      // Pass true to force worker to close. Does not wait for workers
+      // to finish first.
+      await worker.close(true);
     }
     process.exit(0);
   };
