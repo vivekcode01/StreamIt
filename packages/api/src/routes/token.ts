@@ -1,16 +1,16 @@
 import { Elysia, t } from "elysia";
-import { authUserJwt } from "../auth";
+import { jwtUser } from "../auth";
 import { DeliberateError } from "../errors";
 import { getUserIdByCredentials } from "../repositories/users";
 
-export const token = new Elysia().use(authUserJwt).post(
+export const token = new Elysia().use(jwtUser).post(
   "/token",
-  async ({ authUserJwt, body }) => {
+  async ({ jwtUser, body }) => {
     const id = await getUserIdByCredentials(body.username, body.password);
     if (id === null) {
       throw new DeliberateError({ type: "ERR_USER_INVALID_CREDENTIALS" });
     }
-    return await authUserJwt.sign({
+    return await jwtUser.sign({
       id,
     });
   },

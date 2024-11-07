@@ -1,12 +1,15 @@
 import { Elysia } from "elysia";
-import { authUser } from "../auth";
+import { auth } from "../auth";
 import { getUser } from "../repositories/users";
 import { UserSchema } from "../types";
 
-export const user = new Elysia().use(authUser).get(
+export const user = new Elysia().use(auth({ user: true })).get(
   "/user",
-  async ({ user }) => {
-    return await getUser(user.id);
+  async ({ authed }) => {
+    if (authed.type !== "user") {
+      throw new Error("Invalid authed");
+    }
+    return await getUser(authed.id);
   },
   {
     detail: {

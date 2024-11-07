@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { authService, authUser } from "../auth";
+import { auth } from "../auth";
 import {
   assetsFilterSchema,
   getAssets,
@@ -8,8 +8,7 @@ import {
 import { AssetSchema } from "../types";
 
 export const assets = new Elysia()
-  .use(authUser)
-  .use(authService)
+  .use(auth({ user: true, service: true }))
   .get(
     "/assets",
     async ({ query }) => {

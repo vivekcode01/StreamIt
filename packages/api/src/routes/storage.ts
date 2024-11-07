@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { authUser } from "../auth";
+import { auth } from "../auth";
 import { DeliberateError } from "../errors";
 import { StorageFileSchema, StorageFolderSchema } from "../types";
 import {
@@ -9,7 +9,7 @@ import {
 } from "../utils/s3";
 
 export const storage = new Elysia()
-  .use(authUser)
+  .use(auth({ user: true }))
   .get(
     "/storage/folder",
     async ({ query }) => {
