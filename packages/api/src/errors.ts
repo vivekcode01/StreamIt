@@ -16,9 +16,7 @@ interface ApiErrorCode {
   ERR_UNAUTHORIZED: never;
   ERR_NOT_FOUND: never;
   ERR_USER_INVALID_CREDENTIALS: never;
-  ERR_USER_INVALID_TOKEN_TYPE: {
-    only: "service" | "user";
-  };
+  ERR_USER_INVALID_TOKEN: never;
   ERR_STORAGE_NO_FILE_PREVIEW: never;
 }
 
@@ -27,8 +25,8 @@ const statusMap: Record<keyof ApiErrorCode, number> = {
   ERR_VALIDATION: 403,
   ERR_NOT_FOUND: 404,
   ERR_UNAUTHORIZED: 401,
+  ERR_USER_INVALID_TOKEN: 401,
   ERR_USER_INVALID_CREDENTIALS: 401,
-  ERR_USER_INVALID_TOKEN_TYPE: 401,
   ERR_STORAGE_NO_FILE_PREVIEW: 400,
 };
 

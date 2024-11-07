@@ -8,13 +8,14 @@ import {
 } from "bolt";
 import { AudioCodec, VideoCodec } from "bolt";
 import { Elysia, t } from "elysia";
-import { authUser } from "./token";
+import { authService, authUser } from "../auth";
 import { DeliberateError } from "../errors";
 import { getJob, getJobLogs, getJobs } from "../repositories/jobs";
 import { JobSchema } from "../types";
 
 export const jobs = new Elysia()
   .use(authUser)
+  .use(authService)
   .post(
     "/transcode",
     async ({ body }) => {

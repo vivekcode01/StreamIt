@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { authUser } from "./token";
+import { authUser } from "../auth";
 import { DeliberateError } from "../errors";
 import { StorageFileSchema, StorageFolderSchema } from "../types";
 import {
