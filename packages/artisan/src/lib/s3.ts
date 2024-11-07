@@ -2,6 +2,7 @@ import { createReadStream } from "node:fs";
 import { GetObjectCommand, S3 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { ConfiguredRetryStrategy } from "@smithy/util-retry";
 import { lookup } from "mime-types";
 import { S3SyncClient } from "s3-sync-client";
 import { env } from "../env";
@@ -16,7 +17,10 @@ const client = new S3({
     secretAccessKey: env.S3_SECRET_KEY,
   },
   logger: console,
-  maxAttempts: 5,
+  retryStrategy: new ConfiguredRetryStrategy(
+    10,
+    (attempt) => 1000 + attempt * 1000,
+  ),
 });
 
 const { sync } = new S3SyncClient({ client });
