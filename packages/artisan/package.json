@@ -22,7 +22,6 @@
     "iso-language-codes": "^2.0.0",
     "mime-types": "^2.1.35",
     "parse-filepath": "^1.0.2",
-    "pretty-print-error": "^1.1.2",
     "s3-sync-client": "^4.3.1",
     "shared": "workspace:*"
   },

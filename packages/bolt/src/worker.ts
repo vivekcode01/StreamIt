@@ -1,5 +1,4 @@
 import { WaitingChildrenError, Worker } from "bullmq";
-import { formatError } from "pretty-print-error";
 import { assert } from "shared/assert";
 import { connection } from "./env";
 import { WorkerDir } from "./lib/worker-dir";
@@ -25,7 +24,7 @@ export function runWorkers(
 
     worker.on("error", (failedReason) => {
       // Pretty print the error for debug reasons.
-      console.log(formatError(failedReason));
+      console.dir(failedReason);
     });
 
     return worker;
