@@ -15,6 +15,8 @@ const client = new S3({
     accessKeyId: env.S3_ACCESS_KEY,
     secretAccessKey: env.S3_SECRET_KEY,
   },
+  logger: console,
+  maxAttempts: 5,
 });
 
 const { sync } = new S3SyncClient({ client });
