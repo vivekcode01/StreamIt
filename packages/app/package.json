@@ -38,6 +38,7 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.52.2",
     "swr": "^2.2.5",
+    "topbar": "^3.0.0",
     "uniqolor": "^1.1.1",
     "use-local-storage-state": "^19.4.1",
     "zod": "^3.23.8"

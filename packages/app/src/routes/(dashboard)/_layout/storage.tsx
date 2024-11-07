@@ -1,7 +1,7 @@
 import { BreadcrumbItem, Breadcrumbs } from "@nextui-org/breadcrumbs";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
-import { File, Folder, House } from "lucide-react";
+import { File, Folder } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 import { useAuth } from "../../../auth";
@@ -38,15 +38,24 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col h-full p-8">
-      <Breadcrumbs className="mb-4 h-4 flex items-center">
-        {breadcrumbs.map(({ name, path }) => (
-          <BreadcrumbItem key={path}>
-            <Link to={Route.fullPath} search={{ path }}>
-              {name || <House className="w-3 h-3" />}
-            </Link>
-          </BreadcrumbItem>
-        ))}
-      </Breadcrumbs>
+      <div className="flex items-center mb-4">
+        <Link
+          className="font-medium"
+          to={Route.fullPath}
+          search={{ path: "/" }}
+        >
+          Storage
+        </Link>
+        <Breadcrumbs className="flex items-center">
+          {breadcrumbs.map(({ name, path }) => (
+            <BreadcrumbItem key={path}>
+              <Link to={Route.fullPath} search={{ path }}>
+                {name}
+              </Link>
+            </BreadcrumbItem>
+          ))}
+        </Breadcrumbs>
+      </div>
       <FullTable
         classNames={{
           base: "grow",

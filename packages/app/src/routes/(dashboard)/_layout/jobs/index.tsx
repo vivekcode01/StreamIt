@@ -33,7 +33,8 @@ function RouteComponent() {
 
   return (
     <div className="p-8">
-      <div className="mb-4">
+      <div className="mb-4 flex gap-4">
+        <h2 className="font-medium">Jobs</h2>
         <AutoRefresh interval={5} defaultEnabled />
       </div>
       <FullTable

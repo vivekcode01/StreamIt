@@ -10,14 +10,21 @@ import type { Plugin } from "vite";
 const env = parseEnv((z) => ({
   PUBLIC_API_ENDPOINT: z.string().optional(),
   PUBLIC_STITCHER_ENDPOINT: z.string().optional(),
+  TAG: z.string().default("latest"),
 }));
+
+let version = process.env.npm_package_version;
+if (env.TAG !== "latest") {
+  const [date, time] = new Date().toISOString().split("T");
+  version = `${env.TAG} ${date} ${time.substring(0, 5)}`;
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   return {
     plugins: [TanStackRouterVite(), react(), ssiEnvPlugin(env, mode)],
     define: {
-      __VERSION__: JSON.stringify(process.env.npm_package_version),
+      __VERSION__: JSON.stringify(version),
     },
     clearScreen: false,
     server: {

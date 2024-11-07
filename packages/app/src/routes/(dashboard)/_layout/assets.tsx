@@ -1,5 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
+import { CircleSlash } from "lucide-react";
 import { z } from "zod";
 import { Format } from "../../../components/Format";
 import { FullTable } from "../../../components/FullTable";
@@ -39,6 +40,7 @@ function RouteComponent() {
 
   return (
     <div className="p-8">
+      <h2 className="mb-4 font-medium">Assets</h2>
       <FullTable
         columns={[
           {
@@ -71,7 +73,7 @@ function RouteComponent() {
           key: item.id,
           cells: [
             item.name,
-            item.playables,
+            <Playables asset={item} />,
             <GroupTag groups={groups.data} asset={item} />,
             <Format format="date" value={item.createdAt} />,
           ],
@@ -83,8 +85,19 @@ function RouteComponent() {
 
 function GroupTag({ groups, asset }: { groups: Group[]; asset: Asset }) {
   const group = groups.find((group) => group.id === asset.groupId);
-  if (!group) {
-    return <Uniqolor value="default" />;
-  }
-  return <Uniqolor value={group.name} />;
+  return <Uniqolor value={group?.name ?? "default"} />;
+}
+
+function Playables({ asset }: { asset: Asset }) {
+  return (
+    <div className="w-12 flex justify-center">
+      {asset.playables ? (
+        <Link to="/storage" search={{ path: `/package/${asset.id}/` }}>
+          {asset.playables}
+        </Link>
+      ) : (
+        <CircleSlash className="w-4 h-4" />
+      )}
+    </div>
+  );
 }
