@@ -38,6 +38,8 @@ services:
     environment:
       - REDIS_HOST=superstreamer-redis
       - REDIS_PORT=6379
+      - PUBLIC_API_ENDPOINT=http://localhost:52001
+      - PUBLIC_STITCHER_ENDPOINT=http://localhost:52002
 
   superstreamer-artisan:
     image: "superstreamerapp/artisan:alpha"
