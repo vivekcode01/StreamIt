@@ -35,10 +35,12 @@
   max-width: 160px;
 }
 
-.video {
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+.schema {
+  margin: 4em 0;
+}
+
+.framed {
+  border-radius: 1rem;
 }
 
 .package {
@@ -65,20 +67,6 @@
   border-left: 1px solid var(--vp-c-divider);
 }
 
-.schema {
-  margin: 3rem auto;
-  width: 100%;
-}
-
-.schema-stitcher {
-  max-width: 400px;
-}
-
-.schema-dashboard {
-  max-width: 300px;
-}
-
-.details.minimal {
-  background-color: transparent;
-  padding: 0;
+.package div {
+  margin-left: 2rem;
 }
