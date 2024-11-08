@@ -108,12 +108,6 @@ export const jobs = new Elysia()
               "Only provide if you wish to re-transcode an existing asset. When not provided, a unique UUID is created.",
           }),
         ),
-        packageAfter: t.Optional(
-          t.Boolean({
-            description:
-              "Starts a default package job after a succesful transcode.",
-          }),
-        ),
         group: t.Optional(
           t.String({
             description:

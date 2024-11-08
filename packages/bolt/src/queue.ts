@@ -7,7 +7,6 @@ export interface TranscodeData {
   inputs: PartialInput[];
   streams: PartialStream[];
   segmentSize: number;
-  packageAfter?: boolean;
   group?: string;
 }
 

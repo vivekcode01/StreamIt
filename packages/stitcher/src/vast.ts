@@ -51,39 +51,40 @@ async function getAdMedias(adBreak: VmapAdBreak): Promise<AdMedia[]> {
 }
 
 async function scheduleForPackage(adMedia: AdMedia) {
-  await api.transcode.post({
-    group: "ad",
-    assetId: adMedia.assetId,
-    packageAfter: true,
-    inputs: [
-      {
-        path: adMedia.fileUrl,
-        type: "video",
-      },
-      {
-        path: adMedia.fileUrl,
-        type: "audio",
-        language: "eng",
-      },
-    ],
-    streams: [
-      {
-        type: "video",
-        codec: VideoCodec.h264,
-        height: 720,
-      },
-      {
-        type: "video",
-        codec: VideoCodec.h264,
-        height: 480,
-      },
-      {
-        type: "audio",
-        codec: AudioCodec.aac,
-        language: "eng",
-      },
-    ],
-  });
+  // TODO: Migrate to pipeline API.
+  // await api.transcode.post({
+  //   group: "ad",
+  //   assetId: adMedia.assetId,
+  //   packageAfter: true,
+  //   inputs: [
+  //     {
+  //       path: adMedia.fileUrl,
+  //       type: "video",
+  //     },
+  //     {
+  //       path: adMedia.fileUrl,
+  //       type: "audio",
+  //       language: "eng",
+  //     },
+  //   ],
+  //   streams: [
+  //     {
+  //       type: "video",
+  //       codec: VideoCodec.h264,
+  //       height: 720,
+  //     },
+  //     {
+  //       type: "video",
+  //       codec: VideoCodec.h264,
+  //       height: 480,
+  //     },
+  //     {
+  //       type: "audio",
+  //       codec: AudioCodec.aac,
+  //       language: "eng",
+  //     },
+  //   ],
+  // });
 }
 
 async function formatVastResponse(response: VastResponse) {
