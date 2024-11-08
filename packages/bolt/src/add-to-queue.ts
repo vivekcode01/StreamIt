@@ -1,11 +1,16 @@
 import { randomUUID } from "crypto";
 import { FlowProducer } from "bullmq";
 import { connection } from "./env";
+import type { PackageData, TranscodeData } from "./queue";
 import type { DefaultJobOptions, Job, JobsOptions, Queue } from "bullmq";
 
 export const flowProducer = new FlowProducer({
   connection,
 });
+
+const DEFAULT_SEGMENT_SIZE = 2.24;
+
+const DEFAULT_PACKAGE_NAME = "hls";
 
 export const DEFAULT_JOB_OPTIONS: DefaultJobOptions = {
   removeOnComplete: {
@@ -67,4 +72,23 @@ export async function addToQueue<Q extends Queue, D = QueueData<Q>>(
   await Bun.sleep(1);
 
   return job.id;
+}
+
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+export function formatTranscodeData(
+  data: PartialBy<TranscodeData, "assetId" | "segmentSize">,
+) {
+  return {
+    assetId: randomUUID(),
+    segmentSize: DEFAULT_SEGMENT_SIZE,
+    ...data,
+  };
+}
+
+export function formatPackageData(data: PartialBy<PackageData, "name">) {
+  return {
+    name: DEFAULT_PACKAGE_NAME,
+    ...data,
+  };
 }

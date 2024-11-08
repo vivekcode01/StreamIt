@@ -1,9 +1,10 @@
 import { randomUUID } from "crypto";
 import {
   addToQueue,
-  DEFAULT_PACKAGE_NAME,
-  DEFAULT_SEGMENT_SIZE,
+  formatPackageData,
+  formatTranscodeData,
   packageQueue,
+  pipelineQueue,
   transcodeQueue,
 } from "bolt";
 import { AudioCodec, VideoCodec } from "bolt";
@@ -12,17 +13,149 @@ import { auth } from "../auth";
 import { DeliberateError } from "../errors";
 import { getJob, getJobLogs, getJobs } from "../repositories/jobs";
 import { JobSchema } from "../types";
+import type { PackageData, PipelineData, TranscodeData } from "bolt";
+
+const transcodeBodySchema = t.Object({
+  inputs: t.Array(
+    t.Union([
+      t.Object({
+        type: t.Literal("video"),
+        path: t.String({
+          description: "The source path, starting with http(s):// or s3://",
+        }),
+        height: t.Optional(t.Number()),
+      }),
+      t.Object({
+        type: t.Literal("audio"),
+        path: t.String({
+          description: "The source path, starting with http(s):// or s3://",
+        }),
+        language: t.Optional(t.String()),
+        channels: t.Optional(t.Number()),
+      }),
+      t.Object({
+        type: t.Literal("text"),
+        path: t.String({
+          description: "The source path, starting with http(s):// or s3://",
+        }),
+        language: t.String(),
+      }),
+    ]),
+    {
+      description:
+        "Source input types. Can refer to the same file, eg: when an mp4 contains " +
+        "both audio and video, the same source can be added for both video and audio as type.",
+    },
+  ),
+  streams: t.Array(
+    t.Union([
+      t.Object({
+        type: t.Literal("video"),
+        codec: t.Enum(VideoCodec),
+        height: t.Number(),
+        bitrate: t.Optional(t.Number({ description: "Bitrate in bps" })),
+        framerate: t.Optional(t.Number({ description: "Frames per second" })),
+      }),
+      t.Object({
+        type: t.Literal("audio"),
+        codec: t.Enum(AudioCodec),
+        bitrate: t.Optional(t.Number({ description: "Bitrate in bps" })),
+        language: t.Optional(t.String()),
+        channels: t.Optional(t.Number()),
+      }),
+      t.Object({
+        type: t.Literal("text"),
+        language: t.String(),
+      }),
+    ]),
+    {
+      description:
+        "Output types, the transcoder will match any given input and figure out if a particular output can be generated.",
+    },
+  ),
+  segmentSize: t.Optional(
+    t.Number({
+      description: "In seconds, will result in proper GOP sizes.",
+    }),
+  ),
+  assetId: t.Optional(
+    t.String({
+      format: "uuid",
+      description:
+        "Only provide if you wish to re-transcode an existing asset. When not provided, a unique UUID is created.",
+    }),
+  ),
+  group: t.Optional(
+    t.String({
+      description: 'Groups the asset with an arbitrary value, such as "ad"',
+    }),
+  ),
+});
+
+const packageBodySchema = t.Object({
+  language: t.Optional(t.String()),
+  segmentSize: t.Optional(
+    t.Number({
+      description:
+        "In seconds, shall be the same or a multiple of the originally transcoded segment size.",
+    }),
+  ),
+  name: t.Optional(
+    t.String({
+      description:
+        'When provided, the package result will be stored under this name in S3. Mainly used to create multiple packaged results for a transcode result. We\'ll use "hls" when not provided.',
+    }),
+  ),
+});
 
 export const jobs = new Elysia()
   .use(auth({ user: true, service: true }))
   .post(
+    "/pipeline",
+    async ({ body }) => {
+      const { package: inputPackageData, ...inputTranscodeData } = body;
+
+      const transcodeData = formatTranscodeData(inputTranscodeData);
+
+      let packageData: PipelineData["package"];
+      if (inputPackageData) {
+        packageData = formatPackageData({
+          assetId: transcodeData.assetId,
+          ...(typeof inputPackageData === "boolean" ? {} : inputPackageData),
+        });
+      }
+
+      const data = {
+        ...transcodeData,
+        package: packageData,
+      };
+      const jobId = await addToQueue(pipelineQueue, data, {
+        id: data.assetId,
+      });
+      return { jobId };
+    },
+    {
+      detail: {
+        summary: "Create pipeline job",
+        tags: ["Jobs"],
+      },
+      body: t.Intersect([
+        transcodeBodySchema,
+        t.Object({
+          package: t.Optional(t.Union([packageBodySchema, t.Boolean()])),
+        }),
+      ]),
+      response: {
+        200: t.Object({
+          jobId: t.String(),
+        }),
+      },
+    },
+  )
+  .post(
     "/transcode",
     async ({ body }) => {
-      const data = {
-        assetId: randomUUID(),
-        segmentSize: DEFAULT_SEGMENT_SIZE,
-        ...body,
-      };
+      const data = formatTranscodeData(body);
       const jobId = await addToQueue(transcodeQueue, data, {
         id: data.assetId,
       });
@@ -33,88 +166,7 @@ export const jobs = new Elysia()
         summary: "Create transcode job",
         tags: ["Jobs"],
       },
-      body: t.Object({
-        inputs: t.Array(
-          t.Union([
-            t.Object({
-              type: t.Literal("video"),
-              path: t.String({
-                description:
-                  "The source path, starting with http(s):// or s3://",
-              }),
-              height: t.Optional(t.Number()),
-            }),
-            t.Object({
-              type: t.Literal("audio"),
-              path: t.String({
-                description:
-                  "The source path, starting with http(s):// or s3://",
-              }),
-              language: t.Optional(t.String()),
-              channels: t.Optional(t.Number()),
-            }),
-            t.Object({
-              type: t.Literal("text"),
-              path: t.String({
-                description:
-                  "The source path, starting with http(s):// or s3://",
-              }),
-              language: t.String(),
-            }),
-          ]),
-          {
-            description:
-              "Source input types. Can refer to the same file, eg: when an mp4 contains " +
-              "both audio and video, the same source can be added for both video and audio as type.",
-          },
-        ),
-        streams: t.Array(
-          t.Union([
-            t.Object({
-              type: t.Literal("video"),
-              codec: t.Enum(VideoCodec),
-              height: t.Number(),
-              bitrate: t.Optional(t.Number({ description: "Bitrate in bps" })),
-              framerate: t.Optional(
-                t.Number({ description: "Frames per second" }),
-              ),
-            }),
-            t.Object({
-              type: t.Literal("audio"),
-              codec: t.Enum(AudioCodec),
-              bitrate: t.Optional(t.Number({ description: "Bitrate in bps" })),
-              language: t.Optional(t.String()),
-              channels: t.Optional(t.Number()),
-            }),
-            t.Object({
-              type: t.Literal("text"),
-              language: t.String(),
-            }),
-          ]),
-          {
-            description:
-              "Output types, the transcoder will match any given input and figure out if a particular output can be generated.",
-          },
-        ),
-        segmentSize: t.Optional(
-          t.Number({
-            description: "In seconds, will result in proper GOP sizes.",
-          }),
-        ),
-        assetId: t.Optional(
-          t.String({
-            format: "uuid",
-            description:
-              "Only provide if you wish to re-transcode an existing asset. When not provided, a unique UUID is created.",
-          }),
-        ),
-        group: t.Optional(
-          t.String({
-            description:
-              'Groups the asset with an arbitrary value, such as "ad"',
-          }),
-        ),
-      }),
+      body: transcodeBodySchema,
       response: {
         200: t.Object({
           jobId: t.String(),
@@ -125,10 +177,7 @@ export const jobs = new Elysia()
   .post(
     "/package",
     async ({ body }) => {
-      const data = {
-        name: DEFAULT_PACKAGE_NAME,
-        ...body,
-      };
+      const data = formatPackageData(body);
       const jobId = await addToQueue(packageQueue, data, {
         id: [data.assetId, data.name],
       });
@@ -139,30 +188,14 @@ export const jobs = new Elysia()
         summary: "Create package job",
         tags: ["Jobs"],
       },
-      body: t.Object({
-        assetId: t.String({
-          format: "uuid",
+      body: t.Intersect([
+        t.Object({
+          assetId: t.String({
+            format: "uuid",
+          }),
         }),
-        language: t.Optional(t.String()),
-        segmentSize: t.Optional(
-          t.Number({
-            description:
-              "In seconds, shall be the same or a multiple of the originally transcoded segment size.",
-          }),
-        ),
-        tag: t.Optional(
-          t.String({
-            description:
-              'Tag a job for a particular purpose, such as "ad". Arbitrary value.',
-          }),
-        ),
-        name: t.Optional(
-          t.String({
-            description:
-              'When provided, the package result will be stored under this name in S3. Mainly used to create multiple packaged results for a transcode result. We\'ll use "hls" when not provided.',
-          }),
-        ),
-      }),
+        packageBodySchema,
+      ]),
       response: {
         200: t.Object({
           jobId: t.String(),

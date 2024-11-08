@@ -3,7 +3,7 @@ import { connection } from "./env";
 import type { Input, PartialInput, PartialStream, Stream } from "./types";
 
 export type PipelineData = TranscodeData & {
-  package?: Omit<PackageData, "assetId">;
+  package?: PackageData;
 };
 
 export const pipelineQueue = new Queue<PipelineData>("pipeline", {

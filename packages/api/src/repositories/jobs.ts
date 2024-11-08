@@ -4,6 +4,7 @@ import {
   flowProducer,
   outcomeQueue,
   packageQueue,
+  pipelineQueue,
   transcodeQueue,
 } from "bolt";
 import { Job as RawJob } from "bullmq";
@@ -12,6 +13,7 @@ import type { Job } from "../types";
 import type { JobNode, JobState, Queue } from "bullmq";
 
 const allQueus = [
+  pipelineQueue,
   transcodeQueue,
   packageQueue,
   ffmpegQueue,
