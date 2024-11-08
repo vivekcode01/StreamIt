@@ -157,13 +157,7 @@ async function formatJobNode(node: JobNode): Promise<Job> {
 
   const failedReason = state === "failed" ? job.failedReason : undefined;
 
-  const findParentSortIndex = (job: RawJob): number => {
-    const value = job.data?.parentSortIndex;
-    return typeof value === "number" ? value : 0;
-  };
-  (children ?? []).sort(
-    (a, b) => findParentSortIndex(a.job) - findParentSortIndex(b.job),
-  );
+  children?.sort((a, b) => a.job.timestamp - b.job.timestamp);
 
   const jobChildren = await Promise.all((children ?? []).map(formatJobNode));
 
@@ -202,6 +196,7 @@ async function formatJobNode(node: JobNode): Promise<Job> {
     inputData: JSON.stringify(job.data),
     outputData: job.returnvalue ? JSON.stringify(job.returnvalue) : undefined,
     failedReason,
+    stacktrace: job.stacktrace,
     children: jobChildren,
   };
 }

@@ -9,7 +9,7 @@ export function Logs({ lines }: LogsProps) {
   return (
     <ul className="flex flex-col gap-2">
       {lines.map((line, index) => (
-        <Line line={line} index={index + 1} />
+        <Line key={line} line={line} index={index + 1} />
       ))}
     </ul>
   );

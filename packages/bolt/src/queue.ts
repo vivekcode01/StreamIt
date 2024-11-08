@@ -2,6 +2,14 @@ import { Queue } from "bullmq";
 import { connection } from "./env";
 import type { Input, PartialInput, PartialStream, Stream } from "./types";
 
+export type PipelineData = TranscodeData & {
+  package?: Omit<PackageData, "assetId">;
+};
+
+export const pipelineQueue = new Queue<PipelineData>("pipeline", {
+  connection,
+});
+
 export interface TranscodeData {
   assetId: string;
   inputs: PartialInput[];
@@ -30,7 +38,6 @@ export interface FfmpegData {
   stream: Stream;
   segmentSize: number;
   assetId: string;
-  parentSortIndex: number;
 }
 
 export const ffmpegQueue = new Queue<FfmpegData>("ffmpeg", {
@@ -39,7 +46,6 @@ export const ffmpegQueue = new Queue<FfmpegData>("ffmpeg", {
 
 export interface FfprobeData {
   inputs: PartialInput[];
-  parentSortIndex: number;
 }
 
 export const ffprobeQueue = new Queue<FfprobeData>("ffprobe", {

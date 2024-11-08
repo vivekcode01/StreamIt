@@ -112,15 +112,11 @@ async function handleStepInitial(job: Job<TranscodeData>) {
     ffprobeQueue,
     {
       inputs,
-      parentSortIndex: 0,
     },
     {
+      parent: job,
       options: {
         failParentOnFailure: true,
-        parent: {
-          id: job.id,
-          queue: job.queueQualifiedName,
-        },
       },
     },
   );
@@ -136,7 +132,7 @@ async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
 
   const matches = getMatches(job.data.streams, inputs);
 
-  const promises = matches.map(async ([type, stream, input], index) => {
+  for (const [type, stream, input] of matches) {
     assert(job.id);
 
     job.log(
@@ -159,23 +155,16 @@ async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
         stream,
         segmentSize: job.data.segmentSize,
         assetId: job.data.assetId,
-        // Start from 1, ffprobe job is always the first sort index.
-        parentSortIndex: index + 1,
       },
       {
         name,
+        parent: job,
         options: {
           failParentOnFailure: true,
-          parent: {
-            id: job.id,
-            queue: job.queueQualifiedName,
-          },
         },
       },
     );
-  });
-
-  await Promise.all(promises);
+  }
 }
 
 async function handleStepMeta(job: Job<TranscodeData>, token?: string) {

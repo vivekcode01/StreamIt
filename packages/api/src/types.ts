@@ -20,6 +20,7 @@ export const JobSchema = t.Recursive(
       inputData: t.String(),
       outputData: t.Optional(t.String()),
       failedReason: t.Optional(t.String()),
+      stacktrace: t.Optional(t.Array(t.String())),
       children: t.Array(This),
     }),
   { $id: "#/components/schemas/Job" },
