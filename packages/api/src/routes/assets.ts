@@ -1,5 +1,6 @@
 import { Elysia, t } from "elysia";
 import { auth } from "../auth";
+import { DeliberateError } from "../errors";
 import {
   assetsFilterSchema,
   getAsset,
@@ -33,7 +34,11 @@ export const assets = new Elysia()
   .get(
     "/assets/:id",
     async ({ params }) => {
-      return await getAsset(params.id);
+      const asset = await getAsset(params.id);
+      if (!asset) {
+        throw new DeliberateError({ type: "ERR_NOT_FOUND" });
+      }
+      return asset;
     },
     {
       params: t.Object({
@@ -45,6 +50,7 @@ export const assets = new Elysia()
       },
       response: {
         200: AssetSchema,
+        400: t.Never(),
       },
     },
   )

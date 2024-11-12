@@ -13,39 +13,46 @@ export interface AdMedia {
   fileUrl: string;
 }
 
-export async function getAdMediasFromVast(adBreak: VmapAdBreak) {
+export async function getAdMediasFromAdBreak(adBreak: VmapAdBreak) {
   const adMedias = await getAdMedias(adBreak);
   const result: AdMedia[] = [];
 
   for (const adMedia of adMedias) {
-    const isAvailable = await getIsAssetAvailable(adMedia.assetId);
-    if (!isAvailable) {
+    const asset = await fetchAsset(adMedia.assetId);
+    if (!asset) {
       await scheduleForPackage(adMedia);
-      continue;
+    } else {
+      // If we have an asset registered for the ad media,
+      // add it to the result.
+      result.push(adMedia);
     }
-    result.push(adMedia);
   }
+
   return result;
 }
 
 async function getAdMedias(adBreak: VmapAdBreak): Promise<AdMedia[]> {
   const vastClient = new VASTClient();
+  const parser = new DOMParser();
 
-  if (adBreak.vastUrl) {
-    const response = await vastClient.get(adBreak.vastUrl);
-    return await formatVastResponse(response);
+  const result: AdMedia[] = [];
+
+  for (const slot of adBreak.slots) {
+    if (slot.type === "url") {
+      const response = await vastClient.get(slot.url);
+      const adMedias = await formatVastResponse(response);
+      result.push(...adMedias);
+    }
+
+    if (slot.type === "data") {
+      const doc = parser.parseFromString(slot.data, "text/xml");
+      const response = await vastClient.parseVAST(doc);
+      const adMedias = await formatVastResponse(response);
+      result.push(...adMedias);
+    }
   }
 
-  if (adBreak.vastData) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(adBreak.vastData, "text/xml");
-
-    const response = await vastClient.parseVAST(doc);
-
-    return await formatVastResponse(response);
-  }
-
-  return [];
+  return result;
 }
 
 async function scheduleForPackage(adMedia: AdMedia) {
@@ -83,10 +90,16 @@ async function scheduleForPackage(adMedia: AdMedia) {
   });
 }
 
-async function getIsAssetAvailable(id: string) {
-  const { data } = await api.assets({ id }).get();
-  // TODO: Anything that is not a 404 or a 200 should be refused.
-  return data !== null;
+async function fetchAsset(id: string) {
+  const { data, status } = await api.assets({ id }).get();
+  console.log("---", data, status);
+  if (status === 404) {
+    return null;
+  }
+  if (status === 200) {
+    return data;
+  }
+  throw new Error(`Failed to fetch asset, got status ${status}`);
 }
 
 async function formatVastResponse(response: VastResponse) {

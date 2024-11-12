@@ -98,7 +98,11 @@ export async function getAsset(id: string) {
     ])
     .groupBy("assets.id")
     .where("assets.id", "=", id)
-    .executeTakeFirstOrThrow();
+    .executeTakeFirst();
+
+  if (!asset) {
+    return null;
+  }
 
   return {
     ...asset,
