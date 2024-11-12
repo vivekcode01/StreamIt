@@ -92,7 +92,6 @@ async function scheduleForPackage(adMedia: AdMedia) {
 
 async function fetchAsset(id: string) {
   const { data, status } = await api.assets({ id }).get();
-  console.log("---", data, status);
   if (status === 404) {
     return null;
   }
