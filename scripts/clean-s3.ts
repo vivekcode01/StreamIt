@@ -3,7 +3,7 @@ import {
   ListObjectsCommand,
   S3,
 } from "@aws-sdk/client-s3";
-import { env } from "../src/env";
+import { env } from "../packages/api/src/env";
 
 const client = new S3({
   endpoint: env.S3_ENDPOINT,
