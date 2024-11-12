@@ -159,10 +159,6 @@ async function formatJobNode(node: JobNode): Promise<Job> {
 
   const failedReason = state === "failed" ? job.failedReason : undefined;
 
-  for (const t of children ?? []) {
-    console.log("jooo", t);
-  }
-
   const jobChildren: Job[] = [];
   if (children) {
     children.sort((a, b) => a.job.timestamp - b.job.timestamp);
