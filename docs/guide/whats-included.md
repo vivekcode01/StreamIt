@@ -51,9 +51,3 @@ Superstreamer is a monorepo, with multiple smaller projects inside. We'll provid
     <a href="https://www.npmjs.com/package/@superstreamer/player" target="_blank"><img src="/button-npm.webp" style="max-height: 1.5rem;" /></a>
   </div>
 </div>
-
-::: tip
-
-Artisan consumes jobs from a Redis queue. You can run as many Artisan instances as you like in the background, over multiple machines. This scales like a beast.
-
-:::

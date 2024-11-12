@@ -1,7 +1,3 @@
----
-outline: [1,2]
----
-
 # Getting Started
 
 Setting up your video streaming platform has never been easier. With just a few simple steps, you'll be up and running, delivering seamless video experiences. 

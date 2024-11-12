@@ -122,12 +122,12 @@ function sidebarGuide() {
           link: "building-blocks.md",
           items: [
             {
-              text: "Process",
-              link: "process",
+              text: "Transcode and package",
+              link: "transcode-and-package",
             },
             {
-              text: "Stitch",
-              link: "stitch",
+              text: "Content personalization",
+              link: "content-personalization",
             },
             {
               text: "Player",

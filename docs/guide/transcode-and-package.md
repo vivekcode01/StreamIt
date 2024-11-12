@@ -1,4 +1,4 @@
-# Process
+# Transcode and package
 
 We'll begin by processing and preparing our video source file (e.g., MP4, MKV, ...), ensuring it's properly formatted and optimized for the next stages of transcoding and packaging.
 

@@ -1,6 +1,10 @@
-# Stitch
+---
+outline: [2,3]
+---
 
-Superstreamer comes with a separate project named Stitcher, an HLS playlist manipulator that can insert interstitials on-the-fly.
+# Content personalisation
+
+Superstreamer comes with a separate project named Stitcher, an HLS playlist manipulator that can insert interstitials on-the-fly. You can use Stitcher to set individual quality limits for each user or to insert advertisements into your content.
 
 Make sure you read the [video processing](/guide/video-processing) page first. In order to stitch playlists together, we must first make sure we have our video files processed and available as HLS playlists.
 
@@ -16,6 +20,10 @@ Before we dive in, let's cover some basic terminology. We'll keep this brief, bu
 
   HLS (HTTP Live Streaming) is a protocol that splits video into small chunks and delivers them over HTTP. For Superstreamer, we focus exclusively on using HLS for streaming.
 
+- Interstitial
+
+  An interstitial is a type of video segment inserted into an HLS playback session, usually serving as a mid-stream interruption for purposes like advertisements, informational messages, or promotional content.
+
 ## Use cases
 
 - Insert linear ads at given cue points, derived from a VMAP (a spec compliant format that includes the positions of where ads should be in a video).
@@ -24,20 +32,26 @@ Before we dive in, let's cover some basic terminology. We'll keep this brief, bu
 
 ## Create a session
 
+To personalize a playback session, begin by creating a session for a specific user. This requires a `POST` request, where the body includes parameters for Stitcher to generate a customized playlist in response.
+
+<div style="display: flex; justify-content: center;">
+  <img class="schema" src="/schema-stitcher.png" style="max-width: 350px;" />
+</div>
+
 Providing input for the stitcher happens in the form of a `uri`. The support uri schemas are:
 
-- `asset://{assetId}`
+- **asset://{assetId}**
 
   We want to greatly simplify how you stitch playlists together. If you use the asset scheme, Superstreamer will know that you mean a package result from within the platform.
   
-- `http(s)://{url}/master.m3u8`
+- **https://{url}/master.m3u8**
 
   In case you want to use HLS playlists hosted elsewhere, you can use the http(s) scheme.
 
-```sh [Terminal]
-$ curl -X POST https://stitcher-superstreamer.domain.com/session
+```sh
+curl -X POST
+  "https://stitcher.domain.com/session"
   -H "Content-Type: application/json"
-  -d "{body}" 
 ```
 
 ```json
@@ -80,7 +94,7 @@ When streaming over networks with limited bandwidth (eg; mobile networks), remov
 }
 ```
 
-### Interstitials
+### Manual interstitials
 
 Let's say you transcoded and packaged a new asset, a bumper for example. We'll add it as an interstitial. An HLS interstitials supported player will then switch to the new asset at position 10 and when finished, it'll go back to the primary content.
 
@@ -98,7 +112,7 @@ Let's say you transcoded and packaged a new asset, a bumper for example. We'll a
 
 If you'd like to add a bumper, you'd insert an interstitial at position 0.
 
-### Linear ads
+### Linear advertisements
 
 We solely work with standards. VMAP (Video Multiple Ad Playlist) is an XML-based specification that defines how multiple ad breaks can be inserted into a video stream. Instruct Stitcher to add interstitials based on VMAP definitions. Each VMAP contains one or more AdBreak elements with a position of where the interstitial should be.
 
