@@ -165,6 +165,7 @@ async function formatJobNode(node: JobNode): Promise<Job> {
 
     for (const child of children) {
       if (!child) {
+        // Jobs can be auto removed. Skip them.
         continue;
       }
       jobChildren.push(await formatJobNode(child));
