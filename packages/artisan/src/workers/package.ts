@@ -38,18 +38,7 @@ export const packageCallback: WorkerCallback<
       }
 
       case Step.Outcome: {
-        await addToQueue(
-          outcomeQueue,
-          {
-            type: "package",
-            data: job.data,
-          },
-          {
-            options: {
-              removeOnComplete: true,
-            },
-          },
-        );
+        await handleJobOutcome(job);
         await job.updateData({
           ...job.data,
           step: Step.Finish,
@@ -154,6 +143,21 @@ async function handleStepInitial(job: Job<PackageData>, dir: WorkerDir) {
     del: true,
     public: true,
   });
+}
+
+async function handleJobOutcome(job: Job<PackageData>) {
+  await addToQueue(
+    outcomeQueue,
+    {
+      type: "package",
+      data: job.data,
+    },
+    {
+      options: {
+        removeOnComplete: true,
+      },
+    },
+  );
 }
 
 function getGroupId(

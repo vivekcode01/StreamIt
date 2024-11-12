@@ -73,19 +73,7 @@ export const transcodeCallback: WorkerCallback<
       }
 
       case Step.Outcome: {
-        await addToQueue(
-          outcomeQueue,
-          {
-            type: "transcode",
-            data: job.data,
-          },
-          {
-            options: {
-              removeOnComplete: true,
-            },
-          },
-        );
-
+        await handleStepOutcome(job);
         await job.updateData({
           ...job.data,
           step: Step.Finish,
@@ -108,22 +96,7 @@ async function handleStepInitial(job: Job<TranscodeData>) {
     (input) => input.type === "video" || input.type === "audio",
   );
 
-  await addToQueue(
-    ffprobeQueue,
-    {
-      inputs,
-      parentSortIndex: 0,
-    },
-    {
-      options: {
-        failParentOnFailure: true,
-        parent: {
-          id: job.id,
-          queue: job.queueQualifiedName,
-        },
-      },
-    },
-  );
+  await addToQueue(ffprobeQueue, { inputs }, { parent: job });
 }
 
 async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
@@ -136,7 +109,7 @@ async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
 
   const matches = getMatches(job.data.streams, inputs);
 
-  const promises = matches.map(async ([type, stream, input], index) => {
+  for (const [type, stream, input] of matches) {
     assert(job.id);
 
     job.log(
@@ -159,23 +132,16 @@ async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
         stream,
         segmentSize: job.data.segmentSize,
         assetId: job.data.assetId,
-        // Start from 1, ffprobe job is always the first sort index.
-        parentSortIndex: index + 1,
       },
       {
         name,
-        options: {
-          failParentOnFailure: true,
-          parent: {
-            id: job.id,
-            queue: job.queueQualifiedName,
-          },
-        },
+        parent: job,
       },
     );
-  });
 
-  await Promise.all(promises);
+    // Make sure timestamp is increased.
+    await Bun.sleep(1);
+  }
 }
 
 async function handleStepMeta(job: Job<TranscodeData>, token?: string) {
@@ -200,6 +166,21 @@ async function handleStepMeta(job: Job<TranscodeData>, token?: string) {
     type: "json",
     data: meta,
   });
+}
+
+async function handleStepOutcome(job: Job<TranscodeData>) {
+  await addToQueue(
+    outcomeQueue,
+    {
+      type: "transcode",
+      data: job.data,
+    },
+    {
+      options: {
+        removeOnComplete: true,
+      },
+    },
+  );
 }
 
 type MixedMatch<

@@ -1,31 +1,24 @@
 import { randomUUID } from "crypto";
 import { FlowProducer } from "bullmq";
 import { connection } from "./env";
-import type { DefaultJobOptions, JobsOptions, Queue } from "bullmq";
+import type { Job, JobsOptions, Queue } from "bullmq";
 
 export const flowProducer = new FlowProducer({
   connection,
 });
 
-export const DEFAULT_JOB_OPTIONS: DefaultJobOptions = {
-  removeOnComplete: {
-    age: 3600 * 24 * 3,
-    count: 200,
-  },
-  removeOnFail: {
-    age: 3600 * 24 * 7,
-  },
-};
+export const DEFAULT_SEGMENT_SIZE = 2.24;
 
-type QueueData<T> = T extends Queue<infer D> ? D : T;
+export const DEFAULT_PACKAGE_NAME = "hls";
 
-export async function addToQueue<Q extends Queue, D = QueueData<Q>>(
+export async function addToQueue<Q extends Queue>(
   queue: Q,
-  data: D,
+  data: Q extends Queue<infer D> ? D : never,
   params?: {
     id?: string | string[];
     name?: string;
     options?: JobsOptions;
+    parent?: Job;
   },
 ) {
   let jobId = params?.id;
@@ -42,10 +35,25 @@ export async function addToQueue<Q extends Queue, D = QueueData<Q>>(
     name = `${name}(${params.name})`;
   }
 
+  const options: JobsOptions = { ...params?.options };
+
+  if (params?.parent?.id) {
+    options.parent = {
+      id: params.parent.id,
+      queue: params.parent.queueQualifiedName,
+    };
+    options.failParentOnFailure = true;
+  }
+
   const job = await queue.add(name, data, {
+    removeOnComplete: {
+      age: 60 * 10,
+    },
+    removeOnFail: {
+      age: 3600 * 24 * 7,
+    },
+    ...options,
     jobId: `${queue.name}_${jobId}`,
-    ...DEFAULT_JOB_OPTIONS,
-    ...params?.options,
   });
 
   if (!job.id) {

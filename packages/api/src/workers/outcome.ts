@@ -1,4 +1,3 @@
-import { addToQueue, DEFAULT_PACKAGE_NAME, packageQueue } from "bolt";
 import { createAsset } from "../repositories/assets";
 import { createPlayable, getOrCreateGroup } from "../repositories/assets";
 import type { OutcomeData, WorkerCallback } from "bolt";
@@ -17,19 +16,6 @@ export const outcomeCallback: WorkerCallback<OutcomeData> = async ({ job }) => {
         id: data.assetId,
         groupId,
       });
-
-      if (data.packageAfter) {
-        await addToQueue(
-          packageQueue,
-          {
-            assetId: data.assetId,
-            name: DEFAULT_PACKAGE_NAME,
-          },
-          {
-            id: [data.assetId, DEFAULT_PACKAGE_NAME],
-          },
-        );
-      }
       break;
     }
     case "package": {

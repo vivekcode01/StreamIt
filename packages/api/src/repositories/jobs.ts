@@ -4,6 +4,7 @@ import {
   flowProducer,
   outcomeQueue,
   packageQueue,
+  pipelineQueue,
   transcodeQueue,
 } from "bolt";
 import { Job as RawJob } from "bullmq";
@@ -12,6 +13,7 @@ import type { Job } from "../types";
 import type { JobNode, JobState, Queue } from "bullmq";
 
 const allQueus = [
+  pipelineQueue,
   transcodeQueue,
   packageQueue,
   ffmpegQueue,
@@ -157,15 +159,18 @@ async function formatJobNode(node: JobNode): Promise<Job> {
 
   const failedReason = state === "failed" ? job.failedReason : undefined;
 
-  const findParentSortIndex = (job: RawJob): number => {
-    const value = job.data?.parentSortIndex;
-    return typeof value === "number" ? value : 0;
-  };
-  (children ?? []).sort(
-    (a, b) => findParentSortIndex(a.job) - findParentSortIndex(b.job),
-  );
+  const jobChildren: Job[] = [];
+  if (children) {
+    children.sort((a, b) => a.job.timestamp - b.job.timestamp);
 
-  const jobChildren = await Promise.all((children ?? []).map(formatJobNode));
+    for (const child of children) {
+      if (!child) {
+        // Jobs can be auto removed. Skip them.
+        continue;
+      }
+      jobChildren.push(await formatJobNode(child));
+    }
+  }
 
   let processedAt = job.processedOn;
   if (processedAt) {
@@ -202,6 +207,7 @@ async function formatJobNode(node: JobNode): Promise<Job> {
     inputData: JSON.stringify(job.data),
     outputData: job.returnvalue ? JSON.stringify(job.returnvalue) : undefined,
     failedReason,
+    stacktrace: job.stacktrace,
     children: jobChildren,
   };
 }

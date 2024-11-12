@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { env } from "./env";
 import { Presentation } from "./presentation";
-import { type AdMedia, getAdMediasFromVast } from "./vast";
+import { getAdMediasFromAdBreak } from "./vast";
 import type { DateRange } from "./parser";
 import type {
   Session,
@@ -105,20 +105,16 @@ async function formatAdBreaks(
   baseDate: DateTime,
   lookupDate: DateTime,
 ) {
-  const adBreaks = vmapResponse.adBreaks.filter((adBreak) =>
+  const adBreak = vmapResponse.adBreaks.find((adBreak) =>
     isEqualTimeOffset(baseDate, adBreak.timeOffset, lookupDate),
   );
 
-  if (!adBreaks.length) {
+  if (!adBreak) {
+    // No adbreak found for the time offset. There's nothing left to do.
     return;
   }
 
-  const adMedias: AdMedia[] = [];
-
-  for (const adBreak of adBreaks) {
-    const items = await getAdMediasFromVast(adBreak);
-    adMedias.push(...items);
-  }
+  const adMedias = await getAdMediasFromAdBreak(adBreak);
 
   for (const adMedia of adMedias) {
     const presentation = new Presentation(`asset://${adMedia.assetId}`);

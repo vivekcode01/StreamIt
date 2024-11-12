@@ -29,3 +29,7 @@ export interface TranscodeResult {
 export interface PackageResult {
   assetId: string;
 }
+
+export interface PipelineResult {
+  assetId: string;
+}
