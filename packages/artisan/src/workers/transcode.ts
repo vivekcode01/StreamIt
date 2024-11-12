@@ -73,19 +73,7 @@ export const transcodeCallback: WorkerCallback<
       }
 
       case Step.Outcome: {
-        await addToQueue(
-          outcomeQueue,
-          {
-            type: "transcode",
-            data: job.data,
-          },
-          {
-            options: {
-              removeOnComplete: true,
-            },
-          },
-        );
-
+        await handleStepOutcome(job);
         await job.updateData({
           ...job.data,
           step: Step.Finish,
@@ -108,18 +96,7 @@ async function handleStepInitial(job: Job<TranscodeData>) {
     (input) => input.type === "video" || input.type === "audio",
   );
 
-  await addToQueue(
-    ffprobeQueue,
-    {
-      inputs,
-    },
-    {
-      parent: job,
-      options: {
-        failParentOnFailure: true,
-      },
-    },
-  );
+  await addToQueue(ffprobeQueue, { inputs }, { parent: job });
 }
 
 async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
@@ -159,11 +136,11 @@ async function handleStepFfmpeg(job: Job<TranscodeData>, token?: string) {
       {
         name,
         parent: job,
-        options: {
-          failParentOnFailure: true,
-        },
       },
     );
+
+    // Make sure timestamp is increased.
+    await Bun.sleep(1);
   }
 }
 
@@ -189,6 +166,21 @@ async function handleStepMeta(job: Job<TranscodeData>, token?: string) {
     type: "json",
     data: meta,
   });
+}
+
+async function handleStepOutcome(job: Job<TranscodeData>) {
+  await addToQueue(
+    outcomeQueue,
+    {
+      type: "transcode",
+      data: job.data,
+    },
+    {
+      options: {
+        removeOnComplete: true,
+      },
+    },
+  );
 }
 
 type MixedMatch<

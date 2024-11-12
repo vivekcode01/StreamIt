@@ -1,45 +1,55 @@
-import { addToQueue } from "bolt";
-import { packageQueue, transcodeQueue, waitForChildren } from "bolt";
-import { getChildren } from "bolt";
-import type {
-  PackageResult,
-  PipelineData,
-  PipelineResult,
-  TranscodeResult,
-  WorkerCallback,
+import {
+  addToQueue,
+  packageQueue,
+  transcodeQueue,
+  waitForChildren,
 } from "bolt";
+import type { PipelineData, PipelineResult, WorkerCallback } from "bolt";
+import type { Job } from "bullmq";
+
+enum Step {
+  Initial,
+  Continue,
+  Wait,
+  Finish,
+}
 
 export const pipelineCallback: WorkerCallback<
-  PipelineData,
+  PipelineData & { step?: Step },
   PipelineResult
 > = async ({ job, token }) => {
-  const { package: packageData, ...transcodeData } = job.data;
+  let step = job.data.step ?? Step.Initial;
+  while (step !== Step.Finish) {
+    switch (step) {
+      case Step.Initial: {
+        await handleStepInitial(job);
+        await job.updateData({
+          ...job.data,
+          step: Step.Continue,
+        });
+        step = Step.Continue;
+        break;
+      }
 
-  const [transcodeResult] = await getChildren<TranscodeResult>(
-    job,
-    "transcode",
-  );
+      case Step.Continue: {
+        await handleStepContinue(job, token);
+        await job.updateData({
+          ...job.data,
+          step: Step.Wait,
+        });
+        step = Step.Wait;
+        break;
+      }
 
-  if (!transcodeResult) {
-    await addToQueue(transcodeQueue, transcodeData, {
-      parent: job,
-      options: {
-        failParentOnFailure: true,
-      },
-    });
-    await waitForChildren(job, token);
-  }
-
-  if (packageData) {
-    const [packageResult] = await getChildren<PackageResult>(job, "package");
-    if (!packageResult) {
-      await addToQueue(packageQueue, packageData, {
-        parent: job,
-        options: {
-          failParentOnFailure: true,
-        },
-      });
-      await waitForChildren(job, token);
+      case Step.Wait: {
+        await waitForChildren(job, token);
+        await job.updateData({
+          ...job.data,
+          step: Step.Finish,
+        });
+        step = Step.Finish;
+        break;
+      }
     }
   }
 
@@ -47,3 +57,35 @@ export const pipelineCallback: WorkerCallback<
     assetId: job.data.assetId,
   };
 };
+
+async function handleStepInitial(job: Job<PipelineData>) {
+  await addToQueue(
+    transcodeQueue,
+    {
+      assetId: job.data.assetId,
+      group: job.data.group,
+      segmentSize: job.data.segmentSize,
+      ...job.data.transcode,
+    },
+    {
+      parent: job,
+    },
+  );
+}
+
+async function handleStepContinue(job: Job<PipelineData>, token?: string) {
+  await waitForChildren(job, token);
+
+  if (job.data.package) {
+    await addToQueue(
+      packageQueue,
+      {
+        assetId: job.data.assetId,
+        ...job.data.package,
+      },
+      {
+        parent: job,
+      },
+    );
+  }
+}

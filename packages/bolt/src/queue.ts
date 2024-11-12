@@ -2,9 +2,19 @@ import { Queue } from "bullmq";
 import { connection } from "./env";
 import type { Input, PartialInput, PartialStream, Stream } from "./types";
 
-export type PipelineData = TranscodeData & {
-  package?: PackageData;
-};
+export interface PipelineData {
+  assetId: string;
+  segmentSize: number;
+  group?: string;
+  transcode: {
+    inputs: PartialInput[];
+    streams: PartialStream[];
+  };
+  package?: {
+    language?: string;
+    name: string;
+  };
+}
 
 export const pipelineQueue = new Queue<PipelineData>("pipeline", {
   connection,

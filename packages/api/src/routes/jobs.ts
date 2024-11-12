@@ -1,7 +1,7 @@
-import { randomUUID } from "crypto";
 import {
   addToQueue,
   formatPackageData,
+  formatPipelineData,
   formatTranscodeData,
   packageQueue,
   pipelineQueue,
@@ -13,9 +13,8 @@ import { auth } from "../auth";
 import { DeliberateError } from "../errors";
 import { getJob, getJobLogs, getJobs } from "../repositories/jobs";
 import { JobSchema } from "../types";
-import type { PackageData, PipelineData, TranscodeData } from "bolt";
 
-const transcodeBodySchema = t.Object({
+const transcodeSchema = t.Object({
   inputs: t.Array(
     t.Union([
       t.Object({
@@ -73,16 +72,19 @@ const transcodeBodySchema = t.Object({
         "Output types, the transcoder will match any given input and figure out if a particular output can be generated.",
     },
   ),
-  segmentSize: t.Optional(
-    t.Number({
-      description: "In seconds, will result in proper GOP sizes.",
-    }),
-  ),
+});
+
+const mediaSchema = t.Object({
   assetId: t.Optional(
     t.String({
       format: "uuid",
       description:
         "Only provide if you wish to re-transcode an existing asset. When not provided, a unique UUID is created.",
+    }),
+  ),
+  segmentSize: t.Optional(
+    t.Number({
+      description: "In seconds, will result in proper GOP sizes.",
     }),
   ),
   group: t.Optional(
@@ -92,20 +94,14 @@ const transcodeBodySchema = t.Object({
   ),
 });
 
-const packageBodySchema = t.Object({
-  language: t.Optional(t.String()),
-  segmentSize: t.Optional(
-    t.Number({
-      description:
-        "In seconds, shall be the same or a multiple of the originally transcoded segment size.",
-    }),
-  ),
+const packageSchema = t.Object({
   name: t.Optional(
     t.String({
       description:
         'When provided, the package result will be stored under this name in S3. Mainly used to create multiple packaged results for a transcode result. We\'ll use "hls" when not provided.',
     }),
   ),
+  language: t.Optional(t.String()),
 });
 
 export const jobs = new Elysia()
@@ -113,22 +109,7 @@ export const jobs = new Elysia()
   .post(
     "/pipeline",
     async ({ body }) => {
-      const { package: inputPackageData, ...inputTranscodeData } = body;
-
-      const transcodeData = formatTranscodeData(inputTranscodeData);
-
-      let packageData: PipelineData["package"];
-      if (inputPackageData) {
-        packageData = formatPackageData({
-          assetId: transcodeData.assetId,
-          ...(typeof inputPackageData === "boolean" ? {} : inputPackageData),
-        });
-      }
-
-      const data = {
-        ...transcodeData,
-        package: packageData,
-      };
+      const data = formatPipelineData(body);
       const jobId = await addToQueue(pipelineQueue, data, {
         id: data.assetId,
       });
@@ -140,9 +121,10 @@ export const jobs = new Elysia()
         tags: ["Jobs"],
       },
       body: t.Intersect([
-        transcodeBodySchema,
+        mediaSchema,
         t.Object({
-          package: t.Optional(t.Union([packageBodySchema, t.Boolean()])),
+          transcode: transcodeSchema,
+          package: t.Optional(t.Union([t.Boolean(), packageSchema])),
         }),
       ]),
       response: {
@@ -166,7 +148,7 @@ export const jobs = new Elysia()
         summary: "Create transcode job",
         tags: ["Jobs"],
       },
-      body: transcodeBodySchema,
+      body: t.Intersect([mediaSchema, transcodeSchema]),
       response: {
         200: t.Object({
           jobId: t.String(),
@@ -193,8 +175,14 @@ export const jobs = new Elysia()
           assetId: t.String({
             format: "uuid",
           }),
+          segmentSize: t.Optional(
+            t.Number({
+              description:
+                "In seconds, shall be the same or a multiple of the originally transcoded segment size.",
+            }),
+          ),
         }),
-        packageBodySchema,
+        packageSchema,
       ]),
       response: {
         200: t.Object({

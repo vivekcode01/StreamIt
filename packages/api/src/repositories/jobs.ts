@@ -159,9 +159,21 @@ async function formatJobNode(node: JobNode): Promise<Job> {
 
   const failedReason = state === "failed" ? job.failedReason : undefined;
 
-  children?.sort((a, b) => a.job.timestamp - b.job.timestamp);
+  for (const t of children ?? []) {
+    console.log("jooo", t);
+  }
 
-  const jobChildren = await Promise.all((children ?? []).map(formatJobNode));
+  const jobChildren: Job[] = [];
+  if (children) {
+    children.sort((a, b) => a.job.timestamp - b.job.timestamp);
+
+    for (const child of children) {
+      if (!child) {
+        continue;
+      }
+      jobChildren.push(await formatJobNode(child));
+    }
+  }
 
   let processedAt = job.processedOn;
   if (processedAt) {
