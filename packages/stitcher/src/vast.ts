@@ -3,7 +3,6 @@ import { AudioCodec, VideoCodec } from "bolt";
 import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
 import { api } from "./lib/api-client";
-import { getMasterUrl, isUrlAvailable } from "./lib/url";
 import type { VmapAdBreak } from "./vmap";
 import type { VastAd, VastCreativeLinear, VastResponse } from "vast-client";
 
@@ -19,8 +18,7 @@ export async function getAdMediasFromVast(adBreak: VmapAdBreak) {
   const result: AdMedia[] = [];
 
   for (const adMedia of adMedias) {
-    const url = getMasterUrl(`asset://${adMedia.assetId}`);
-    const isAvailable = await isUrlAvailable(url);
+    const isAvailable = await getIsAssetAvailable(adMedia.assetId);
     if (!isAvailable) {
       await scheduleForPackage(adMedia);
       continue;
@@ -86,6 +84,12 @@ async function scheduleForPackage(adMedia: AdMedia) {
     },
     package: true,
   });
+}
+
+async function getIsAssetAvailable(id: string) {
+  const { data } = await api.assets({ id }).get();
+  // TODO: Anything that is not a 404 or a 200 should be refused.
+  return data !== null;
 }
 
 async function formatVastResponse(response: VastResponse) {

@@ -2,6 +2,7 @@ import { Elysia, t } from "elysia";
 import { auth } from "../auth";
 import {
   assetsFilterSchema,
+  getAsset,
   getAssets,
   getGroups,
 } from "../repositories/assets";
@@ -26,6 +27,24 @@ export const assets = new Elysia()
           totalPages: t.Number(),
           items: t.Array(AssetSchema),
         }),
+      },
+    },
+  )
+  .get(
+    "/assets/:id",
+    async ({ params }) => {
+      return await getAsset(params.id);
+    },
+    {
+      params: t.Object({
+        id: t.String(),
+      }),
+      detail: {
+        summary: "Get an asset by id",
+        tags: ["Assets"],
+      },
+      response: {
+        200: AssetSchema,
       },
     },
   )

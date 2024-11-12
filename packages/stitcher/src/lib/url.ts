@@ -39,10 +39,3 @@ export function joinPath(base: string, ...paths: string[]) {
 export function getDir(url: string) {
   return url.substring(0, url.lastIndexOf("/"));
 }
-
-export async function isUrlAvailable(url: string) {
-  const response = await fetch(url, {
-    method: "HEAD",
-  });
-  return response.ok;
-}

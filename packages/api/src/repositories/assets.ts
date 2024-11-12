@@ -85,3 +85,23 @@ export async function createPlayable(fields: PlayableInsert) {
     .values(fields)
     .executeTakeFirstOrThrow();
 }
+
+export async function getAsset(id: string) {
+  const asset = await db
+    .selectFrom("assets")
+    .leftJoin("playables", "playables.assetId", "assets.id")
+    .select(({ fn }) => [
+      "assets.id",
+      "assets.groupId",
+      "assets.createdAt",
+      fn.count<number>("playables.assetId").as("playables"),
+    ])
+    .groupBy("assets.id")
+    .where("assets.id", "=", id)
+    .executeTakeFirstOrThrow();
+
+  return {
+    ...asset,
+    name: asset.id,
+  };
+}
