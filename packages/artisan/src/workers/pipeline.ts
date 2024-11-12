@@ -63,9 +63,10 @@ async function handleStepInitial(job: Job<PipelineData>) {
     transcodeQueue,
     {
       assetId: job.data.assetId,
+      inputs: job.data.inputs,
+      streams: job.data.streams,
       group: job.data.group,
       segmentSize: job.data.segmentSize,
-      ...job.data.transcode,
     },
     {
       parent: job,
@@ -76,16 +77,15 @@ async function handleStepInitial(job: Job<PipelineData>) {
 async function handleStepContinue(job: Job<PipelineData>, token?: string) {
   await waitForChildren(job, token);
 
-  if (job.data.package) {
-    await addToQueue(
-      packageQueue,
-      {
-        assetId: job.data.assetId,
-        ...job.data.package,
-      },
-      {
-        parent: job,
-      },
-    );
-  }
+  await addToQueue(
+    packageQueue,
+    {
+      assetId: job.data.assetId,
+      name: job.data.name,
+      language: job.data.language,
+    },
+    {
+      parent: job,
+    },
+  );
 }

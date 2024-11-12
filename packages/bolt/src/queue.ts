@@ -4,16 +4,12 @@ import type { Input, PartialInput, PartialStream, Stream } from "./types";
 
 export interface PipelineData {
   assetId: string;
+  inputs: PartialInput[];
+  streams: PartialStream[];
   segmentSize: number;
   group?: string;
-  transcode: {
-    inputs: PartialInput[];
-    streams: PartialStream[];
-  };
-  package?: {
-    language?: string;
-    name: string;
-  };
+  language?: string;
+  name: string;
 }
 
 export const pipelineQueue = new Queue<PipelineData>("pipeline", {
