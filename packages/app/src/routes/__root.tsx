@@ -1,9 +1,10 @@
 import {
   createRootRouteWithContext,
   Outlet,
+  useLocation,
   useRouterState,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import topbar from "topbar";
 import type { AuthContext } from "../auth";
 
@@ -21,15 +22,29 @@ export const Route = createRootRouteWithContext<{ auth: AuthContext }>()({
 });
 
 function RootComponent() {
+  const [loading, setLoading] = useState(false);
+  const location = useLocation();
   const state = useRouterState();
 
   useEffect(() => {
-    if (state.status === "idle") {
-      topbar.hide();
-    } else if (state.status === "pending") {
-      topbar.show();
+    if (state.status === "pending") {
+      setLoading(true);
     }
-  }, [state.status]);
+  }, [location]);
+
+  useEffect(() => {
+    if (loading && state.status === "idle") {
+      setLoading(false);
+    }
+  }, [loading, state.status]);
+
+  useEffect(() => {
+    if (loading) {
+      topbar.show();
+    } else {
+      topbar.hide();
+    }
+  }, [loading]);
 
   return <Outlet />;
 }
