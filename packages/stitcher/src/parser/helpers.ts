@@ -4,7 +4,7 @@ export function mapAttributes(
 ) {
   const items = splitByCommaWithPreservingQuotes(param);
   items.forEach((item) => {
-    const [key, value] = item.split("=");
+    const [key, value] = item.split(/=(.+)/);
     if (key === undefined || value === undefined) {
       return;
     }

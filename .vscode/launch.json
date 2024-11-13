@@ -11,7 +11,7 @@
       "type": "bun",
       "request": "attach",
       "name": "Debug Stitcher",
-      "url": "ws://localhost:6499/sprs-stitcher",
+      "url": "ws://localhost:6500/sprs-stitcher",
     }
   ]
 }
