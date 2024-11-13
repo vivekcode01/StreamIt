@@ -1,32 +1,54 @@
 import { Elysia, t } from "elysia";
 import { auth } from "../auth";
 import { DeliberateError } from "../errors";
-import {
-  assetsFilterSchema,
-  getAsset,
-  getAssets,
-  getGroups,
-} from "../repositories/assets";
+import { getAsset, getAssets, getGroups } from "../repositories/assets";
 import { AssetSchema } from "../types";
+import { mergeProps } from "../utils/type-guard";
 
 export const assets = new Elysia()
   .use(auth({ user: true, service: true }))
   .get(
     "/assets",
     async ({ query }) => {
-      return await getAssets(query);
+      const filter = mergeProps(query, {
+        page: 1,
+        perPage: 20,
+        sortKey: "createdAt",
+        sortDir: "desc",
+      });
+      return await getAssets(filter);
     },
     {
       detail: {
         summary: "Get all assets",
         tags: ["Assets"],
       },
-
-      query: assetsFilterSchema,
+      query: t.Object({
+        page: t.Optional(t.Number()),
+        perPage: t.Optional(t.Number()),
+        sortKey: t.Optional(
+          t.Union([
+            t.Literal("name"),
+            t.Literal("playables"),
+            t.Literal("groupId"),
+            t.Literal("createdAt"),
+          ]),
+        ),
+        sortDir: t.Optional(t.Union([t.Literal("asc"), t.Literal("desc")])),
+      }),
       response: {
         200: t.Object({
-          totalPages: t.Number(),
+          page: t.Number(),
+          perPage: t.Number(),
+          sortKey: t.Union([
+            t.Literal("name"),
+            t.Literal("playables"),
+            t.Literal("groupId"),
+            t.Literal("createdAt"),
+          ]),
+          sortDir: t.Union([t.Literal("asc"), t.Literal("desc")]),
           items: t.Array(AssetSchema),
+          totalPages: t.Number(),
         }),
       },
     },

@@ -13,6 +13,7 @@ import { auth } from "../auth";
 import { DeliberateError } from "../errors";
 import { getJob, getJobLogs, getJobs } from "../repositories/jobs";
 import { JobSchema } from "../types";
+import { mergeProps } from "../utils/type-guard";
 
 const InputSchema = t.Union([
   t.Object({
@@ -170,7 +171,13 @@ export const jobs = new Elysia()
   .get(
     "/jobs",
     async ({ query }) => {
-      return await getJobs(query);
+      const filter = mergeProps(query, {
+        page: 1,
+        perPage: 20,
+        sortKey: "createdAt",
+        sortDir: "desc",
+      });
+      return await getJobs(filter);
     },
     {
       detail: {
@@ -178,19 +185,29 @@ export const jobs = new Elysia()
         tags: ["Jobs"],
       },
       query: t.Object({
-        page: t.Number(),
-        perPage: t.Number(),
-        sortKey: t.Union([
-          t.Literal("name"),
-          t.Literal("duration"),
-          t.Literal("createdAt"),
-        ]),
-        sortDir: t.Union([t.Literal("asc"), t.Literal("desc")]),
+        page: t.Optional(t.Number()),
+        perPage: t.Optional(t.Number()),
+        sortKey: t.Optional(
+          t.Union([
+            t.Literal("name"),
+            t.Literal("duration"),
+            t.Literal("createdAt"),
+          ]),
+        ),
+        sortDir: t.Optional(t.Union([t.Literal("asc"), t.Literal("desc")])),
       }),
       response: {
         200: t.Object({
-          totalPages: t.Number(),
+          page: t.Number(),
+          perPage: t.Number(),
+          sortKey: t.Union([
+            t.Literal("name"),
+            t.Literal("duration"),
+            t.Literal("createdAt"),
+          ]),
+          sortDir: t.Union([t.Literal("asc"), t.Literal("desc")]),
           items: t.Array(JobSchema),
+          totalPages: t.Number(),
         }),
       },
     },

@@ -37,12 +37,14 @@ function formatIdPair(id: string): [Queue, string] {
   return [findQueueByName(queueName), id];
 }
 
-export async function getJobs(filter: {
+interface JobsFilter {
   page: number;
   perPage: number;
   sortKey: "name" | "duration" | "createdAt";
   sortDir: "asc" | "desc";
-}) {
+}
+
+export async function getJobs(filter: JobsFilter) {
   let items: Job[] = [];
 
   for (const queue of allQueus) {
@@ -80,6 +82,7 @@ export async function getJobs(filter: {
   items = items.slice(index, index + filter.perPage);
 
   return {
+    ...filter,
     items,
     totalPages,
   };
