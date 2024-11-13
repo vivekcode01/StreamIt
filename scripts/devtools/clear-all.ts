@@ -3,7 +3,7 @@ import {
   ListObjectsCommand,
   S3,
 } from "@aws-sdk/client-s3";
-import { env } from "../packages/api/src/env";
+import { env } from "../../packages/api/src/env";
 
 const client = new S3({
   endpoint: env.S3_ENDPOINT,
@@ -14,7 +14,7 @@ const client = new S3({
   },
 });
 
-for (const prefix of ["transcode", "package"]) {
+async function clearFolder(prefix: string) {
   const response = await client.send(
     new ListObjectsCommand({
       Bucket: env.S3_BUCKET,
@@ -33,3 +33,6 @@ for (const prefix of ["transcode", "package"]) {
     }),
   );
 }
+
+await clearFolder("transcode");
+await clearFolder("package");

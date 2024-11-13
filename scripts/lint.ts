@@ -1,5 +1,6 @@
-import {$} from "bun";
+import { $ } from "bun";
+import { buildClientPackages } from "./devtools/client-packages";
 
-import "./pre-build";
+await buildClientPackages();
 
 await $`bun run --filter="*" lint`;
