@@ -16,12 +16,12 @@ export const session = new Elysia()
   .post(
     "/session",
     async ({ body }) => {
-      const sessionId = await createSession(body);
+      const session = await createSession(body);
 
       const masterUrl = resolveUri(body.uri);
 
       const url = buildProxyUrl("master.m3u8", masterUrl, {
-        sessionId,
+        session,
         filter: body.filter,
       });
 
@@ -87,9 +87,9 @@ export const session = new Elysia()
   .get(
     "/out/master.m3u8",
     async ({ set, query }) => {
-      const session = await getSession(query.sessionId);
+      const session = await getSession(query.sid);
 
-      await formatSessionByMasterRequest(query.sessionId, session);
+      await formatSessionByMasterRequest(session);
 
       const filter = extractFilterFromQuery(query);
 
@@ -105,7 +105,7 @@ export const session = new Elysia()
       },
       query: t.Object({
         url: t.String(),
-        sessionId: t.String(),
+        sid: t.String(),
         "filter.resolution": t.Optional(t.String()),
       }),
     },
@@ -113,7 +113,7 @@ export const session = new Elysia()
   .get(
     "/out/playlist.m3u8",
     async ({ set, query }) => {
-      const session = await getSession(query.sessionId);
+      const session = await getSession(query.sid);
 
       const playlist = await formatMediaPlaylist(
         session,
@@ -136,7 +136,7 @@ export const session = new Elysia()
           t.Literal("text"),
         ]),
         url: t.String(),
-        sessionId: t.String(),
+        sid: t.String(),
       }),
     },
   )

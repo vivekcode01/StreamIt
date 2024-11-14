@@ -8,7 +8,8 @@ import type { VmapResponse } from "./vmap";
 
 export interface Session {
   id: string;
-  initTime: DateTime;
+  startTime?: DateTime;
+  expiry: number;
   vmap?: {
     url: string;
   };
@@ -25,14 +26,15 @@ export async function createSession(params: {
     uri: string;
     type?: InterstitialType;
   }[];
+  expiry?: number;
 }) {
   const id = randomUUID();
 
-  const initTime = DateTime.now();
   const session: Session = {
     id,
-    initTime,
     vmap: params.vmap,
+    // A session is valid for 3 hours by default.
+    expiry: params.expiry ?? 60 * 60 * 3,
   };
 
   if (params.interstitials?.length) {
@@ -45,10 +47,11 @@ export async function createSession(params: {
     });
   }
 
-  const ttl = 3600;
-  await kv.set(`session:${id}`, serializeSession(session), ttl);
+  // We'll initially store the session for 10 minutes, if it's not been consumed
+  // within the timeframe, it's gone.
+  await kv.set(`session:${id}`, serializeSession(session), 60 * 10);
 
-  return id;
+  return session;
 }
 
 export async function getSession(id: string) {
@@ -59,30 +62,32 @@ export async function getSession(id: string) {
   return deserializeSession(id, data);
 }
 
-export async function formatSessionByMasterRequest(
-  id: string,
-  session: Session,
-) {
-  let updateSession = false;
+export async function formatSessionByMasterRequest(session: Session) {
+  // Check if we have a startTime, if so, the master playlist has been requested
+  // before and we no longer need it.
+  if (session.startTime) {
+    return;
+  }
+
+  session.startTime = DateTime.now();
 
   if (session.vmap) {
     session.vmapResponse = await fetchVmap(session.vmap.url);
     delete session.vmap;
-
-    updateSession = true;
   }
 
-  if (updateSession) {
-    const ttl = 3600;
-    await kv.set(`session:${id}`, serializeSession(session), ttl);
-  }
+  await kv.set(
+    `session:${session.id}`,
+    serializeSession(session),
+    session.expiry,
+  );
 }
 
 function serializeSession(session: Session) {
   const copy = {
     ...session,
     id: undefined,
-    initTime: session.initTime.toISO(),
+    startTime: session.startTime?.toISO(),
   };
   return JSON.stringify(copy);
 }
@@ -92,7 +97,7 @@ function deserializeSession(id: string, value: string): Session {
   const session = {
     ...copy,
     id,
-    initTime: DateTime.fromISO(copy.initTime),
+    startTime: copy.startTime ? DateTime.fromISO(copy.startTime) : undefined,
   };
   return session;
 }

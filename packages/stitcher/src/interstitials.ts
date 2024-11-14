@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+import { assert } from "shared/assert";
 import { env } from "./env";
 import { resolveUri, toAssetProtocol } from "./lib/url";
 import { fetchMasterPlaylistDuration } from "./playlist";
@@ -22,18 +23,20 @@ interface InterstitialAsset {
 }
 
 export function getStaticDateRanges(session: Session) {
+  assert(session.startTime, "No startTime in session");
+
   const group: Record<string, InterstitialType[]> = {};
 
   if (session.vmapResponse) {
     for (const adBreak of session.vmapResponse.adBreaks) {
-      const dateTime = session.initTime.plus({ seconds: adBreak.timeOffset });
+      const dateTime = session.startTime.plus({ seconds: adBreak.timeOffset });
       groupTimeOffset(group, dateTime, "ad");
     }
   }
 
   if (session.interstitials) {
     for (const interstitial of session.interstitials) {
-      const dateTime = session.initTime.plus({
+      const dateTime = session.startTime.plus({
         seconds: interstitial.timeOffset,
       });
       groupTimeOffset(group, dateTime, interstitial.type);
@@ -80,13 +83,15 @@ function groupTimeOffset(
 }
 
 export async function getAssets(session: Session, lookupDate: DateTime) {
+  assert(session.startTime, "No startTime in session");
+
   const assets: InterstitialAsset[] = [];
 
   if (session.vmapResponse) {
     await formatStaticAdBreaks(
       assets,
       session.vmapResponse,
-      session.initTime,
+      session.startTime,
       lookupDate,
     );
   }
@@ -95,7 +100,7 @@ export async function getAssets(session: Session, lookupDate: DateTime) {
     await formatStaticInterstitials(
       assets,
       session.interstitials,
-      session.initTime,
+      session.startTime,
       lookupDate,
     );
   }

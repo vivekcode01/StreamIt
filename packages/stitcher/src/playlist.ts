@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+import { assert } from "shared/assert";
 import { filterMasterPlaylist } from "./filters";
 import { getAssets, getStaticDateRanges } from "./interstitials";
 import { buildProxyUrl, joinUrl, resolveUri } from "./lib/url";
@@ -23,7 +24,7 @@ export async function formatMasterPlaylist(
 
   for (const variant of master.variants) {
     variant.uri = buildProxyUrl("playlist.m3u8", joinUrl(url, variant.uri), {
-      sessionId: session.id,
+      session,
       params: {
         type: "video",
       },
@@ -46,7 +47,7 @@ export async function formatMasterPlaylist(
       "playlist.m3u8",
       joinUrl(url, rendition.uri),
       {
-        sessionId: session.id,
+        session,
         params: {
           type,
         },
@@ -62,12 +63,15 @@ export async function formatMediaPlaylist(
   type: "video" | "audio" | "text",
   url: string,
 ) {
+  assert(session.startTime, "No startTime in session");
+
   const media = await fetchMediaPlaylist(url);
 
   if (type === "video" && media.endlist && media.segments[0]) {
     // When we have an endlist, the playlist is static. We can check whether we need
     // to add dateRanges.
-    media.segments[0].programDateTime = session.initTime;
+
+    media.segments[0].programDateTime = session.startTime;
     media.dateRanges = getStaticDateRanges(session);
   }
 
