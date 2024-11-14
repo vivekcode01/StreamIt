@@ -35,9 +35,9 @@ export function resolveUri(uri: string) {
 
 function buildUrl(
   url: string,
-  query?: Record<string, string | number | undefined | null>,
+  query: Record<string, string | number | undefined | null> = {},
 ) {
-  const queryString = Object.entries(query ?? {})
+  const queryString = Object.entries(query)
     .map(([key, value]) => {
       if (value === undefined || value === null) {
         return null;
@@ -70,7 +70,7 @@ export function buildProxyUrl(
   options: {
     url?: string;
     session?: Session;
-    params?: Record<string, string>;
+    params?: Record<string, string | undefined>;
   } = {},
 ) {
   const { url, session, params } = options;

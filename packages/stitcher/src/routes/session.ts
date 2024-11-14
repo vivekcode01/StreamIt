@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { assert } from "shared/assert";
-import { parseFilterQuery } from "../filters";
+import { filterQuery, parseFilterQuery } from "../filters";
 import { decrypt } from "../lib/crypto";
 import { buildProxyUrl } from "../lib/url";
 import {
@@ -20,7 +20,11 @@ export const session = new Elysia()
     async ({ body }) => {
       const session = await createSession(body);
 
-      const url = buildProxyUrl(`${session.id}/master.m3u8`);
+      const url = buildProxyUrl(`${session.id}/master.m3u8`, {
+        params: {
+          ...filterQuery(body.filter),
+        },
+      });
 
       return { url };
     },

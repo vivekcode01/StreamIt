@@ -89,9 +89,9 @@ export function parseFilterQuery(query: Record<string, string>) {
   return filter;
 }
 
-export function buildFilterQuery(filter: Filter) {
+export function filterQuery(filter?: Filter) {
   return {
-    "filter.resolution": filter.resolution,
-    "filter.audioLanguage": filter.audioLanguage,
+    "filter.resolution": filter?.resolution,
+    "filter.audioLanguage": filter?.audioLanguage,
   };
 }
