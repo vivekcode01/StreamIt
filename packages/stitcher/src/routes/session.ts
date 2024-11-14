@@ -1,5 +1,6 @@
 import { Elysia, t } from "elysia";
 import { extractFilterFromQuery } from "../filters";
+import { decrypt } from "../lib/crypto";
 import { buildProxyUrl, resolveUri } from "../lib/url";
 import {
   formatAssetList,
@@ -93,7 +94,8 @@ export const session = new Elysia()
 
       const filter = extractFilterFromQuery(query);
 
-      const playlist = await formatMasterPlaylist(query.url, session, filter);
+      const url = decrypt(query.eurl);
+      const playlist = await formatMasterPlaylist(url, session, filter);
 
       set.headers["content-type"] = "application/x-mpegURL";
 
@@ -104,7 +106,7 @@ export const session = new Elysia()
         hide: true,
       },
       query: t.Object({
-        url: t.String(),
+        eurl: t.String(),
         sid: t.String(),
         "filter.resolution": t.Optional(t.String()),
       }),
@@ -115,11 +117,8 @@ export const session = new Elysia()
     async ({ set, query }) => {
       const session = await getSession(query.sid);
 
-      const playlist = await formatMediaPlaylist(
-        session,
-        query.type,
-        query.url,
-      );
+      const url = decrypt(query.eurl);
+      const playlist = await formatMediaPlaylist(session, query.type, url);
 
       set.headers["content-type"] = "application/x-mpegURL";
 
@@ -130,12 +129,8 @@ export const session = new Elysia()
         hide: true,
       },
       query: t.Object({
-        type: t.Union([
-          t.Literal("video"),
-          t.Literal("audio"),
-          t.Literal("text"),
-        ]),
-        url: t.String(),
+        type: t.String(),
+        eurl: t.String(),
         sid: t.String(),
       }),
     },

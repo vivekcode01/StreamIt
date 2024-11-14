@@ -14,45 +14,33 @@ import type { Filter } from "./filters";
 import type { Session } from "./session";
 
 export async function formatMasterPlaylist(
-  url: string,
+  masterUrl: string,
   session: Session,
   filter: Filter,
 ) {
-  const master = await fetchMasterPlaylist(url);
+  const master = await fetchMasterPlaylist(masterUrl);
 
   filterMasterPlaylist(master, filter);
 
   for (const variant of master.variants) {
-    variant.uri = buildProxyUrl("playlist.m3u8", joinUrl(url, variant.uri), {
+    const url = joinUrl(masterUrl, variant.uri);
+    variant.uri = buildProxyUrl("playlist.m3u8", url, {
       session,
       params: {
-        type: "video",
+        type: "VIDEO",
       },
     });
   }
 
   const renditions = groupRenditions(master.variants);
   renditions.forEach((rendition) => {
-    let type: string | undefined;
-
-    if (rendition.type === "AUDIO") {
-      type = "audio";
-    } else if (rendition.type === "SUBTITLES") {
-      type = "text";
-    } else {
-      return;
-    }
-
-    rendition.uri = buildProxyUrl(
-      "playlist.m3u8",
-      joinUrl(url, rendition.uri),
-      {
-        session,
-        params: {
-          type,
-        },
+    const url = joinUrl(masterUrl, rendition.uri);
+    rendition.uri = buildProxyUrl("playlist.m3u8", url, {
+      session,
+      params: {
+        type: rendition.type,
       },
-    );
+    });
   });
 
   return stringifyMasterPlaylist(master);
@@ -60,26 +48,28 @@ export async function formatMasterPlaylist(
 
 export async function formatMediaPlaylist(
   session: Session,
-  type: "video" | "audio" | "text",
-  url: string,
+  mediaType: string,
+  mediaUrl: string,
 ) {
   assert(session.startTime, "No startTime in session");
 
-  const media = await fetchMediaPlaylist(url);
+  const media = await fetchMediaPlaylist(mediaUrl);
+
+  // Type is the actual value of EXT-X-MEDIA, thus it's in capital. Let's lowercase it first.
+  const type = mediaType.toLowerCase();
 
   if (type === "video" && media.endlist && media.segments[0]) {
     // When we have an endlist, the playlist is static. We can check whether we need
     // to add dateRanges.
-
     media.segments[0].programDateTime = session.startTime;
     media.dateRanges = getStaticDateRanges(session);
   }
 
   media.segments.forEach((segment) => {
     if (segment.map?.uri === "init.mp4") {
-      segment.map.uri = joinUrl(url, segment.map.uri);
+      segment.map.uri = joinUrl(mediaUrl, segment.map.uri);
     }
-    segment.uri = joinUrl(url, segment.uri);
+    segment.uri = joinUrl(mediaUrl, segment.uri);
   });
 
   return stringifyMediaPlaylist(media);

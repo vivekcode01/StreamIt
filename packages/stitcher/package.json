@@ -28,6 +28,7 @@
     "@matvp91/elysia-swagger": "^2.0.0",
     "@superstreamer/api": "workspace:*",
     "@xmldom/xmldom": "^0.8.10",
+    "cryptr": "^6.3.0",
     "dom-parser": "^1.1.5",
     "elysia": "^1.1.24",
     "hh-mm-ss": "^1.2.0",

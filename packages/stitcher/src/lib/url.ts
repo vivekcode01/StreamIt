@@ -1,4 +1,5 @@
 import * as path from "path";
+import { encrypt } from "./crypto";
 import { env } from "../env";
 import type { Filter } from "../filters";
 import type { Session } from "../session";
@@ -75,7 +76,7 @@ export function buildProxyUrl(
   },
 ) {
   return buildUrl(`${env.PUBLIC_STITCHER_ENDPOINT}/out/${file}`, {
-    url,
+    eurl: encrypt(url),
     sid: params?.session?.id,
 
     // Filter query params.
