@@ -115,24 +115,37 @@ export const session = new Elysia()
     },
   )
   .get(
-    "/session/:sessionId/*",
-    async ({ set, params }) => {
+    "/session/:sessionId/playlist.m3u8",
+    async ({ set, params, query }) => {
       const session = await getSession(params.sessionId);
       if (!session) {
         throw new Error(`Invalid session for "${params.sessionId}"`);
       }
 
-      const playlist = await formatMediaPlaylist(session, params["*"]);
+      const playlist = await formatMediaPlaylist(
+        session,
+        query.type,
+        query.path,
+      );
+
       set.headers["content-type"] = "application/x-mpegURL";
+
       return playlist;
     },
     {
       detail: {
         hide: true,
       },
+      query: t.Object({
+        type: t.Union([
+          t.Literal("video"),
+          t.Literal("audio"),
+          t.Literal("text"),
+        ]),
+        path: t.String(),
+      }),
       params: t.Object({
         sessionId: t.String(),
-        "*": t.String(),
       }),
     },
   )
