@@ -1,5 +1,4 @@
 import { Elysia, t } from "elysia";
-import { env } from "../env";
 import { extractFilterFromQuery } from "../filters";
 import { buildProxyUrl, resolveUri } from "../lib/url";
 import {
