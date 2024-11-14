@@ -11,6 +11,7 @@ const NAMESPACE_UUID_AD = "5b212a7e-d6a2-43bf-bd30-13b1ca1f9b13";
 export interface AdMedia {
   assetId: string;
   fileUrl: string;
+  duration: number;
 }
 
 export async function getAdMediasFromAdBreak(adBreak: VmapAdBreak) {
@@ -38,18 +39,21 @@ async function getAdMedias(adBreak: VmapAdBreak): Promise<AdMedia[]> {
   const result: AdMedia[] = [];
 
   for (const slot of adBreak.slots) {
-    if (slot.type === "url") {
-      const response = await vastClient.get(slot.url);
-      const adMedias = await formatVastResponse(response);
-      result.push(...adMedias);
+    let vastResponse: VastResponse | undefined;
+
+    if (slot.vastUrl) {
+      vastResponse = await vastClient.get(slot.vastUrl);
+    } else if (slot.vastData) {
+      const xml = parser.parseFromString(slot.vastData, "text/xml");
+      vastResponse = await vastClient.parseVAST(xml);
     }
 
-    if (slot.type === "data") {
-      const doc = parser.parseFromString(slot.data, "text/xml");
-      const response = await vastClient.parseVAST(doc);
-      const adMedias = await formatVastResponse(response);
-      result.push(...adMedias);
+    if (!vastResponse) {
+      continue;
     }
+
+    const adMedias = await formatVastResponse(vastResponse);
+    result.push(...adMedias);
   }
 
   return result;
@@ -118,6 +122,7 @@ async function formatVastResponse(response: VastResponse) {
     acc.push({
       assetId: adId,
       fileUrl: mediaFile.fileURL,
+      duration: creative.duration,
     });
 
     return acc;

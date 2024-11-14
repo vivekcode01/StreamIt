@@ -1,42 +1,45 @@
 import { DateTime } from "luxon";
+import { assert } from "shared/assert";
 import { env } from "./env";
-import { Presentation } from "./presentation";
+import { resolveUri, toAssetProtocol } from "./lib/url";
+import { fetchMasterPlaylistDuration } from "./playlist";
 import { getAdMediasFromAdBreak } from "./vast";
 import type { DateRange } from "./parser";
-import type {
-  Session,
-  SessionInterstitial,
-  SessionInterstitialType,
-} from "./session";
+import type { Session } from "./session";
 import type { VmapResponse } from "./vmap";
+
+export type InterstitialType = "ad" | "bumper";
+
+export interface Interstitial {
+  timeOffset: number;
+  url: string;
+  type?: InterstitialType;
+}
 
 interface InterstitialAsset {
   URI: string;
   DURATION: number;
-  "SPRS-TYPE": Required<SessionInterstitial["type"]>;
-}
-
-export function getStaticPDT(session: Session) {
-  return session.initialTime;
+  "SPRS-TYPE"?: InterstitialType;
 }
 
 export function getStaticDateRanges(session: Session) {
-  const group: Record<string, SessionInterstitialType[]> = {};
+  assert(session.startTime, "No startTime in session");
 
-  if (session.vmap) {
-    for (const adBreak of session.vmap.adBreaks) {
-      groupTimeOffset(group, session.initialTime, adBreak.timeOffset, "ad");
+  const group: Record<string, InterstitialType[]> = {};
+
+  if (session.vmapResponse) {
+    for (const adBreak of session.vmapResponse.adBreaks) {
+      const dateTime = session.startTime.plus({ seconds: adBreak.timeOffset });
+      groupTimeOffset(group, dateTime, "ad");
     }
   }
 
   if (session.interstitials) {
     for (const interstitial of session.interstitials) {
-      groupTimeOffset(
-        group,
-        session.initialTime,
-        interstitial.timeOffset,
-        interstitial.type,
-      );
+      const dateTime = session.startTime.plus({
+        seconds: interstitial.timeOffset,
+      });
+      groupTimeOffset(group, dateTime, interstitial.type);
     }
   }
 
@@ -63,12 +66,11 @@ export function getStaticDateRanges(session: Session) {
 }
 
 function groupTimeOffset(
-  group: Record<string, SessionInterstitialType[]>,
-  startDate: DateTime,
-  timeOffset: number,
-  type?: SessionInterstitialType,
+  group: Record<string, InterstitialType[]>,
+  dateTime: DateTime,
+  type?: InterstitialType,
 ) {
-  const key = startDate.plus({ seconds: timeOffset }).toISO();
+  const key = dateTime.toISO();
   if (!key) {
     return;
   }
@@ -81,17 +83,24 @@ function groupTimeOffset(
 }
 
 export async function getAssets(session: Session, lookupDate: DateTime) {
+  assert(session.startTime, "No startTime in session");
+
   const assets: InterstitialAsset[] = [];
 
-  if (session.vmap) {
-    await formatAdBreaks(assets, session.vmap, session.initialTime, lookupDate);
+  if (session.vmapResponse) {
+    await formatStaticAdBreaks(
+      assets,
+      session.vmapResponse,
+      session.startTime,
+      lookupDate,
+    );
   }
 
   if (session.interstitials) {
-    await formatInterstitials(
+    await formatStaticInterstitials(
       assets,
       session.interstitials,
-      session.initialTime,
+      session.startTime,
       lookupDate,
     );
   }
@@ -99,7 +108,7 @@ export async function getAssets(session: Session, lookupDate: DateTime) {
   return assets;
 }
 
-async function formatAdBreaks(
+async function formatStaticAdBreaks(
   assets: InterstitialAsset[],
   vmapResponse: VmapResponse,
   baseDate: DateTime,
@@ -117,30 +126,31 @@ async function formatAdBreaks(
   const adMedias = await getAdMediasFromAdBreak(adBreak);
 
   for (const adMedia of adMedias) {
-    const presentation = new Presentation(`asset://${adMedia.assetId}`);
+    const uri = toAssetProtocol(adMedia.assetId);
     assets.push({
-      URI: presentation.url,
-      DURATION: await presentation.getDuration(),
+      URI: resolveUri(uri),
+      DURATION: adMedia.duration,
       "SPRS-TYPE": "ad",
     });
   }
 }
 
-async function formatInterstitials(
+async function formatStaticInterstitials(
   assets: InterstitialAsset[],
-  interstitials: SessionInterstitial[],
+  interstitials: Interstitial[],
   baseDate: DateTime,
   lookupDate: DateTime,
 ) {
-  const filteredInterstitials = interstitials.filter((interstitial) =>
+  // Filter each interstitial and match it with the given lookup time.
+  const list = interstitials.filter((interstitial) =>
     isEqualTimeOffset(baseDate, interstitial.timeOffset, lookupDate),
   );
 
-  for (const interstitial of filteredInterstitials) {
-    const presentation = new Presentation(interstitial.uri);
+  for (const interstitial of list) {
+    const duration = await fetchMasterPlaylistDuration(interstitial.url);
     assets.push({
-      URI: presentation.url,
-      DURATION: await presentation.getDuration(),
+      URI: interstitial.url,
+      DURATION: duration,
       "SPRS-TYPE": interstitial.type,
     });
   }

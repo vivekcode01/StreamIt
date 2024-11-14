@@ -1,11 +1,14 @@
 import * as path from "path";
+import { encrypt } from "./crypto";
 import { env } from "../env";
+import type { Filter } from "../filters";
+import type { Session } from "../session";
 
 const uuidRegex = /^[a-z,0-9,-]{36,36}$/;
 
 const ASSET_PROTOCOL = "asset:";
 
-export function getMasterUrl(uri: string) {
+export function resolveUri(uri: string) {
   if (uri.startsWith("http://") || uri.startsWith("https://")) {
     return uri;
   }
@@ -31,11 +34,56 @@ export function getMasterUrl(uri: string) {
   throw new Error(`Invalid uri: "${uri}"`);
 }
 
-export function joinPath(base: string, ...paths: string[]) {
-  const url = new URL(base);
-  return `${url.protocol}//${url.host}${path.join(url.pathname, ...paths)}`;
+function buildUrl(
+  url: string,
+  query?: Record<string, string | number | undefined | null>,
+) {
+  const queryString = Object.entries(query ?? {})
+    .map(([key, value]) => {
+      if (value === undefined || value === null) {
+        return null;
+      }
+      return `${key}=${encodeURIComponent(value)}`;
+    })
+    .filter((chunk) => chunk !== null)
+    .join("&");
+
+  return `${url}${queryString ? `?${queryString}` : ""}`;
 }
 
-export function getDir(url: string) {
-  return url.substring(0, url.lastIndexOf("/"));
+export function joinUrl(urlFile: string, filePath: string) {
+  if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
+    return filePath;
+  }
+  const urlBase = urlFile.substring(0, urlFile.lastIndexOf("/"));
+
+  const url = new URL(urlBase);
+
+  return `${url.protocol}//${url.host}${path.join(url.pathname, filePath)}`;
+}
+
+export function toAssetProtocol(uuid: string) {
+  return `${ASSET_PROTOCOL}:${uuid}`;
+}
+
+export function buildProxyUrl(
+  file: string,
+  url: string,
+  params?: {
+    filter?: Filter;
+    session?: Session;
+    params?: Record<string, string>;
+  },
+) {
+  return buildUrl(`${env.PUBLIC_STITCHER_ENDPOINT}/out/${file}`, {
+    eurl: encrypt(url),
+    sid: params?.session?.id,
+
+    // Filter query params.
+    "filter.resolution": params?.filter?.resolution,
+    "filter.audioLanguage": params?.filter?.audioLanguage,
+
+    // Rest params
+    ...params?.params,
+  });
 }
