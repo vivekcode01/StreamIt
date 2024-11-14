@@ -1,51 +1,76 @@
-import type { MasterPlaylist, Variant } from "./parser";
-import type { SessionFilter } from "./session";
+import type { MasterPlaylist } from "./parser";
 
-const FILTER_VARIANTS_OPERATOR = {
-  "<": (a: number, b: number) => a < b,
-  "<=": (a: number, b: number) => a <= b,
-  ">": (a: number, b: number) => a > b,
-  ">=": (a: number, b: number) => a >= b,
-} as const;
-
-function getResolutionFilter(
-  resolution: string,
-): [number, (a: number, b: number) => boolean] {
-  const [operator, value] = resolution.split(" ");
-  if (!value) {
-    throw new Error(`Failed to parse operator / value pair "${value}"`);
-  }
-
-  const height = parseInt(value, 10);
-
-  const fn =
-    FILTER_VARIANTS_OPERATOR[operator as keyof typeof FILTER_VARIANTS_OPERATOR];
-
-  if (Number.isNaN(height) || !fn) {
-    throw new Error(`Resolution filter with value "${resolution}" is invalid.`);
-  }
-
-  return [height, fn];
+export interface Filter {
+  resolution?: string;
 }
 
-function filterVariantsByResolution(variants: Variant[], resolution: string) {
-  const [height, fn] = getResolutionFilter(resolution);
-  return variants.filter(
-    (item) => item.resolution && fn(item.resolution.height, height),
-  );
+function parseRange(input: string): [number, number] | null {
+  const match = input.match(/^(\d+)-(\d+)$/);
+
+  if (match?.[1] && match[2]) {
+    const min = parseInt(match[1]);
+    const max = parseInt(match[2]);
+    return [min, max];
+  }
+
+  return null;
 }
 
-export function filterMaster(master: MasterPlaylist, filter: SessionFilter) {
+function parseOperatorToRange(input: string): [number, number] | null {
+  const match = input.match(/(<=?|>=?)\s*(\d+)/);
+  if (match?.[2] === undefined) {
+    return null;
+  }
+
+  const operator = match[1];
+  const number = parseInt(match[2]);
+
+  if (operator === "<=") {
+    return [0, number];
+  } else if (operator === "<") {
+    return [0, number - 1];
+  } else if (operator === ">=") {
+    return [number, Infinity];
+  } else if (operator === ">") {
+    return [number + 1, Infinity];
+  }
+
+  return null;
+}
+
+function parseFilterToRange(input: string): [number, number] {
+  let range = parseRange(input);
+  if (range) {
+    return range;
+  }
+
+  range = parseOperatorToRange(input);
+  if (range) {
+    return range;
+  }
+
+  throw new Error(`Failed to parse to range "${input}"`);
+}
+
+export function filterMasterPlaylist(master: MasterPlaylist, filter: Filter) {
   if (filter.resolution) {
-    master.variants = filterVariantsByResolution(
-      master.variants,
-      filter.resolution,
+    const [min, max] = parseFilterToRange(filter.resolution);
+    master.variants = master.variants.filter(
+      (variant) =>
+        // If we have no height, we'll make it pass.
+        !variant.resolution?.height ||
+        // If the variant height is within our range.
+        (variant.resolution.height >= min && variant.resolution.height <= max),
     );
   }
 }
 
-export function validateFilter(filter: SessionFilter) {
-  if (filter.resolution) {
-    getResolutionFilter(filter.resolution);
+export function extractFilterFromQuery(query: Record<string, string>) {
+  const filter: Filter = {};
+
+  if ("filter.resolution" in query) {
+    filter.resolution = query["filter.resolution"];
   }
+
+  return filter;
 }

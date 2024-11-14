@@ -4,15 +4,10 @@ import * as timeFormat from "hh-mm-ss";
 const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
 
-export type VmapSlot =
-  | {
-      type: "url";
-      url: string;
-    }
-  | {
-      type: "data";
-      data: string;
-    };
+export interface VmapSlot {
+  vastUrl?: string;
+  vastData?: string;
+}
 
 export interface VmapAdBreak {
   timeOffset: number;
@@ -67,18 +62,13 @@ function getAdSource(element: Element) {
   return childList(element).find((child) => child.localName === "AdSource");
 }
 
-function getSlot(element: Element): VmapSlot | null {
-  const url = getVastUrl(element);
-  if (url) {
-    return { type: "url", url };
-  }
-
-  const data = getVastData(element);
-  if (data) {
-    return { type: "data", data };
-  }
-
-  return null;
+function getSlot(element: Element): VmapSlot {
+  const vastUrl = getVastUrl(element);
+  const vastData = getVastData(element);
+  return {
+    vastUrl,
+    vastData,
+  };
 }
 
 function getVastUrl(element: Element) {

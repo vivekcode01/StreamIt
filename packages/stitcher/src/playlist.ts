@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
-import { filterMaster } from "./filters";
-import { getAssets, getStaticDateRanges, getStaticPDT } from "./interstitials";
-import { getDir, getMasterUrl, joinPath } from "./lib/url";
+import { filterMasterPlaylist } from "./filters";
+import { getAssets, getStaticDateRanges } from "./interstitials";
+import { buildProxyUrl, joinUrl, resolveUri } from "./lib/url";
 import {
   groupRenditions,
   parseMasterPlaylist,
@@ -9,30 +9,49 @@ import {
   stringifyMasterPlaylist,
   stringifyMediaPlaylist,
 } from "./parser";
+import type { Filter } from "./filters";
 import type { Session } from "./session";
 
-export async function formatMasterPlaylist(session: Session) {
-  const url = getMasterUrl(session.uri);
+export async function formatMasterPlaylist(
+  url: string,
+  session: Session,
+  filter: Filter,
+) {
   const master = await fetchMasterPlaylist(url);
 
-  if (session.filter) {
-    filterMaster(master, session.filter);
-  }
-
-  if (!master.variants.length) {
-    throw new Error("Playlist has no variants.");
-  }
+  filterMasterPlaylist(master, filter);
 
   for (const variant of master.variants) {
-    variant.uri = `playlist.m3u8?type=video&path=${encodeURIComponent(createFullUrl(url, variant.uri))}`;
+    variant.uri = buildProxyUrl("playlist.m3u8", joinUrl(url, variant.uri), {
+      sessionId: session.id,
+      params: {
+        type: "video",
+      },
+    });
   }
 
-  groupRenditions(master.variants).forEach((rendition) => {
-    const type = {
-      AUDIO: "audio",
-      SUBTITLES: "text",
-    }[rendition.type];
-    rendition.uri = `playlist.m3u8?type=${type}&path=${encodeURIComponent(createFullUrl(url, rendition.uri))}`;
+  const renditions = groupRenditions(master.variants);
+  renditions.forEach((rendition) => {
+    let type: string | undefined;
+
+    if (rendition.type === "AUDIO") {
+      type = "audio";
+    } else if (rendition.type === "SUBTITLES") {
+      type = "text";
+    } else {
+      return;
+    }
+
+    rendition.uri = buildProxyUrl(
+      "playlist.m3u8",
+      joinUrl(url, rendition.uri),
+      {
+        sessionId: session.id,
+        params: {
+          type,
+        },
+      },
+    );
   });
 
   return stringifyMasterPlaylist(master);
@@ -41,28 +60,22 @@ export async function formatMasterPlaylist(session: Session) {
 export async function formatMediaPlaylist(
   session: Session,
   type: "video" | "audio" | "text",
-  path: string,
+  url: string,
 ) {
-  const media = await fetchMediaPlaylist(path);
+  const media = await fetchMediaPlaylist(url);
 
   if (type === "video" && media.endlist && media.segments[0]) {
     // When we have an endlist, the playlist is static. We can check whether we need
     // to add dateRanges.
-    media.segments[0].programDateTime = getStaticPDT(session);
+    media.segments[0].programDateTime = session.initTime;
     media.dateRanges = getStaticDateRanges(session);
   }
 
   media.segments.forEach((segment) => {
-    if (
-      segment.uri.startsWith("http://") ||
-      segment.uri.startsWith("https://")
-    ) {
-      return;
-    }
     if (segment.map?.uri === "init.mp4") {
-      segment.map.uri = createFullUrl(path, segment.map.uri);
+      segment.map.uri = joinUrl(url, segment.map.uri);
     }
-    segment.uri = createFullUrl(path, segment.uri);
+    segment.uri = joinUrl(url, segment.uri);
   });
 
   return stringifyMediaPlaylist(media);
@@ -71,7 +84,9 @@ export async function formatMediaPlaylist(
 export async function formatAssetList(session: Session, startDate: string) {
   const lookupDate = DateTime.fromISO(startDate);
   const assets = await getAssets(session, lookupDate);
-  return { ASSETS: assets };
+  return {
+    ASSETS: assets,
+  };
 }
 
 async function fetchMasterPlaylist(url: string) {
@@ -86,28 +101,17 @@ async function fetchMediaPlaylist(url: string) {
   return parseMediaPlaylist(result);
 }
 
-export async function getPlaylistDuration(uri: string) {
-  const masterUrl = getMasterUrl(uri);
-  const master = await fetchMasterPlaylist(masterUrl);
+export async function fetchMasterPlaylistDuration(uri: string) {
+  const url = resolveUri(uri);
+  const variant = (await fetchMasterPlaylist(url))?.variants[0];
 
-  const firstVariant = master.variants[0];
-  if (!firstVariant) {
-    throw new Error("No first variant found");
+  if (!variant) {
+    throw new Error(`Missing variant for "${url}"`);
   }
 
-  const mediaUrl = createFullUrl(masterUrl, firstVariant.uri);
-  const media = await fetchMediaPlaylist(mediaUrl);
-
+  const media = await fetchMediaPlaylist(joinUrl(url, variant.uri));
   return media.segments.reduce((acc, segment) => {
     acc += segment.duration;
     return acc;
   }, 0);
-}
-
-function createFullUrl(masterUrl: string, path: string) {
-  if (path.startsWith("http://") || path.startsWith("https://")) {
-    return path;
-  }
-  const dir = getDir(masterUrl);
-  return joinPath(dir, path);
 }

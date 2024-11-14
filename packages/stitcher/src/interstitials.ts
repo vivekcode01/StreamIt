@@ -1,43 +1,42 @@
 import { DateTime } from "luxon";
 import { env } from "./env";
-import { getMasterUrl } from "./lib/url";
-import { getPlaylistDuration } from "./playlist";
+import { resolveUri, toAssetProtocol } from "./lib/url";
+import { fetchMasterPlaylistDuration } from "./playlist";
 import { getAdMediasFromAdBreak } from "./vast";
 import type { DateRange } from "./parser";
-import type {
-  Session,
-  SessionInterstitial,
-  SessionInterstitialType,
-} from "./session";
+import type { Session } from "./session";
 import type { VmapResponse } from "./vmap";
+
+export type InterstitialType = "ad" | "bumper";
+
+export interface Interstitial {
+  timeOffset: number;
+  url: string;
+  type?: InterstitialType;
+}
 
 interface InterstitialAsset {
   URI: string;
   DURATION: number;
-  "SPRS-TYPE": Required<SessionInterstitial["type"]>;
-}
-
-export function getStaticPDT(session: Session) {
-  return session.initialTime;
+  "SPRS-TYPE"?: InterstitialType;
 }
 
 export function getStaticDateRanges(session: Session) {
-  const group: Record<string, SessionInterstitialType[]> = {};
+  const group: Record<string, InterstitialType[]> = {};
 
-  if (session.vmap) {
-    for (const adBreak of session.vmap.adBreaks) {
-      groupTimeOffset(group, session.initialTime, adBreak.timeOffset, "ad");
+  if (session.vmapResponse) {
+    for (const adBreak of session.vmapResponse.adBreaks) {
+      const dateTime = session.initTime.plus({ seconds: adBreak.timeOffset });
+      groupTimeOffset(group, dateTime, "ad");
     }
   }
 
   if (session.interstitials) {
     for (const interstitial of session.interstitials) {
-      groupTimeOffset(
-        group,
-        session.initialTime,
-        interstitial.timeOffset,
-        interstitial.type,
-      );
+      const dateTime = session.initTime.plus({
+        seconds: interstitial.timeOffset,
+      });
+      groupTimeOffset(group, dateTime, interstitial.type);
     }
   }
 
@@ -64,12 +63,11 @@ export function getStaticDateRanges(session: Session) {
 }
 
 function groupTimeOffset(
-  group: Record<string, SessionInterstitialType[]>,
-  startDate: DateTime,
-  timeOffset: number,
-  type?: SessionInterstitialType,
+  group: Record<string, InterstitialType[]>,
+  dateTime: DateTime,
+  type?: InterstitialType,
 ) {
-  const key = startDate.plus({ seconds: timeOffset }).toISO();
+  const key = dateTime.toISO();
   if (!key) {
     return;
   }
@@ -84,15 +82,20 @@ function groupTimeOffset(
 export async function getAssets(session: Session, lookupDate: DateTime) {
   const assets: InterstitialAsset[] = [];
 
-  if (session.vmap) {
-    await formatAdBreaks(assets, session.vmap, session.initialTime, lookupDate);
+  if (session.vmapResponse) {
+    await formatStaticAdBreaks(
+      assets,
+      session.vmapResponse,
+      session.initTime,
+      lookupDate,
+    );
   }
 
   if (session.interstitials) {
-    await formatInterstitials(
+    await formatStaticInterstitials(
       assets,
       session.interstitials,
-      session.initialTime,
+      session.initTime,
       lookupDate,
     );
   }
@@ -100,7 +103,7 @@ export async function getAssets(session: Session, lookupDate: DateTime) {
   return assets;
 }
 
-async function formatAdBreaks(
+async function formatStaticAdBreaks(
   assets: InterstitialAsset[],
   vmapResponse: VmapResponse,
   baseDate: DateTime,
@@ -118,30 +121,31 @@ async function formatAdBreaks(
   const adMedias = await getAdMediasFromAdBreak(adBreak);
 
   for (const adMedia of adMedias) {
-    const url = getMasterUrl(`asset://${adMedia.assetId}`);
+    const uri = toAssetProtocol(adMedia.assetId);
     assets.push({
-      URI: url,
-      DURATION: await getPlaylistDuration(`asset://${adMedia.assetId}`),
+      URI: resolveUri(uri),
+      DURATION: adMedia.duration,
       "SPRS-TYPE": "ad",
     });
   }
 }
 
-async function formatInterstitials(
+async function formatStaticInterstitials(
   assets: InterstitialAsset[],
-  interstitials: SessionInterstitial[],
+  interstitials: Interstitial[],
   baseDate: DateTime,
   lookupDate: DateTime,
 ) {
-  const filteredInterstitials = interstitials.filter((interstitial) =>
+  // Filter each interstitial and match it with the given lookup time.
+  const list = interstitials.filter((interstitial) =>
     isEqualTimeOffset(baseDate, interstitial.timeOffset, lookupDate),
   );
 
-  for (const interstitial of filteredInterstitials) {
-    const url = getMasterUrl(interstitial.uri);
+  for (const interstitial of list) {
+    const duration = await fetchMasterPlaylistDuration(interstitial.url);
     assets.push({
-      URI: url,
-      DURATION: await getPlaylistDuration(interstitial.uri),
+      URI: interstitial.url,
+      DURATION: duration,
       "SPRS-TYPE": interstitial.type,
     });
   }
