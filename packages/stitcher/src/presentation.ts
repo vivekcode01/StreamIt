@@ -22,18 +22,46 @@ export class Presentation {
     return this.url_;
   }
 
+  private urlMap_ = new Map<string, string>();
+
   async getMaster() {
     const text = await fetchPlaylistText(this.url_);
-    return parseMasterPlaylist(text);
+    const master = parseMasterPlaylist(text);
+
+    master.variants.forEach((variant, variantIndex) => {
+      const uri = `variant_${variantIndex}.m3u8`;
+      this.urlMap_.set(uri, variant.uri);
+      variant.uri = uri;
+
+      variant.audio.forEach((audio, audioIndex) => {
+        if (!audio.uri) {
+          return;
+        }
+        const uri = `audio_${audioIndex}.m3u8`;
+        this.urlMap_.set(uri, audio.uri);
+        audio.uri = uri;
+      });
+
+      variant.subtitles.forEach((subtitle, subtitleIndex) => {
+        if (!subtitle.uri) {
+          return;
+        }
+        const uri = `subtitle_${subtitleIndex}.m3u8`;
+        this.urlMap_.set(uri, subtitle.uri);
+        subtitle.uri = uri;
+      });
+    });
+
+    return master;
   }
 
   private async getMedia_(path: string) {
-    const url = joinPath(getDir(this.url_), path);
-    const text = await fetchPlaylistText(url);
+    // const url = joinPath(getDir(this.url_), path);
+    const text = await fetchPlaylistText(path);
 
     const media = parseMediaPlaylist(text);
 
-    this.makeSegmentsAbsolute_(media.segments, path);
+    // this.makeSegmentsAbsolute_(media.segments, path);
 
     return media;
   }
@@ -77,7 +105,10 @@ export class Presentation {
 
   async getMedia(path: string) {
     const master = await this.getMaster();
-    const media = await this.getMedia_(path);
+    const URL = this.urlMap_.get(path);
+    assert(URL, "found url");
+
+    const media = await this.getMedia_(URL);
 
     const mediaType = this.getMediaType_(path, master);
     assert(mediaType, `A mediaType for "${path}" could not be found.`);
