@@ -78,15 +78,20 @@ export function filterMasterPlaylist(master: MasterPlaylist, filter: Filter) {
   }
 }
 
-export function extractFilterFromQuery(query: Record<string, string>) {
+export function parseFilterQuery(query: Record<string, string>) {
   const filter: Filter = {};
-
   if ("filter.resolution" in query) {
     filter.resolution = query["filter.resolution"];
   }
   if ("filter.audioLanguage" in query) {
     filter.audioLanguage = query["filter.audioLanguage"];
   }
-
   return filter;
+}
+
+export function buildFilterQuery(filter: Filter) {
+  return {
+    "filter.resolution": filter.resolution,
+    "filter.audioLanguage": filter.audioLanguage,
+  };
 }

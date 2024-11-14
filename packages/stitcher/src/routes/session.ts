@@ -1,7 +1,8 @@
 import { Elysia, t } from "elysia";
-import { extractFilterFromQuery } from "../filters";
+import { assert } from "shared/assert";
+import { parseFilterQuery } from "../filters";
 import { decrypt } from "../lib/crypto";
-import { buildProxyUrl, resolveUri } from "../lib/url";
+import { buildProxyUrl } from "../lib/url";
 import {
   formatAssetList,
   formatMasterPlaylist,
@@ -19,12 +20,7 @@ export const session = new Elysia()
     async ({ body }) => {
       const session = await createSession(body);
 
-      const masterUrl = resolveUri(body.uri);
-
-      const url = buildProxyUrl("master.m3u8", masterUrl, {
-        session,
-        filter: body.filter,
-      });
+      const url = buildProxyUrl(`${session.id}/master.m3u8`);
 
       return { url };
     },
@@ -87,15 +83,24 @@ export const session = new Elysia()
     },
   )
   .get(
-    "/out/master.m3u8",
-    async ({ set, query }) => {
-      const session = await getSession(query.sid);
+    "/out/:sessionId?/master.m3u8",
+    async ({ set, query, params }) => {
+      const sessionId = params.sessionId ?? query.sid;
+      assert(sessionId, "Could not extract sessionId");
+
+      const session = await getSession(sessionId);
 
       await formatSessionByMasterRequest(session);
 
-      const filter = extractFilterFromQuery(query);
+      const filter = parseFilterQuery(query);
 
-      const url = decrypt(query.eurl);
+      let url: string | undefined;
+      if (query.eurl) {
+        url = decrypt(query.eurl);
+      } else {
+        url = session.url;
+      }
+
       const playlist = await formatMasterPlaylist(url, session, filter);
 
       set.headers["content-type"] = "application/x-mpegURL";
@@ -106,9 +111,12 @@ export const session = new Elysia()
       detail: {
         hide: true,
       },
+      params: t.Object({
+        sessionId: t.Optional(t.String()),
+      }),
       query: t.Object({
-        eurl: t.String(),
-        sid: t.String(),
+        eurl: t.Optional(t.String()),
+        sid: t.Optional(t.String()),
         "filter.resolution": t.Optional(t.String()),
         "filter.audioLanguage": t.Optional(t.String()),
       }),

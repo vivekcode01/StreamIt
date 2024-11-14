@@ -8,6 +8,7 @@ import type { VmapResponse } from "./vmap";
 
 export interface Session {
   id: string;
+  url: string;
   startTime?: DateTime;
   expiry: number;
   vmap?: {
@@ -18,6 +19,7 @@ export interface Session {
 }
 
 export async function createSession(params: {
+  uri: string;
   vmap?: {
     url: string;
   };
@@ -32,6 +34,7 @@ export async function createSession(params: {
 
   const session: Session = {
     id,
+    url: resolveUri(params.uri),
     vmap: params.vmap,
     // A session is valid for 3 hours by default.
     expiry: params.expiry ?? 60 * 60 * 3,

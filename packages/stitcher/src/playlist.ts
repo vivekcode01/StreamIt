@@ -24,7 +24,8 @@ export async function formatMasterPlaylist(
 
   for (const variant of master.variants) {
     const url = joinUrl(masterUrl, variant.uri);
-    variant.uri = buildProxyUrl("playlist.m3u8", url, {
+    variant.uri = buildProxyUrl("playlist.m3u8", {
+      url,
       session,
       params: {
         type: "VIDEO",
@@ -35,7 +36,8 @@ export async function formatMasterPlaylist(
   const renditions = groupRenditions(master.variants);
   renditions.forEach((rendition) => {
     const url = joinUrl(masterUrl, rendition.uri);
-    rendition.uri = buildProxyUrl("playlist.m3u8", url, {
+    rendition.uri = buildProxyUrl("playlist.m3u8", {
+      url,
       session,
       params: {
         type: rendition.type,
