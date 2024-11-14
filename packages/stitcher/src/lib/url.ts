@@ -81,6 +81,7 @@ export function buildProxyUrl(
 
     // Filter query params.
     "filter.resolution": params?.filter?.resolution,
+    "filter.audioLanguage": params?.filter?.audioLanguage,
 
     // Rest params
     ...params?.params,

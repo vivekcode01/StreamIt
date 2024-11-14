@@ -57,6 +57,7 @@ export const session = new Elysia()
                   description: 'Filter on resolution, like "<=720".',
                 }),
               ),
+              audioLanguage: t.Optional(t.String()),
             },
             {
               description: "Filter applies to master and media playlist.",
@@ -109,6 +110,7 @@ export const session = new Elysia()
         eurl: t.String(),
         sid: t.String(),
         "filter.resolution": t.Optional(t.String()),
+        "filter.audioLanguage": t.Optional(t.String()),
       }),
     },
   )

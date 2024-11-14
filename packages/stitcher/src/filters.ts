@@ -2,6 +2,7 @@ import type { MasterPlaylist } from "./parser";
 
 export interface Filter {
   resolution?: string;
+  audioLanguage?: string;
 }
 
 function parseRange(input: string): [number, number] | null {
@@ -52,8 +53,12 @@ function parseFilterToRange(input: string): [number, number] {
   throw new Error(`Failed to parse to range "${input}"`);
 }
 
+function parseFilterToList(input: string) {
+  return input.split(",").map((value) => value.trim());
+}
+
 export function filterMasterPlaylist(master: MasterPlaylist, filter: Filter) {
-  if (filter.resolution) {
+  if (filter.resolution !== undefined) {
     const [min, max] = parseFilterToRange(filter.resolution);
     master.variants = master.variants.filter(
       (variant) =>
@@ -63,6 +68,14 @@ export function filterMasterPlaylist(master: MasterPlaylist, filter: Filter) {
         (variant.resolution.height >= min && variant.resolution.height <= max),
     );
   }
+  if (filter.audioLanguage !== undefined) {
+    const list = parseFilterToList(filter.audioLanguage);
+    master.variants.filter((variant) => {
+      variant.audio = variant.audio.filter(
+        (audio) => !audio.language || list.includes(audio.language),
+      );
+    });
+  }
 }
 
 export function extractFilterFromQuery(query: Record<string, string>) {
@@ -70,6 +83,9 @@ export function extractFilterFromQuery(query: Record<string, string>) {
 
   if ("filter.resolution" in query) {
     filter.resolution = query["filter.resolution"];
+  }
+  if ("filter.audioLanguage" in query) {
+    filter.audioLanguage = query["filter.audioLanguage"];
   }
 
   return filter;
