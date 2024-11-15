@@ -4,6 +4,7 @@ import { env } from "./env";
 import { resolveUri, toAssetProtocol } from "./lib/url";
 import { fetchMasterPlaylistDuration } from "./playlist";
 import { getAdMediasFromAdBreak } from "./vast";
+import { parseVmap } from "./vmap";
 import type { DateRange } from "./parser";
 import type { Session } from "./session";
 import type { VmapResponse } from "./vmap";
@@ -28,7 +29,8 @@ export function getStaticDateRanges(session: Session) {
   const group: Record<string, InterstitialType[]> = {};
 
   if (session.vmapResponse) {
-    for (const adBreak of session.vmapResponse.adBreaks) {
+    const vmap = parseVmap(session.vmapResponse);
+    for (const adBreak of vmap.adBreaks) {
       const dateTime = session.startTime.plus({ seconds: adBreak.timeOffset });
       groupTimeOffset(group, dateTime, "ad");
     }
@@ -88,12 +90,8 @@ export async function getAssets(session: Session, lookupDate: DateTime) {
   const assets: InterstitialAsset[] = [];
 
   if (session.vmapResponse) {
-    await formatStaticAdBreaks(
-      assets,
-      session.vmapResponse,
-      session.startTime,
-      lookupDate,
-    );
+    const vmap = parseVmap(session.vmapResponse);
+    await formatStaticAdBreaks(assets, vmap, session.startTime, lookupDate);
   }
 
   if (session.interstitials) {
@@ -110,11 +108,11 @@ export async function getAssets(session: Session, lookupDate: DateTime) {
 
 async function formatStaticAdBreaks(
   assets: InterstitialAsset[],
-  vmapResponse: VmapResponse,
+  vmap: VmapResponse,
   baseDate: DateTime,
   lookupDate: DateTime,
 ) {
-  const adBreak = vmapResponse.adBreaks.find((adBreak) =>
+  const adBreak = vmap.adBreaks.find((adBreak) =>
     isEqualTimeOffset(baseDate, adBreak.timeOffset, lookupDate),
   );
 

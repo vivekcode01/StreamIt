@@ -4,7 +4,6 @@ import { kv } from "./kv";
 import { resolveUri } from "./lib/url";
 import { fetchVmap } from "./vmap";
 import type { Interstitial, InterstitialType } from "./interstitials";
-import type { VmapResponse } from "./vmap";
 
 export interface Session {
   id: string;
@@ -14,7 +13,7 @@ export interface Session {
   vmap?: {
     url: string;
   };
-  vmapResponse?: VmapResponse;
+  vmapResponse?: string;
   interstitials?: Interstitial[];
 }
 

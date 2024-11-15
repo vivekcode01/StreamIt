@@ -18,8 +18,9 @@ export interface VmapResponse {
   adBreaks: VmapAdBreak[];
 }
 
-export async function fetchVmap(url: string): Promise<VmapResponse> {
-  const doc = await getXml(url);
+export function parseVmap(text: string): VmapResponse {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(text, "text/xml");
   const rootElement = doc.documentElement;
 
   if (rootElement.localName !== "VMAP") {
@@ -103,7 +104,7 @@ function getVastData(element: Element) {
   return xmlSerializer.serializeToString(vastAdData.firstChild);
 }
 
-async function getXml(url: string) {
+export async function fetchVmap(url: string) {
   const response = await fetch(url, {
     headers: {
       "User-Agent": USER_AGENT,
@@ -111,9 +112,7 @@ async function getXml(url: string) {
   });
 
   const text = await response.text();
-  const parser = new DOMParser();
-
-  return parser.parseFromString(text, "text/xml");
+  return text;
 }
 
 function childList(node: Element) {
