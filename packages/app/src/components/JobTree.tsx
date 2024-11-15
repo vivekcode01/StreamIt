@@ -13,7 +13,7 @@ export function JobTree({ activeJob, jobs, depth = 0 }: JobTreeProps) {
   return (
     <div className={cn(depth !== 0 && "ml-4")}>
       {jobs.map((job) => (
-        <div>
+        <div key={job.id}>
           <div className="flex gap-2 items-center">
             <JobState job={job} />
             <Link

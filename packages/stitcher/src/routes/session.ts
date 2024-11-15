@@ -1,36 +1,32 @@
 import { Elysia, t } from "elysia";
-import { env } from "../env";
-import { validateFilter } from "../filters";
-import { getMasterUrl } from "../lib/url";
+import { assert } from "shared/assert";
+import { filterQuery, parseFilterQuery } from "../filters";
+import { decrypt } from "../lib/crypto";
+import { buildProxyUrl } from "../lib/url";
 import {
   formatAssetList,
   formatMasterPlaylist,
   formatMediaPlaylist,
 } from "../playlist";
 import {
-  createStarter,
+  createSession,
+  formatSessionByMasterRequest,
   getSession,
-  getStarter,
-  swapStarterForSession,
 } from "../session";
 
 export const session = new Elysia()
   .post(
     "/session",
     async ({ body }) => {
-      // This'll fail when uri is invalid.
-      getMasterUrl(body.uri);
+      const session = await createSession(body);
 
-      if (body.filter) {
-        // When we have a filter, validate it here first. There is no need to wait until we approach
-        // the master playlist. We can bail out early.
-        validateFilter(body.filter);
-      }
+      const url = buildProxyUrl(`${session.id}/master.m3u8`, {
+        params: {
+          ...filterQuery(body.filter),
+        },
+      });
 
-      const id = await createStarter(body);
-      return {
-        url: `${env.PUBLIC_STITCHER_ENDPOINT}/session/${id}/master.m3u8`,
-      };
+      return { url };
     },
     {
       detail: {
@@ -58,9 +54,10 @@ export const session = new Elysia()
             {
               resolution: t.Optional(
                 t.String({
-                  description: 'Filter on resolution, like "<= 720".',
+                  description: 'Filter on resolution, like "<=720".',
                 }),
               ),
+              audioLanguage: t.Optional(t.String()),
             },
             {
               description: "Filter applies to master and media playlist.",
@@ -90,16 +87,25 @@ export const session = new Elysia()
     },
   )
   .get(
-    "/session/:sessionId/master.m3u8",
-    async ({ set, params }) => {
-      let session = await getSession(params.sessionId);
+    "/out/:sessionId?/master.m3u8",
+    async ({ set, query, params }) => {
+      const sessionId = params.sessionId ?? query.sid;
+      assert(sessionId, "Could not extract sessionId");
 
-      if (!session) {
-        const starter = await getStarter(params.sessionId);
-        session = await swapStarterForSession(params.sessionId, starter);
+      const session = await getSession(sessionId);
+
+      await formatSessionByMasterRequest(session);
+
+      const filter = parseFilterQuery(query);
+
+      let url: string | undefined;
+      if (query.eurl) {
+        url = decrypt(query.eurl);
+      } else {
+        url = session.url;
       }
 
-      const playlist = await formatMasterPlaylist(session);
+      const playlist = await formatMasterPlaylist(url, session, filter);
 
       set.headers["content-type"] = "application/x-mpegURL";
 
@@ -110,29 +116,36 @@ export const session = new Elysia()
         hide: true,
       },
       params: t.Object({
-        sessionId: t.String(),
+        sessionId: t.Optional(t.String()),
+      }),
+      query: t.Object({
+        eurl: t.Optional(t.String()),
+        sid: t.Optional(t.String()),
+        "filter.resolution": t.Optional(t.String()),
+        "filter.audioLanguage": t.Optional(t.String()),
       }),
     },
   )
   .get(
-    "/session/:sessionId/*",
-    async ({ set, params }) => {
-      const session = await getSession(params.sessionId);
-      if (!session) {
-        throw new Error(`Invalid session for "${params.sessionId}"`);
-      }
+    "/out/playlist.m3u8",
+    async ({ set, query }) => {
+      const session = await getSession(query.sid);
 
-      const playlist = await formatMediaPlaylist(session, params["*"]);
+      const url = decrypt(query.eurl);
+      const playlist = await formatMediaPlaylist(session, query.type, url);
+
       set.headers["content-type"] = "application/x-mpegURL";
+
       return playlist;
     },
     {
       detail: {
         hide: true,
       },
-      params: t.Object({
-        sessionId: t.String(),
-        "*": t.String(),
+      query: t.Object({
+        type: t.String(),
+        eurl: t.String(),
+        sid: t.String(),
       }),
     },
   )
@@ -140,9 +153,6 @@ export const session = new Elysia()
     "/session/:sessionId/asset-list.json",
     async ({ params, query }) => {
       const session = await getSession(params.sessionId);
-      if (!session) {
-        throw new Error(`Invalid session for "${params.sessionId}"`);
-      }
 
       return await formatAssetList(session, query.startDate);
     },

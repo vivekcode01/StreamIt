@@ -1,7 +1,3 @@
-export const DEFAULT_SEGMENT_SIZE = 2.24;
-
-export const DEFAULT_PACKAGE_NAME = "hls";
-
 export enum AudioCodec {
   aac = "aac",
   ac3 = "ac3",

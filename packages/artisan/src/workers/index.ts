@@ -2,6 +2,7 @@ import { runWorkers } from "bolt";
 import { ffmpegCallback } from "./ffmpeg";
 import { ffprobeCallback } from "./ffprobe";
 import { packageCallback } from "./package";
+import { pipelineCallback } from "./pipeline";
 import { transcodeCallback } from "./transcode";
 
 runWorkers([
@@ -20,5 +21,9 @@ runWorkers([
   {
     name: "ffprobe",
     callback: ffprobeCallback,
+  },
+  {
+    name: "pipeline",
+    callback: pipelineCallback,
   },
 ]);

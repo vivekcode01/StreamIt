@@ -1,7 +1,14 @@
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useSelector } from "../..";
-// import pauseIcon from "../icons/pause.svg";
-// import playIcon from "../icons/play.svg";
+import PauseIcon from "../icons/pause.svg";
+import PlayIcon from "../icons/play.svg";
+import type { ReactNode } from "react";
 
 export interface CenterIconPopRef {
   playOrPause(): void;
@@ -9,45 +16,64 @@ export interface CenterIconPopRef {
 
 export const CenterIconPop = forwardRef<CenterIconPopRef, unknown>((_, ref) => {
   const elementRef = useRef<HTMLDivElement>(null);
-  const lastNudgeRef = useRef<LastNudge>();
   const playhead = useSelector((facade) => facade.playhead);
+  const [nudge, setNudge] = useState<ReactNode>(null);
 
-  const pushEl = useCallback(
-    (value: string) => {
-      if (lastNudgeRef.current) {
-        lastNudgeRef.current.element.remove();
-        clearTimeout(lastNudgeRef.current.timerId);
-      }
+  useLayoutEffect(() => {
+    const el = elementRef.current;
+    if (!el) {
+      return;
+    }
 
-      const element = document.createElement("div");
-      element.innerHTML = `<div class="w-10 h-10 rounded-full bg-black/50 flex items-center justify-center">
-        <img class="w-4 h-4 brightness-0 invert" src="${value}" />
-      </div>`;
-      element.style.transition = "all 500ms ease-out";
-      elementRef.current?.appendChild(element);
+    let timerId: number;
 
-      const timerId = window.setTimeout(() => {
-        element.style.opacity = "0";
-        element.style.transform = "scale(2)";
-      }, 50);
+    const stage = (timeout: number) =>
+      new Promise((resolve) => {
+        timerId = window.setTimeout(() => {
+          resolve(undefined);
+        }, timeout);
+      });
 
-      lastNudgeRef.current = { element, timerId };
-    },
-    [elementRef],
-  );
+    const runStages = async () => {
+      el.style.transform = "";
+      el.style.transition = "";
+      el.style.opacity = "0";
+      await stage(10);
+      el.style.opacity = "1";
+      await stage(50);
+      el.style.transition = "all 500ms ease-out";
+      el.style.opacity = "0";
+      el.style.transform = "scale(2)";
+    };
+    runStages();
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [nudge]);
 
   useImperativeHandle(ref, () => {
     return {
       playOrPause() {
-        // pushEl(playhead === "pause" ? playIcon : pauseIcon);
+        setNudge(
+          playhead === "pause" ? (
+            <PlayIcon className="w-4 h-4" />
+          ) : (
+            <PauseIcon className="w-4 h-4" />
+          ),
+        );
       },
     };
-  }, [playhead, pushEl]);
+  }, [playhead]);
 
-  return <div ref={elementRef} />;
+  return (
+    <div>
+      <div
+        ref={elementRef}
+        className="text-white w-10 h-10 rounded-full bg-black/50 flex items-center justify-center"
+      >
+        {nudge}
+      </div>
+    </div>
+  );
 });
-
-interface LastNudge {
-  element: HTMLDivElement;
-  timerId: number;
-}

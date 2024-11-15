@@ -61,7 +61,7 @@ export interface Media {
   groupId: string;
   name: string;
   language?: string;
-  uri?: string;
+  uri: string;
   channels?: string;
 }
 
@@ -187,6 +187,7 @@ function parseLine(line: string): Tag | null {
       assert(attrs.type, "EXT-X-MEDIA: no type");
       assert(attrs.groupId, "EXT-X-MEDIA: no groupId");
       assert(attrs.name, "EXT-X-MEDIA: no name");
+      assert(attrs.uri, "EXT-X-MEDIA: no uri");
 
       return [
         name,

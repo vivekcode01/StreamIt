@@ -12,7 +12,7 @@ export interface Rendition {
   groupId: string;
   name: string;
   language?: string;
-  uri?: string;
+  uri: string;
   channels?: string;
 }
 

@@ -3,10 +3,10 @@
   "version": "1.1.0",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch ./runtime/local.ts",
+    "dev": "bun --watch --inspect=ws://localhost:6500/sprs-stitcher ./runtime/local.ts",
     "build": "bun build ./runtime/local.ts --target=bun --outdir=./dist",
     "test": "bun test",
-   "lint": "tsc && eslint",
+    "lint": "tsc && eslint",
     "dev:cloudflare": "wrangler dev runtime/cloudflare.ts",
     "deploy:cloudflare": "wrangler deploy --minify runtime/cloudflare.ts"
   },
@@ -28,6 +28,7 @@
     "@matvp91/elysia-swagger": "^2.0.0",
     "@superstreamer/api": "workspace:*",
     "@xmldom/xmldom": "^0.8.10",
+    "cryptr": "^6.3.0",
     "dom-parser": "^1.1.5",
     "elysia": "^1.1.24",
     "hh-mm-ss": "^1.2.0",

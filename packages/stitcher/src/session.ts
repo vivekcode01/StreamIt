@@ -1,90 +1,58 @@
 import { randomUUID } from "crypto";
 import { DateTime } from "luxon";
 import { kv } from "./kv";
+import { resolveUri } from "./lib/url";
 import { fetchVmap } from "./vmap";
+import type { Interstitial, InterstitialType } from "./interstitials";
 import type { VmapResponse } from "./vmap";
 
-export interface Starter {
-  uri: string;
-  interstitials?: SessionInterstitial[];
-  filter?: SessionFilter;
-  vmap?: SessionVmap;
-  expiry?: number;
-}
-
-export type Session = {
+export interface Session {
   id: string;
-  initialTime: DateTime;
-  vmap?: VmapResponse;
-} & Pick<Starter, "uri" | "interstitials" | "filter">;
-
-export type SessionInterstitialType = "ad" | "bumper";
-
-export interface SessionInterstitial {
-  timeOffset: number;
-  uri: string;
-  type?: SessionInterstitialType;
-}
-
-export interface SessionFilter {
-  resolution?: string;
-}
-
-export interface SessionVmap {
   url: string;
+  startTime?: DateTime;
+  expiry: number;
+  vmap?: {
+    url: string;
+  };
+  vmapResponse?: VmapResponse;
+  interstitials?: Interstitial[];
 }
 
-export async function createStarter(data: {
+export async function createSession(params: {
   uri: string;
-  interstitials?: SessionInterstitial[];
-  filter?: SessionFilter;
-  vmap?: SessionVmap;
+  vmap?: {
+    url: string;
+  };
+  interstitials?: {
+    timeOffset: number;
+    uri: string;
+    type?: InterstitialType;
+  }[];
   expiry?: number;
 }) {
   const id = randomUUID();
 
-  const starter: Starter = {
-    uri: data.uri,
-    filter: data.filter,
-    interstitials: data.interstitials,
-    vmap: data.vmap,
-    expiry: data.expiry,
-  };
-
-  await kv.set(`starter:${id}`, JSON.stringify(starter), 60 * 15);
-
-  return id;
-}
-
-export async function getStarter(id: string): Promise<Starter> {
-  const data = await kv.get(`starter:${id}`);
-  if (!data) {
-    throw new Error(`Invalid starter for id "${id}"`);
-  }
-  return JSON.parse(data);
-}
-
-export async function swapStarterForSession(id: string, starter: Starter) {
   const session: Session = {
     id,
-    initialTime: DateTime.now(),
-    uri: starter.uri,
-    interstitials: starter.interstitials,
-    filter: starter.filter,
+    url: resolveUri(params.uri),
+    vmap: params.vmap,
+    // A session is valid for 3 hours by default.
+    expiry: params.expiry ?? 60 * 60 * 3,
   };
 
-  if (starter.vmap) {
-    session.vmap = await fetchVmap(starter.vmap.url);
+  if (params.interstitials?.length) {
+    session.interstitials = params.interstitials.map((interstitial) => {
+      return {
+        timeOffset: interstitial.timeOffset,
+        url: resolveUri(interstitial.uri),
+        type: interstitial.type,
+      };
+    });
   }
 
-  const serializableSession = {
-    ...session,
-    id: undefined,
-    initialTime: session.initialTime.toISO(),
-  };
-
-  const ttl = starter.expiry ?? 3600;
-  await kv.set(`session:${id}`, JSON.stringify(serializableSession), ttl);
+  // We'll initially store the session for 10 minutes, if it's not been consumed
+  // within the timeframe, it's gone.
+  await kv.set(`session:${id}`, serializeSession(session), 60 * 10);
 
   return session;
 }
@@ -92,16 +60,47 @@ export async function swapStarterForSession(id: string, starter: Starter) {
 export async function getSession(id: string) {
   const data = await kv.get(`session:${id}`);
   if (!data) {
-    return null;
+    throw new Error(`No session found for id ${id}`);
+  }
+  return deserializeSession(id, data);
+}
+
+export async function formatSessionByMasterRequest(session: Session) {
+  // Check if we have a startTime, if so, the master playlist has been requested
+  // before and we no longer need it.
+  if (session.startTime) {
+    return;
   }
 
-  const fields = JSON.parse(data);
+  session.startTime = DateTime.now();
 
-  const session: Session = {
-    ...fields,
-    id,
-    initialTime: DateTime.fromISO(fields.initialTime),
+  if (session.vmap) {
+    session.vmapResponse = await fetchVmap(session.vmap.url);
+    delete session.vmap;
+  }
+
+  await kv.set(
+    `session:${session.id}`,
+    serializeSession(session),
+    session.expiry,
+  );
+}
+
+function serializeSession(session: Session) {
+  const copy = {
+    ...session,
+    id: undefined,
+    startTime: session.startTime?.toISO(),
   };
+  return JSON.stringify(copy);
+}
 
+function deserializeSession(id: string, value: string): Session {
+  const copy = JSON.parse(value);
+  const session = {
+    ...copy,
+    id,
+    startTime: copy.startTime ? DateTime.fromISO(copy.startTime) : undefined,
+  };
   return session;
 }

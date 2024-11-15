@@ -1,6 +1,7 @@
-import {$} from "bun";
+import { $ } from "bun";
+import { buildClientPackages } from "./devtools/client-packages";
 
-import "./pre-build";
+await buildClientPackages();
 
 await Promise.all([
   $`bun run --filter="@superstreamer/app" build`,

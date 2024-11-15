@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "bun",
+      "request": "attach",
+      "name": "Debug API",
+      "url": "ws://localhost:6499/sprs-api",
+    },
+    {
+      "type": "bun",
+      "request": "attach",
+      "name": "Debug Stitcher",
+      "url": "ws://localhost:6500/sprs-stitcher",
+    }
+  ]
+}

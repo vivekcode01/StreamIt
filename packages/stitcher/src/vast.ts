@@ -3,7 +3,6 @@ import { AudioCodec, VideoCodec } from "bolt";
 import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
 import { api } from "./lib/api-client";
-import { getMasterUrl, isUrlAvailable } from "./lib/url";
 import type { VmapAdBreak } from "./vmap";
 import type { VastAd, VastCreativeLinear, VastResponse } from "vast-client";
 
@@ -12,49 +11,58 @@ const NAMESPACE_UUID_AD = "5b212a7e-d6a2-43bf-bd30-13b1ca1f9b13";
 export interface AdMedia {
   assetId: string;
   fileUrl: string;
+  duration: number;
 }
 
-export async function getAdMediasFromVast(adBreak: VmapAdBreak) {
+export async function getAdMediasFromAdBreak(adBreak: VmapAdBreak) {
   const adMedias = await getAdMedias(adBreak);
   const result: AdMedia[] = [];
 
   for (const adMedia of adMedias) {
-    const url = getMasterUrl(`asset://${adMedia.assetId}`);
-    const isAvailable = await isUrlAvailable(url);
-    if (!isAvailable) {
+    const asset = await fetchAsset(adMedia.assetId);
+    if (!asset) {
       await scheduleForPackage(adMedia);
-      continue;
+    } else {
+      // If we have an asset registered for the ad media,
+      // add it to the result.
+      result.push(adMedia);
     }
-    result.push(adMedia);
   }
+
   return result;
 }
 
 async function getAdMedias(adBreak: VmapAdBreak): Promise<AdMedia[]> {
   const vastClient = new VASTClient();
+  const parser = new DOMParser();
 
-  if (adBreak.vastUrl) {
-    const response = await vastClient.get(adBreak.vastUrl);
-    return await formatVastResponse(response);
+  const result: AdMedia[] = [];
+
+  for (const slot of adBreak.slots) {
+    let vastResponse: VastResponse | undefined;
+
+    if (slot.vastUrl) {
+      vastResponse = await vastClient.get(slot.vastUrl);
+    } else if (slot.vastData) {
+      const xml = parser.parseFromString(slot.vastData, "text/xml");
+      vastResponse = await vastClient.parseVAST(xml);
+    }
+
+    if (!vastResponse) {
+      continue;
+    }
+
+    const adMedias = await formatVastResponse(vastResponse);
+    result.push(...adMedias);
   }
 
-  if (adBreak.vastData) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(adBreak.vastData, "text/xml");
-
-    const response = await vastClient.parseVAST(doc);
-
-    return await formatVastResponse(response);
-  }
-
-  return [];
+  return result;
 }
 
 async function scheduleForPackage(adMedia: AdMedia) {
-  await api.transcode.post({
-    group: "ad",
+  await api.pipeline.post({
     assetId: adMedia.assetId,
-    packageAfter: true,
+    group: "ad",
     inputs: [
       {
         path: adMedia.fileUrl,
@@ -86,6 +94,17 @@ async function scheduleForPackage(adMedia: AdMedia) {
   });
 }
 
+async function fetchAsset(id: string) {
+  const { data, status } = await api.assets({ id }).get();
+  if (status === 404) {
+    return null;
+  }
+  if (status === 200) {
+    return data;
+  }
+  throw new Error(`Failed to fetch asset, got status ${status}`);
+}
+
 async function formatVastResponse(response: VastResponse) {
   return response.ads.reduce<AdMedia[]>((acc, ad) => {
     const creative = getCreative(ad);
@@ -103,6 +122,7 @@ async function formatVastResponse(response: VastResponse) {
     acc.push({
       assetId: adId,
       fileUrl: mediaFile.fileURL,
+      duration: creative.duration,
     });
 
     return acc;

@@ -1,10 +1,25 @@
+import type { Rendition, Variant } from "./types";
+
+export function groupRenditions(variants: Variant[]) {
+  const group = new Set<Rendition>();
+  variants.forEach((variant) => {
+    variant.audio.forEach((rendition) => {
+      group.add(rendition);
+    });
+    variant.subtitles.forEach((rendition) => {
+      group.add(rendition);
+    });
+  });
+  return Array.from(group.values());
+}
+
 export function mapAttributes(
   param: string,
   callback: (key: string, value: string) => void,
 ) {
   const items = splitByCommaWithPreservingQuotes(param);
   items.forEach((item) => {
-    const [key, value] = item.split("=");
+    const [key, value] = item.split(/=(.+)/);
     if (key === undefined || value === undefined) {
       return;
     }

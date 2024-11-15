@@ -15,3 +15,17 @@ export function isRecordWithNumbers(
     (prop) => typeof obj[prop] === "number",
   );
 }
+
+export function mergeProps<T extends object>(
+  value: T,
+  defaultValues: Required<T>,
+): Required<T> {
+  Object.keys(value).forEach((key) => {
+    // @ts-expect-error Valid key
+    if (value[key] !== undefined) {
+      // @ts-expect-error Valid prop
+      defaultValues[key] = value[key];
+    }
+  });
+  return defaultValues;
+}

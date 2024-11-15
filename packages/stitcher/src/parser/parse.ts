@@ -120,8 +120,13 @@ function parseSegment(
   };
 }
 
-function addRendition(variant: Variant, media: Media) {
-  const rendition: Rendition = {
+function createRendition(media: Media, renditions: Map<string, Rendition>) {
+  let rendition = renditions.get(media.uri);
+  if (rendition) {
+    return rendition;
+  }
+
+  rendition = {
     type: media.type,
     groupId: media.groupId,
     name: media.name,
@@ -129,6 +134,18 @@ function addRendition(variant: Variant, media: Media) {
     uri: media.uri,
     channels: media.channels,
   };
+
+  renditions.set(media.uri, rendition);
+
+  return rendition;
+}
+
+function addRendition(
+  variant: Variant,
+  media: Media,
+  renditions: Map<string, Rendition>,
+) {
+  const rendition = createRendition(media, renditions);
 
   if (media.type === "AUDIO") {
     variant.audio.push(rendition);
@@ -139,7 +156,12 @@ function addRendition(variant: Variant, media: Media) {
   }
 }
 
-function parseVariant(tags: Tag[], streamInf: StreamInf, uri: string) {
+function parseVariant(
+  tags: Tag[],
+  streamInf: StreamInf,
+  uri: string,
+  renditions: Map<string, Rendition>,
+) {
   const variant: Variant = {
     uri,
     bandwidth: streamInf.bandwidth,
@@ -155,7 +177,7 @@ function parseVariant(tags: Tag[], streamInf: StreamInf, uri: string) {
         streamInf.audio === value.groupId ||
         streamInf.subtitles === value.groupId
       ) {
-        addRendition(variant, value);
+        addRendition(variant, value, renditions);
       }
     }
   }
@@ -167,10 +189,12 @@ function formatMasterPlaylist(tags: Tag[]): MasterPlaylist {
   const variants: Variant[] = [];
   let independentSegments = false;
 
+  const renditions = new Map<string, Rendition>();
+
   tags.forEach(([name, value], index) => {
     if (name === "EXT-X-STREAM-INF") {
       const uri = nextLiteral(tags, index);
-      const variant = parseVariant(tags, value, uri);
+      const variant = parseVariant(tags, value, uri, renditions);
       variants.push(variant);
     }
     if (name === "EXT-X-INDEPENDENT-SEGMENTS") {
