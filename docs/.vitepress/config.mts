@@ -115,19 +115,19 @@ function sidebarGuide() {
       items: [
         {
           text: "What's included",
-          link: "whats-included.md",
+          link: "whats-included",
         },
         {
           text: "Building blocks",
-          link: "building-blocks.md",
+          link: "building-blocks",
           items: [
             {
-              text: "Transcode and package",
-              link: "transcode-and-package",
+              text: "Video processing",
+              link: "video-processing",
             },
             {
-              text: "Content personalization",
-              link: "content-personalization",
+              text: "Video personalization",
+              link: "video-personalization",
             },
             {
               text: "Player",
@@ -135,6 +135,19 @@ function sidebarGuide() {
             },
           ],
         },
+        {
+          text: "Tutorials",
+          items: [
+            {
+              text: "Play adaptive video",
+              link: "tutorials/play-adaptive-video"
+            },
+            {
+              text: "Add bumper like Netflix",
+              link: "tutorials/add-bumper-like-netflix"
+            }
+          ]
+        }
       ],
     },
     {

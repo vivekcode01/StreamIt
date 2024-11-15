@@ -6,15 +6,19 @@ Much of the hard work was done before us. We're here to bring everything togethe
 
 ![Cloudflare](/logo-cloudflare.jpg){width=100px}
 
-![FFmpeg](/logo-ffmpeg.png){width=120px}
+![Mux](/logo-mux.png){width=80px}
 
 ![Montevideo](/logo-montevideo.png){width=140px}
+
+![FFmpeg](/logo-ffmpeg.png){width=120px}
 
 ![Qualabs](/logo-qualabs.png){width=120px}
 
 ![Shaka Packager](/logo-shaka-packager.png){width=60px}
 
-![Shaka Packager](/logo-hlsjs.png){width=80px}
+![HLS.js](/logo-hlsjs.png){width=80px}
+
+
 
 </div>
 
