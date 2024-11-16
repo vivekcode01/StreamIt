@@ -57,13 +57,13 @@ export const packageCallback: WorkerCallback<
 async function handleStepInitial(job: Job<PackageData>, dir: WorkerDir) {
   const inDir = await dir.createTempDir();
 
+  const meta = await getMetaStruct(job.data.assetId);
+
+  job.log(`Got meta: "${JSON.stringify(meta)}"`);
+
   await syncFromS3(`transcode/${job.data.assetId}`, inDir);
 
   job.log(`Synced folder in ${inDir}`);
-
-  const meta = await getMetaStruct(inDir);
-
-  job.log(`Got meta: "${JSON.stringify(meta)}"`);
 
   // If we do not specify the segmentSize, grab it from the meta file.
   const segmentSize = job.data.segmentSize ?? meta.segmentSize;

@@ -1,6 +1,6 @@
 import { ffmpeg } from "../lib/ffmpeg";
 import { getMetaStruct } from "../lib/file-helpers";
-import { getFromS3, getS3SignedUrl, syncToS3 } from "../lib/s3";
+import { getS3SignedUrl, syncToS3 } from "../lib/s3";
 import type { MetaStruct } from "../lib/file-helpers";
 import type { ThumbnailsData, ThumbnailsResult, WorkerCallback } from "bolt";
 
@@ -8,13 +8,7 @@ export const thumbnailsCallback: WorkerCallback<
   ThumbnailsData,
   ThumbnailsResult
 > = async ({ job, dir, progressTracker }) => {
-  const tmpDir = await dir.createTempDir();
-
-  // TODO: Do not write meta file to local disk but stream it instead.
-  // Do the same for package job.
-  await getFromS3(`transcode/${job.data.assetId}/meta.json`, tmpDir);
-
-  const metaStruct = await getMetaStruct(tmpDir);
+  const metaStruct = await getMetaStruct(job.data.assetId);
   const name = findStreamInputName(metaStruct);
 
   if (!name) {

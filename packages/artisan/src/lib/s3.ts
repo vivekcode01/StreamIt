@@ -1,12 +1,11 @@
 import { createReadStream } from "node:fs";
-import { writeFile } from "node:fs/promises";
 import { GetObjectCommand, S3 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { ConfiguredRetryStrategy } from "@smithy/util-retry";
 import { lookup } from "mime-types";
-import parseFilePath from "parse-filepath";
 import { S3SyncClient } from "s3-sync-client";
+import { assert } from "shared/assert";
 import { env } from "../env";
 import type { PutObjectCommandInput } from "@aws-sdk/client-s3";
 import type { CommandInput } from "s3-sync-client";
@@ -119,13 +118,15 @@ export async function getS3SignedUrl(
   return url;
 }
 
-export async function getFromS3(remoteFilePath: string, localDir: string) {
-  const filePath = parseFilePath(remoteFilePath);
+export async function getTextFromS3(remoteFilePath: string) {
   const command = new GetObjectCommand({
     Bucket: env.S3_BUCKET,
     Key: remoteFilePath,
   });
   const response = await client.send(command);
-  // @ts-expect-error Body is a Readable
-  await writeFile(`${localDir}/${filePath.base}`, response.Body);
+
+  const text = response.Body?.transformToString("utf-8");
+  assert(text, `Failed to get text from S3 "${remoteFilePath}"`);
+
+  return text;
 }
