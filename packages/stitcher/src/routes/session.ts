@@ -1,8 +1,7 @@
 import { Elysia, t } from "elysia";
-import { assert } from "shared/assert";
 import { filterQuery, parseFilterQuery } from "../filters";
 import { decrypt } from "../lib/crypto";
-import { buildProxyUrl } from "../lib/url";
+import { buildProxyMasterUrl, buildProxyUrl } from "../lib/url";
 import {
   formatAssetList,
   formatMasterPlaylist,
@@ -10,9 +9,10 @@ import {
 } from "../playlist";
 import {
   createSession,
-  formatSessionByMasterRequest,
   getSession,
+  processSessionOnMasterReq,
 } from "../session";
+import type { Session } from "../session";
 
 export const session = new Elysia()
   .post(
@@ -20,10 +20,10 @@ export const session = new Elysia()
     async ({ body }) => {
       const session = await createSession(body);
 
-      const url = buildProxyUrl(`${session.id}/master.m3u8`, {
-        params: {
-          ...filterQuery(body.filter),
-        },
+      const url = buildProxyMasterUrl({
+        url: session.url,
+        session,
+        filter: body.filter,
       });
 
       return { url };
@@ -87,25 +87,23 @@ export const session = new Elysia()
     },
   )
   .get(
-    "/out/:sessionId?/master.m3u8",
-    async ({ set, query, params }) => {
-      const sessionId = params.sessionId ?? query.sid;
-      assert(sessionId, "Could not extract sessionId");
+    "/out/master.m3u8",
+    async ({ set, query }) => {
+      let session: Session | undefined;
+      if (query.sid) {
+        session = await getSession(query.sid);
 
-      const session = await getSession(sessionId);
-
-      await formatSessionByMasterRequest(session);
+        await processSessionOnMasterReq(session);
+      }
 
       const filter = parseFilterQuery(query);
 
-      let url: string | undefined;
-      if (query.eurl) {
-        url = decrypt(query.eurl);
-      } else {
-        url = session.url;
-      }
+      const url = decrypt(query.eurl);
 
-      const playlist = await formatMasterPlaylist(url, session, filter);
+      const playlist = await formatMasterPlaylist(url, {
+        session,
+        filter,
+      });
 
       set.headers["content-type"] = "application/x-mpegURL";
 
@@ -115,11 +113,8 @@ export const session = new Elysia()
       detail: {
         hide: true,
       },
-      params: t.Object({
-        sessionId: t.Optional(t.String()),
-      }),
       query: t.Object({
-        eurl: t.Optional(t.String()),
+        eurl: t.String(),
         sid: t.Optional(t.String()),
         "filter.resolution": t.Optional(t.String()),
         "filter.audioLanguage": t.Optional(t.String()),

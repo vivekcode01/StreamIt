@@ -1,6 +1,8 @@
 import * as path from "path";
 import { encrypt } from "./crypto";
 import { env } from "../env";
+import { filterQuery } from "../filters";
+import type { Filter } from "../filters";
 import type { Session } from "../session";
 
 const uuidRegex = /^[a-z,0-9,-]{36,36}$/;
@@ -66,17 +68,27 @@ export function toAssetProtocol(uuid: string) {
 }
 
 export function buildProxyUrl(
-  file: string,
-  options: {
-    url?: string;
-    session?: Session;
-    params?: Record<string, string | undefined>;
-  } = {},
+  path: string,
+  params: Record<string, string | undefined> = {},
 ) {
-  const { url, session, params } = options;
-  return buildUrl(`${env.PUBLIC_STITCHER_ENDPOINT}/out/${file}`, {
-    eurl: url ? encrypt(url) : undefined,
-    sid: session?.id,
-    ...params,
+  return buildUrl(`${env.PUBLIC_STITCHER_ENDPOINT}/${path}`, params);
+}
+
+export function buildProxyMasterUrl(params: {
+  url: string;
+  session?: Session;
+  filter?: Filter;
+}) {
+  return buildProxyUrl("out/master.m3u8", {
+    eurl: encrypt(params.url),
+    sid: params.session?.id,
+    ...filterQuery(params.filter),
+  });
+}
+
+export function buildProxyMediaUrl(params: { url: string; session?: Session }) {
+  return buildProxyUrl("out/playlist.m3u8", {
+    eurl: encrypt(params.url),
+    sid: params.session?.id,
   });
 }

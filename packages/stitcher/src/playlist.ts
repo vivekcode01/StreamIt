@@ -15,12 +15,14 @@ import type { Session } from "./session";
 
 export async function formatMasterPlaylist(
   masterUrl: string,
-  session: Session,
-  filter: Filter,
+  options: {
+    filter: Filter;
+    session?: Session;
+  },
 ) {
   const master = await fetchMasterPlaylist(masterUrl);
 
-  filterMasterPlaylist(master, filter);
+  filterMasterPlaylist(master, options.filter);
 
   for (const variant of master.variants) {
     const url = joinUrl(masterUrl, variant.uri);

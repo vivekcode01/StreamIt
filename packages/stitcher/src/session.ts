@@ -64,7 +64,7 @@ export async function getSession(id: string) {
   return deserializeSession(id, data);
 }
 
-export async function formatSessionByMasterRequest(session: Session) {
+export async function processSessionOnMasterReq(session: Session) {
   // Check if we have a startTime, if so, the master playlist has been requested
   // before and we no longer need it.
   if (session.startTime) {
