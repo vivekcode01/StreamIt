@@ -1,6 +1,6 @@
 import { assert } from "shared/assert";
 import { Group } from "./lib/group";
-import { buildProxyUrl, resolveUri } from "./lib/url";
+import { makeUrl, resolveUri } from "./lib/url";
 import { fetchDuration } from "./playlist";
 import { getAdMediasFromAdBreak } from "./vast";
 import { parseVmap } from "./vmap";
@@ -44,12 +44,9 @@ export function getStaticDateRanges(startTime: DateTime, session: Session) {
   group.forEach((timeOffset, types) => {
     const startDate = startTime.plus({ seconds: timeOffset });
 
-    const assetListUrl = buildProxyUrl(
-      `session/${session.id}/asset-list.json`,
-      {
-        startDate: startDate.toISO(),
-      },
-    );
+    const assetListUrl = makeUrl(`session/${session.id}/asset-list.json`, {
+      startDate: startDate.toISO(),
+    });
 
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",

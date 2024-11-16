@@ -1,11 +1,11 @@
 import { Elysia, t } from "elysia";
-import { parseFilterQuery } from "../filters";
+import { getFilterFromQuery } from "../filters";
 import { decrypt } from "../lib/crypto";
-import { buildProxyMasterUrl } from "../lib/url";
 import {
   formatAssetList,
   formatMasterPlaylist,
   formatMediaPlaylist,
+  makeMasterUrl,
 } from "../playlist";
 import {
   createSession,
@@ -19,10 +19,11 @@ export const session = new Elysia()
     async ({ body }) => {
       const session = await createSession(body);
 
-      const url = buildProxyMasterUrl({
+      const filter = body.filter ?? {};
+      const url = makeMasterUrl({
         url: session.url,
         session,
-        filter: body.filter,
+        filter,
       });
 
       return { url };
@@ -93,7 +94,7 @@ export const session = new Elysia()
 
       await processSessionOnMasterReq(session);
 
-      const filter = parseFilterQuery(query);
+      const filter = getFilterFromQuery(query);
 
       const url = decrypt(query.eurl);
 

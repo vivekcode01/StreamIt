@@ -1,9 +1,5 @@
 import * as path from "path";
-import { encrypt } from "./crypto";
 import { env } from "../env";
-import { filterQuery } from "../filters";
-import type { Filter } from "../filters";
-import type { Session } from "../session";
 
 const uuidRegex = /^[a-z,0-9,-]{36,36}$/;
 
@@ -63,33 +59,9 @@ export function joinUrl(urlFile: string, filePath: string) {
   return `${url.protocol}//${url.host}${path.join(url.pathname, filePath)}`;
 }
 
-export function buildProxyUrl(
+export function makeUrl(
   path: string,
   params: Record<string, string | undefined | null> = {},
 ) {
   return buildUrl(`${env.PUBLIC_STITCHER_ENDPOINT}/${path}`, params);
-}
-
-export function buildProxyMasterUrl(params: {
-  url: string;
-  session?: Session;
-  filter?: Filter;
-}) {
-  return buildProxyUrl("out/master.m3u8", {
-    eurl: encrypt(params.url),
-    sid: params.session?.id,
-    ...filterQuery(params.filter),
-  });
-}
-
-export function buildProxyMediaUrl(params: {
-  type: string;
-  url: string;
-  session?: Session;
-}) {
-  return buildProxyUrl("out/playlist.m3u8", {
-    type: params.type,
-    eurl: encrypt(params.url),
-    sid: params.session?.id,
-  });
 }

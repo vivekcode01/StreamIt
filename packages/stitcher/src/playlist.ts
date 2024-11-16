@@ -1,8 +1,9 @@
 import { DateTime } from "luxon";
 import { assert } from "shared/assert";
-import { filterMasterPlaylist } from "./filters";
+import { filterMasterPlaylist, getQueryParamsFromFilter } from "./filters";
 import { getAssets, getStaticDateRanges } from "./interstitials";
-import { buildProxyMediaUrl, joinUrl, resolveUri } from "./lib/url";
+import { encrypt } from "./lib/crypto";
+import { joinUrl, makeUrl, resolveUri } from "./lib/url";
 import {
   groupRenditions,
   parseMasterPlaylist,
@@ -26,7 +27,7 @@ export async function formatMasterPlaylist(
 
   for (const variant of master.variants) {
     const url = joinUrl(masterUrl, variant.uri);
-    variant.uri = buildProxyMediaUrl({
+    variant.uri = makeMediaUrl({
       url,
       session: options.session,
       type: "VIDEO",
@@ -36,7 +37,7 @@ export async function formatMasterPlaylist(
   const renditions = groupRenditions(master.variants);
   renditions.forEach((rendition) => {
     const url = joinUrl(masterUrl, rendition.uri);
-    rendition.uri = buildProxyMediaUrl({
+    rendition.uri = makeMediaUrl({
       url,
       session: options.session,
       type: rendition.type,
@@ -109,4 +110,28 @@ export async function fetchDuration(uri: string) {
     acc += segment.duration;
     return acc;
   }, 0);
+}
+
+export function makeMasterUrl(params: {
+  url: string;
+  filter: Filter;
+  session?: Session;
+}) {
+  return makeUrl("out/master.m3u8", {
+    eurl: encrypt(params.url),
+    sid: params.session?.id,
+    ...getQueryParamsFromFilter(params.filter),
+  });
+}
+
+function makeMediaUrl(params: {
+  type: string;
+  url: string;
+  session?: Session;
+}) {
+  return makeUrl("out/playlist.m3u8", {
+    type: params.type,
+    eurl: encrypt(params.url),
+    sid: params.session?.id,
+  });
 }

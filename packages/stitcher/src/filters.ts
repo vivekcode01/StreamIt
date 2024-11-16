@@ -78,7 +78,7 @@ export function filterMasterPlaylist(master: MasterPlaylist, filter: Filter) {
   }
 }
 
-export function parseFilterQuery(query: Record<string, string>) {
+export function getFilterFromQuery(query: Record<string, string>) {
   const filter: Filter = {};
   if ("filter.resolution" in query) {
     filter.resolution = query["filter.resolution"];
@@ -89,9 +89,12 @@ export function parseFilterQuery(query: Record<string, string>) {
   return filter;
 }
 
-export function filterQuery(filter?: Filter) {
-  return {
-    "filter.resolution": filter?.resolution,
-    "filter.audioLanguage": filter?.audioLanguage,
-  };
+export function getQueryParamsFromFilter(filter: Filter) {
+  const queryParams: Record<string, string> = {};
+
+  Object.entries(filter).forEach(([key, value]) => {
+    queryParams[`filter.${key}`] = value;
+  });
+
+  return queryParams;
 }
