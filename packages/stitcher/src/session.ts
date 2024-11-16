@@ -1,8 +1,8 @@
 import { randomUUID } from "crypto";
 import { DateTime } from "luxon";
 import { kv } from "./kv";
+import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
-import { fetchVmap } from "./vmap";
 import type { Interstitial, InterstitialType } from "./interstitials";
 
 export interface Session {
@@ -51,7 +51,8 @@ export async function createSession(params: {
 
   // We'll initially store the session for 10 minutes, if it's not been consumed
   // within the timeframe, it's gone.
-  await kv.set(`session:${id}`, serializeSession(session), 60 * 10);
+  const value = JSON.stringify(session);
+  await kv.set(`session:${id}`, value, 60 * 10);
 
   return session;
 }
@@ -61,7 +62,7 @@ export async function getSession(id: string) {
   if (!data) {
     throw new Error(`No session found for id ${id}`);
   }
-  return deserializeSession(id, data);
+  return JSON.parse<Session>(data);
 }
 
 export async function processSessionOnMasterReq(session: Session) {
@@ -74,32 +75,17 @@ export async function processSessionOnMasterReq(session: Session) {
   session.startTime = DateTime.now();
 
   if (session.vmap) {
-    session.vmapResponse = await fetchVmap(session.vmap.url);
+    const USER_AGENT =
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
+    const response = await fetch(session.vmap.url, {
+      headers: {
+        "User-Agent": USER_AGENT,
+      },
+    });
+    session.vmapResponse = await response.text();
     delete session.vmap;
   }
 
-  await kv.set(
-    `session:${session.id}`,
-    serializeSession(session),
-    session.expiry,
-  );
-}
-
-function serializeSession(session: Session) {
-  const copy = {
-    ...session,
-    id: undefined,
-    startTime: session.startTime?.toISO(),
-  };
-  return JSON.stringify(copy);
-}
-
-function deserializeSession(id: string, value: string): Session {
-  const copy = JSON.parse(value);
-  const session = {
-    ...copy,
-    id,
-    startTime: copy.startTime ? DateTime.fromISO(copy.startTime) : undefined,
-  };
-  return session;
+  const value = JSON.stringify(session);
+  await kv.set(`session:${session.id}`, value, session.expiry);
 }

@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { assert } from "shared/assert";
 import { filterMasterPlaylist } from "./filters";
 import { getAssets, getStaticDateRanges } from "./interstitials";
-import { buildProxyUrl, joinUrl, resolveUri } from "./lib/url";
+import { buildProxyMediaUrl, joinUrl, resolveUri } from "./lib/url";
 import {
   groupRenditions,
   parseMasterPlaylist,
@@ -26,24 +26,20 @@ export async function formatMasterPlaylist(
 
   for (const variant of master.variants) {
     const url = joinUrl(masterUrl, variant.uri);
-    variant.uri = buildProxyUrl("playlist.m3u8", {
+    variant.uri = buildProxyMediaUrl({
       url,
-      session,
-      params: {
-        type: "VIDEO",
-      },
+      session: options.session,
+      type: "VIDEO",
     });
   }
 
   const renditions = groupRenditions(master.variants);
   renditions.forEach((rendition) => {
     const url = joinUrl(masterUrl, rendition.uri);
-    rendition.uri = buildProxyUrl("playlist.m3u8", {
+    rendition.uri = buildProxyMediaUrl({
       url,
-      session,
-      params: {
-        type: rendition.type,
-      },
+      session: options.session,
+      type: rendition.type,
     });
   });
 

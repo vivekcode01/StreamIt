@@ -86,8 +86,13 @@ export function buildProxyMasterUrl(params: {
   });
 }
 
-export function buildProxyMediaUrl(params: { url: string; session?: Session }) {
+export function buildProxyMediaUrl(params: {
+  type: string;
+  url: string;
+  session?: Session;
+}) {
   return buildProxyUrl("out/playlist.m3u8", {
+    type: params.type,
     eurl: encrypt(params.url),
     sid: params.session?.id,
   });

@@ -1,9 +1,6 @@
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import * as timeFormat from "hh-mm-ss";
 
-const USER_AGENT =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
-
 export interface VmapSlot {
   vastUrl?: string;
   vastData?: string;
@@ -102,17 +99,6 @@ function getVastData(element: Element) {
   const xmlSerializer = new XMLSerializer();
 
   return xmlSerializer.serializeToString(vastAdData.firstChild);
-}
-
-export async function fetchVmap(url: string) {
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": USER_AGENT,
-    },
-  });
-
-  const text = await response.text();
-  return text;
 }
 
 function childList(node: Element) {

@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
-import { filterQuery, parseFilterQuery } from "../filters";
+import { parseFilterQuery } from "../filters";
 import { decrypt } from "../lib/crypto";
-import { buildProxyMasterUrl, buildProxyUrl } from "../lib/url";
+import { buildProxyMasterUrl } from "../lib/url";
 import {
   formatAssetList,
   formatMasterPlaylist,
@@ -12,7 +12,6 @@ import {
   getSession,
   processSessionOnMasterReq,
 } from "../session";
-import type { Session } from "../session";
 
 export const session = new Elysia()
   .post(
@@ -89,12 +88,9 @@ export const session = new Elysia()
   .get(
     "/out/master.m3u8",
     async ({ set, query }) => {
-      let session: Session | undefined;
-      if (query.sid) {
-        session = await getSession(query.sid);
+      const session = await getSession(query.sid);
 
-        await processSessionOnMasterReq(session);
-      }
+      await processSessionOnMasterReq(session);
 
       const filter = parseFilterQuery(query);
 
@@ -115,7 +111,7 @@ export const session = new Elysia()
       },
       query: t.Object({
         eurl: t.String(),
-        sid: t.Optional(t.String()),
+        sid: t.String(),
         "filter.resolution": t.Optional(t.String()),
         "filter.audioLanguage": t.Optional(t.String()),
       }),

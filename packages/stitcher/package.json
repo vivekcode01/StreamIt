@@ -36,6 +36,7 @@
     "luxon": "^3.5.0",
     "redis": "^4.7.0",
     "shared": "workspace:*",
+    "superjson": "^2.2.1",
     "uuid": "^10.0.0",
     "vast-client": "workspace:*"
   }
