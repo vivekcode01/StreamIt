@@ -46,6 +46,13 @@ export const storage = new Elysia()
             url: await getStorageFileUrl(query.path),
             type: "video",
           };
+        case "png":
+        case "webp":
+          return {
+            mode: "url",
+            url: await getStorageFileUrl(query.path),
+            type: "image",
+          };
         case "m3u8":
         case "json":
         case "vtt":

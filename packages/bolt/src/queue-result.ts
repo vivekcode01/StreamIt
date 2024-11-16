@@ -33,3 +33,7 @@ export interface PackageResult {
 export interface PipelineResult {
   assetId: string;
 }
+
+export interface ThumbnailsResult {
+  assetId: string;
+}

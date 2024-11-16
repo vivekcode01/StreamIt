@@ -1,9 +1,11 @@
 import { createReadStream } from "node:fs";
+import { writeFile } from "node:fs/promises";
 import { GetObjectCommand, S3 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { ConfiguredRetryStrategy } from "@smithy/util-retry";
 import { lookup } from "mime-types";
+import parseFilePath from "parse-filepath";
 import { S3SyncClient } from "s3-sync-client";
 import { env } from "../env";
 import type { PutObjectCommandInput } from "@aws-sdk/client-s3";
@@ -115,4 +117,15 @@ export async function getS3SignedUrl(
     expiresIn,
   });
   return url;
+}
+
+export async function getFromS3(remoteFilePath: string, localDir: string) {
+  const filePath = parseFilePath(remoteFilePath);
+  const command = new GetObjectCommand({
+    Bucket: env.S3_BUCKET,
+    Key: remoteFilePath,
+  });
+  const response = await client.send(command);
+  // @ts-expect-error Body is a Readable
+  await writeFile(`${localDir}/${filePath.base}`, response.Body);
 }

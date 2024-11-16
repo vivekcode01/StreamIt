@@ -71,3 +71,11 @@ export type OutcomeData =
 export const outcomeQueue = new Queue<OutcomeData>("outcome", {
   connection,
 });
+
+export interface ThumbnailsData {
+  assetId: string;
+}
+
+export const thumbnailsQueue = new Queue<ThumbnailsData>("thumbnails", {
+  connection,
+});

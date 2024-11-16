@@ -54,6 +54,9 @@ function Preview({ file }: { file: StorageFile }) {
         />
       );
     }
+    if (file.type === "image") {
+      return <img src={file.url} className="w-full" />;
+    }
   }
   return null;
 }
