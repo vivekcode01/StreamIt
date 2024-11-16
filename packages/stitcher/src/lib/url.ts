@@ -63,10 +63,6 @@ export function joinUrl(urlFile: string, filePath: string) {
   return `${url.protocol}//${url.host}${path.join(url.pathname, filePath)}`;
 }
 
-export function toAssetProtocol(uuid: string) {
-  return `${ASSET_PROTOCOL}:${uuid}`;
-}
-
 export function buildProxyUrl(
   path: string,
   params: Record<string, string | undefined | null> = {},

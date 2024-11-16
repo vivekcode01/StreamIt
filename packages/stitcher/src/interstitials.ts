@@ -1,6 +1,6 @@
 import { assert } from "shared/assert";
 import { Group } from "./lib/group";
-import { buildProxyUrl, resolveUri, toAssetProtocol } from "./lib/url";
+import { buildProxyUrl, resolveUri } from "./lib/url";
 import { fetchDuration } from "./playlist";
 import { getAdMediasFromAdBreak } from "./vast";
 import { parseVmap } from "./vmap";
@@ -119,9 +119,8 @@ async function getAssetsFromVmap(
   const adMedias = await getAdMediasFromAdBreak(adBreak);
 
   for (const adMedia of adMedias) {
-    const uri = toAssetProtocol(adMedia.assetId);
     assets.push({
-      URI: resolveUri(uri),
+      URI: resolveUri(`asset://${adMedia.assetId}`),
       DURATION: adMedia.duration,
       "SPRS-TYPE": "ad",
     });
