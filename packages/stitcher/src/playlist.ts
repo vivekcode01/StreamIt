@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { assert } from "shared/assert";
 import { filterMasterPlaylist } from "./filters";
 import { getAssets, getStaticDateRanges } from "./interstitials";
-import { buildProxyUrl, joinUrl, resolveUri } from "./lib/url";
+import { buildProxyMediaUrl, joinUrl, resolveUri } from "./lib/url";
 import {
   groupRenditions,
   parseMasterPlaylist,
@@ -15,33 +15,31 @@ import type { Session } from "./session";
 
 export async function formatMasterPlaylist(
   masterUrl: string,
-  session: Session,
-  filter: Filter,
+  options: {
+    filter: Filter;
+    session?: Session;
+  },
 ) {
   const master = await fetchMasterPlaylist(masterUrl);
 
-  filterMasterPlaylist(master, filter);
+  filterMasterPlaylist(master, options.filter);
 
   for (const variant of master.variants) {
     const url = joinUrl(masterUrl, variant.uri);
-    variant.uri = buildProxyUrl("playlist.m3u8", {
+    variant.uri = buildProxyMediaUrl({
       url,
-      session,
-      params: {
-        type: "VIDEO",
-      },
+      session: options.session,
+      type: "VIDEO",
     });
   }
 
   const renditions = groupRenditions(master.variants);
   renditions.forEach((rendition) => {
     const url = joinUrl(masterUrl, rendition.uri);
-    rendition.uri = buildProxyUrl("playlist.m3u8", {
+    rendition.uri = buildProxyMediaUrl({
       url,
-      session,
-      params: {
-        type: rendition.type,
-      },
+      session: options.session,
+      type: rendition.type,
     });
   });
 
@@ -53,7 +51,8 @@ export async function formatMediaPlaylist(
   mediaType: string,
   mediaUrl: string,
 ) {
-  assert(session.startTime, "No startTime in session");
+  const { startTime } = session;
+  assert(startTime, "No startTime in session");
 
   const media = await fetchMediaPlaylist(mediaUrl);
 
@@ -63,8 +62,8 @@ export async function formatMediaPlaylist(
   if (type === "video" && media.endlist && media.segments[0]) {
     // When we have an endlist, the playlist is static. We can check whether we need
     // to add dateRanges.
-    media.segments[0].programDateTime = session.startTime;
-    media.dateRanges = getStaticDateRanges(session);
+    media.segments[0].programDateTime = startTime;
+    media.dateRanges = getStaticDateRanges(startTime, session);
   }
 
   media.segments.forEach((segment) => {
@@ -97,7 +96,7 @@ async function fetchMediaPlaylist(url: string) {
   return parseMediaPlaylist(result);
 }
 
-export async function fetchMasterPlaylistDuration(uri: string) {
+export async function fetchDuration(uri: string) {
   const url = resolveUri(uri);
   const variant = (await fetchMasterPlaylist(url))?.variants[0];
 
