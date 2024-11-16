@@ -69,7 +69,7 @@ export function toAssetProtocol(uuid: string) {
 
 export function buildProxyUrl(
   path: string,
-  params: Record<string, string | undefined> = {},
+  params: Record<string, string | undefined | null> = {},
 ) {
   return buildUrl(`${env.PUBLIC_STITCHER_ENDPOINT}/${path}`, params);
 }

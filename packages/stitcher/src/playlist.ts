@@ -51,7 +51,8 @@ export async function formatMediaPlaylist(
   mediaType: string,
   mediaUrl: string,
 ) {
-  assert(session.startTime, "No startTime in session");
+  const { startTime } = session;
+  assert(startTime, "No startTime in session");
 
   const media = await fetchMediaPlaylist(mediaUrl);
 
@@ -61,8 +62,8 @@ export async function formatMediaPlaylist(
   if (type === "video" && media.endlist && media.segments[0]) {
     // When we have an endlist, the playlist is static. We can check whether we need
     // to add dateRanges.
-    media.segments[0].programDateTime = session.startTime;
-    media.dateRanges = getStaticDateRanges(session);
+    media.segments[0].programDateTime = startTime;
+    media.dateRanges = getStaticDateRanges(startTime, session);
   }
 
   media.segments.forEach((segment) => {
@@ -95,7 +96,7 @@ async function fetchMediaPlaylist(url: string) {
   return parseMediaPlaylist(result);
 }
 
-export async function fetchMasterPlaylistDuration(uri: string) {
+export async function fetchDuration(uri: string) {
   const url = resolveUri(uri);
   const variant = (await fetchMasterPlaylist(url))?.variants[0];
 

@@ -41,6 +41,7 @@ export const session = new Elysia()
             t.Object({
               timeOffset: t.Number(),
               uri: t.String(),
+              duration: t.Optional(t.Number()),
               type: t.Optional(t.Union([t.Literal("ad"), t.Literal("bumper")])),
             }),
             {

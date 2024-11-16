@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { DateTime } from "luxon";
 import { kv } from "./kv";
+import { Group } from "./lib/group";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
 import type { Interstitial, InterstitialType } from "./interstitials";
@@ -8,13 +9,16 @@ import type { Interstitial, InterstitialType } from "./interstitials";
 export interface Session {
   id: string;
   url: string;
-  startTime?: DateTime;
   expiry: number;
+
+  startTime?: DateTime;
+
+  // User defined options
   vmap?: {
     url: string;
   };
   vmapResponse?: string;
-  interstitials?: Interstitial[];
+  interstitials?: Group<number, Interstitial>;
 }
 
 export async function createSession(params: {
@@ -25,6 +29,7 @@ export async function createSession(params: {
   interstitials?: {
     timeOffset: number;
     uri: string;
+    duration?: number;
     type?: InterstitialType;
   }[];
   expiry?: number;
@@ -39,14 +44,16 @@ export async function createSession(params: {
     expiry: params.expiry ?? 60 * 60 * 3,
   };
 
-  if (params.interstitials?.length) {
-    session.interstitials = params.interstitials.map((interstitial) => {
-      return {
-        timeOffset: interstitial.timeOffset,
+  if (params.interstitials) {
+    const group = new Group<number, Interstitial>();
+    params.interstitials.forEach((interstitial) => {
+      group.add(interstitial.timeOffset, {
         url: resolveUri(interstitial.uri),
+        duration: interstitial.duration,
         type: interstitial.type,
-      };
+      });
     });
+    session.interstitials = group;
   }
 
   // We'll initially store the session for 10 minutes, if it's not been consumed
