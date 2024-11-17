@@ -1,4 +1,4 @@
-import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/react";
+import { Modal, ModalBody, ModalContent } from "@nextui-org/react";
 import useSWR from "swr";
 import { DataDump } from "./DataDump";
 import { useAuth } from "../auth";
