@@ -2,12 +2,13 @@ import { ffmpeg } from "../lib/ffmpeg";
 import { getMetaStruct } from "../lib/file-helpers";
 import { getS3SignedUrl, syncToS3 } from "../lib/s3";
 import type { MetaStruct } from "../lib/file-helpers";
-import type { ThumbnailsData, ThumbnailsResult, WorkerCallback } from "bolt";
+import type { ImageData, ImageResult, WorkerCallback } from "bolt";
 
-export const thumbnailsCallback: WorkerCallback<
-  ThumbnailsData,
-  ThumbnailsResult
-> = async ({ job, dir, progressTracker }) => {
+export const imageCallback: WorkerCallback<ImageData, ImageResult> = async ({
+  job,
+  dir,
+  progressTracker,
+}) => {
   const metaStruct = await getMetaStruct(job.data.assetId);
   const name = findStreamInputName(metaStruct);
 
@@ -26,17 +27,17 @@ export const thumbnailsCallback: WorkerCallback<
 
   await ffmpeg(
     publicUrl,
-    `${outDir}/0.png`,
+    `${outDir}/thumbnail.png`,
     outputOptions,
     (command) => {
       job.log(command);
     },
     (value) => {
-      progressTracker.set("ffmpeg", value);
+      progressTracker.set("screenshot", value);
     },
   );
 
-  const s3Dir = `thumbnails/${job.data.assetId}`;
+  const s3Dir = `screenshots/${job.data.assetId}`;
   job.log(`Uploading to ${s3Dir}`);
 
   await syncToS3(outDir, s3Dir, {

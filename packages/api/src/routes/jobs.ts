@@ -3,9 +3,9 @@ import {
   addToQueue,
   DEFAULT_PACKAGE_NAME,
   DEFAULT_SEGMENT_SIZE,
+  imageQueue,
   packageQueue,
   pipelineQueue,
-  thumbnailsQueue,
   transcodeQueue,
 } from "bolt";
 import { AudioCodec, VideoCodec } from "bolt";
@@ -170,16 +170,16 @@ export const jobs = new Elysia()
     },
   )
   .post(
-    "/thumbnails",
+    "/image",
     async ({ body }) => {
-      const jobId = await addToQueue(thumbnailsQueue, body, {
+      const jobId = await addToQueue(imageQueue, body, {
         id: body.assetId,
       });
       return { jobId };
     },
     {
       detail: {
-        summary: "Create thumbnails job",
+        summary: "Create image job",
         tags: ["Jobs"],
       },
       body: t.Object({

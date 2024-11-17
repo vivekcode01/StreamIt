@@ -34,6 +34,6 @@ export interface PipelineResult {
   assetId: string;
 }
 
-export interface ThumbnailsResult {
+export interface ImageResult {
   assetId: string;
 }

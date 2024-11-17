@@ -2,10 +2,10 @@ import {
   ffmpegQueue,
   ffprobeQueue,
   flowProducer,
+  imageQueue,
   outcomeQueue,
   packageQueue,
   pipelineQueue,
-  thumbnailsQueue,
   transcodeQueue,
 } from "bolt";
 import { Job as RawJob } from "bullmq";
@@ -20,7 +20,7 @@ const allQueus = [
   ffmpegQueue,
   ffprobeQueue,
   outcomeQueue,
-  thumbnailsQueue,
+  imageQueue,
 ];
 
 function findQueueByName(name: string): Queue {

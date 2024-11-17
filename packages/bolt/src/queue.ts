@@ -72,10 +72,10 @@ export const outcomeQueue = new Queue<OutcomeData>("outcome", {
   connection,
 });
 
-export interface ThumbnailsData {
+export interface ImageData {
   assetId: string;
 }
 
-export const thumbnailsQueue = new Queue<ThumbnailsData>("thumbnails", {
+export const imageQueue = new Queue<ImageData>("image", {
   connection,
 });
