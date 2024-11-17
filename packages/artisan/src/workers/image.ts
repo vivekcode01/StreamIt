@@ -41,7 +41,6 @@ export const imageCallback: WorkerCallback<ImageData, ImageResult> = async ({
   job.log(`Uploading to ${s3Dir}`);
 
   await syncToS3(outDir, s3Dir, {
-    del: true,
     public: true,
   });
 
