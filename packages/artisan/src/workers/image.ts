@@ -1,3 +1,4 @@
+import { addToQueue, outcomeQueue } from "bolt";
 import { ffmpeg } from "../lib/ffmpeg";
 import { getMetaStruct } from "../lib/file-helpers";
 import { getS3SignedUrl, syncToS3 } from "../lib/s3";
@@ -43,6 +44,19 @@ export const imageCallback: WorkerCallback<ImageData, ImageResult> = async ({
   await syncToS3(outDir, s3Dir, {
     public: true,
   });
+
+  await addToQueue(
+    outcomeQueue,
+    {
+      type: "image",
+      data: job.data,
+    },
+    {
+      options: {
+        removeOnComplete: true,
+      },
+    },
+  );
 
   return {
     assetId: job.data.assetId,

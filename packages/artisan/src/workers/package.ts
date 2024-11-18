@@ -3,58 +3,14 @@ import { execa } from "execa";
 import parseFilePath from "parse-filepath";
 import { getBinaryPath, getMetaStruct } from "../lib/file-helpers";
 import { syncFromS3, syncToS3 } from "../lib/s3";
-import type {
-  PackageData,
-  PackageResult,
-  Stream,
-  WorkerCallback,
-  WorkerDir,
-} from "bolt";
-import type { Job } from "bullmq";
+import type { PackageData, PackageResult, Stream, WorkerCallback } from "bolt";
 
 const packagerBin = await getBinaryPath("packager");
 
-enum Step {
-  Initial,
-  Outcome,
-  Finish,
-}
-
 export const packageCallback: WorkerCallback<
-  PackageData & { step?: Step },
+  PackageData,
   PackageResult
 > = async ({ job, dir }) => {
-  let step = job.data.step ?? Step.Initial;
-  while (step !== Step.Finish) {
-    switch (step) {
-      case Step.Initial: {
-        await handleStepInitial(job, dir);
-        await job.updateData({
-          ...job.data,
-          step: Step.Outcome,
-        });
-        step = Step.Outcome;
-        break;
-      }
-
-      case Step.Outcome: {
-        await handleJobOutcome(job);
-        await job.updateData({
-          ...job.data,
-          step: Step.Finish,
-        });
-        step = Step.Finish;
-        break;
-      }
-    }
-  }
-
-  return {
-    assetId: job.data.assetId,
-  };
-};
-
-async function handleStepInitial(job: Job<PackageData>, dir: WorkerDir) {
   const inDir = await dir.createTempDir();
 
   const meta = await getMetaStruct(job.data.assetId);
@@ -143,9 +99,7 @@ async function handleStepInitial(job: Job<PackageData>, dir: WorkerDir) {
     del: true,
     public: true,
   });
-}
 
-async function handleJobOutcome(job: Job<PackageData>) {
   await addToQueue(
     outcomeQueue,
     {
@@ -158,7 +112,11 @@ async function handleJobOutcome(job: Job<PackageData>) {
       },
     },
   );
-}
+
+  return {
+    assetId: job.data.assetId,
+  };
+};
 
 function getGroupId(
   stream:

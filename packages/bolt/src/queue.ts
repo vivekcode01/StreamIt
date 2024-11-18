@@ -66,6 +66,10 @@ export type OutcomeData =
   | {
       type: "package";
       data: PackageData;
+    }
+  | {
+      type: "image";
+      data: ImageData;
     };
 
 export const outcomeQueue = new Queue<OutcomeData>("outcome", {
