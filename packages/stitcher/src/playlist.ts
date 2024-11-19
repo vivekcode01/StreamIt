@@ -60,11 +60,19 @@ export async function formatMediaPlaylist(
   // Type is the actual value of EXT-X-MEDIA, thus it's in capital. Let's lowercase it first.
   const type = mediaType.toLowerCase();
 
-  if (type === "video" && media.endlist && media.segments[0]) {
-    // When we have an endlist, the playlist is static. We can check whether we need
-    // to add dateRanges.
-    media.segments[0].programDateTime = startTime;
-    media.dateRanges = getStaticDateRanges(startTime, session);
+  const firstSegment = media.segments[0];
+
+  if (media.endlist) {
+    assert(firstSegment);
+    firstSegment.programDateTime = startTime;
+  }
+
+  if (type === "video" && media.endlist && firstSegment?.programDateTime) {
+    // If we have an endlist and a PDT, we can add static date ranges based on this.
+    media.dateRanges = getStaticDateRanges(
+      firstSegment.programDateTime,
+      session,
+    );
   }
 
   media.segments.forEach((segment) => {
