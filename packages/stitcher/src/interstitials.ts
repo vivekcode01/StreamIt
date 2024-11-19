@@ -52,7 +52,12 @@ export function getStaticDateRanges(startTime: DateTime, session: Session) {
       RESTRICT: "SKIP,JUMP",
       "RESUME-OFFSET": 0,
       "ASSET-LIST": assetListUrl,
+      CUE: "ONCE",
     };
+
+    if (timeOffset === 0) {
+      clientAttributes["CUE"] += ",PRE";
+    }
 
     if (types.length) {
       clientAttributes["SPRS-TYPES"] = types.join(",");
