@@ -40,7 +40,7 @@ export const sessionRoutes = new Elysia()
         interstitials: t.Optional(
           t.Array(
             t.Object({
-              timeOffset: t.Number(),
+              position: t.Number(),
               uri: t.String(),
               duration: t.Optional(t.Number()),
               type: t.Optional(t.Union([t.Literal("ad"), t.Literal("bumper")])),
@@ -144,7 +144,7 @@ export const sessionRoutes = new Elysia()
       const session = await getSession(query.sid);
 
       const url = decrypt(query.eurl);
-      const playlist = await formatMediaPlaylist(session, query.type, url);
+      const playlist = await formatMediaPlaylist(session, url, query.type);
 
       set.headers["content-type"] = "application/x-mpegURL";
 
@@ -155,9 +155,9 @@ export const sessionRoutes = new Elysia()
         hide: true,
       },
       query: t.Object({
-        type: t.String(),
         eurl: t.String(),
         sid: t.String(),
+        type: t.Optional(t.String()),
       }),
     },
   )
@@ -166,7 +166,7 @@ export const sessionRoutes = new Elysia()
     async ({ params, query }) => {
       const session = await getSession(params.sessionId);
 
-      return await formatAssetList(session, query.startDate);
+      return await formatAssetList(session, query.timeOffset);
     },
     {
       detail: {
@@ -176,7 +176,7 @@ export const sessionRoutes = new Elysia()
         sessionId: t.String(),
       }),
       query: t.Object({
-        startDate: t.String(),
+        timeOffset: t.Optional(t.Number()),
         _HLS_primary_id: t.Optional(t.String()),
       }),
     },

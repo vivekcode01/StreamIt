@@ -1,9 +1,8 @@
-import { assert } from "shared/assert";
 import { Group } from "./lib/group";
 import { makeUrl, resolveUri } from "./lib/url";
 import { fetchDuration } from "./playlist";
-import { getAdMediasFromAdBreak } from "./vast";
-import { parseVmap } from "./vmap";
+import { type AdMedia, getAdMediasFromAdBreak } from "./vast";
+import { toAdBreakTimeOffset } from "./vmap";
 import type { DateRange } from "./parser";
 import type { Session } from "./session";
 import type { VmapResponse } from "./vmap";
@@ -12,6 +11,7 @@ import type { DateTime } from "luxon";
 export type InterstitialType = "ad" | "bumper";
 
 export interface Interstitial {
+  position: number;
   url: string;
   duration?: number;
   type?: InterstitialType;
@@ -24,20 +24,22 @@ interface InterstitialAsset {
 }
 
 export function getStaticDateRanges(startTime: DateTime, session: Session) {
-  const group = new Group<number, InterstitialType | undefined>();
+  const group = new Group<number, InterstitialType>();
 
   if (session.vmapResponse) {
-    const vmap = parseVmap(session.vmapResponse);
-    for (const adBreak of vmap.adBreaks) {
-      group.add(adBreak.timeOffset, "ad");
+    for (const adBreak of session.vmapResponse.adBreaks) {
+      const timeOffset = toAdBreakTimeOffset(adBreak);
+      if (timeOffset !== null) {
+        group.add(timeOffset, "ad");
+      }
     }
   }
 
-  session.interstitials?.forEach((timeOffset, interstitials) => {
-    interstitials.forEach((interstitial) => {
-      group.add(timeOffset, interstitial.type);
-    });
-  });
+  if (session.interstitials) {
+    for (const interstitial of session.interstitials) {
+      group.add(interstitial.position, interstitial.type);
+    }
+  }
 
   const dateRanges: DateRange[] = [];
 
@@ -45,7 +47,7 @@ export function getStaticDateRanges(startTime: DateTime, session: Session) {
     const startDate = startTime.plus({ seconds: timeOffset });
 
     const assetListUrl = makeUrl(`session/${session.id}/asset-list.json`, {
-      startDate: startDate.toISO(),
+      timeOffset,
     });
 
     const clientAttributes: Record<string, number | string> = {
@@ -74,51 +76,34 @@ export function getStaticDateRanges(startTime: DateTime, session: Session) {
   return dateRanges;
 }
 
-export async function getAssets(session: Session, lookupDate: DateTime) {
+export async function getAssets(session: Session, timeOffset?: number) {
   const assets: InterstitialAsset[] = [];
 
-  if (session.startTime) {
+  if (timeOffset !== undefined) {
     if (session.vmapResponse) {
-      const vmap = parseVmap(session.vmapResponse);
-      const vmapAssets = await getAssetsFromVmap(
-        vmap,
-        session.startTime,
-        lookupDate,
-      );
-      assets.push(...vmapAssets);
+      const items = await getAssetsFromVmap(session.vmapResponse, timeOffset);
+      assets.push(...items);
     }
 
     if (session.interstitials) {
-      const groupAssets = await getAssetsFromGroup(
-        session.interstitials,
-        session.startTime,
-        lookupDate,
-      );
-      assets.push(...groupAssets);
+      const items = await getAssetsFromGroup(session.interstitials, timeOffset);
+      assets.push(...items);
     }
   }
 
   return assets;
 }
 
-async function getAssetsFromVmap(
-  vmap: VmapResponse,
-  baseDate: DateTime,
-  lookupDate: DateTime,
-) {
-  const timeOffset = getTimeOffset(baseDate, lookupDate);
-  const adBreak = vmap.adBreaks.find(
-    (adBreak) => adBreak.timeOffset === timeOffset,
+async function getAssetsFromVmap(vmap: VmapResponse, timeOffset: number) {
+  const adBreaks = vmap.adBreaks.filter(
+    (adBreak) => toAdBreakTimeOffset(adBreak) === timeOffset,
   );
-
-  if (!adBreak) {
-    // No adbreak found for the time offset. There's nothing left to do.
-    return [];
-  }
-
   const assets: InterstitialAsset[] = [];
 
-  const adMedias = await getAdMediasFromAdBreak(adBreak);
+  const adMedias: AdMedia[] = [];
+  for (const adBreak of adBreaks) {
+    adMedias.push(...(await getAdMediasFromAdBreak(adBreak)));
+  }
 
   for (const adMedia of adMedias) {
     assets.push({
@@ -132,17 +117,16 @@ async function getAssetsFromVmap(
 }
 
 async function getAssetsFromGroup(
-  interstitialsGroup: Group<number, Interstitial>,
-  baseDate: DateTime,
-  lookupDate: DateTime,
+  interstitials: Interstitial[],
+  timeOffset: number,
 ) {
   const assets: InterstitialAsset[] = [];
 
-  const timeOffset = getTimeOffset(baseDate, lookupDate);
-
-  const interstitials = interstitialsGroup.get(timeOffset);
-
   for (const interstitial of interstitials) {
+    if (interstitial.position !== timeOffset) {
+      continue;
+    }
+
     let duration = interstitial.duration;
     if (!duration) {
       duration = await fetchDuration(interstitial.url);
@@ -156,10 +140,4 @@ async function getAssetsFromGroup(
   }
 
   return assets;
-}
-
-function getTimeOffset(baseDate: DateTime, lookupDate: DateTime) {
-  const { seconds } = lookupDate.diff(baseDate, "seconds").toObject();
-  assert(seconds);
-  return seconds;
 }

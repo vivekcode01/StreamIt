@@ -1,4 +1,3 @@
-import { DateTime } from "luxon";
 import { assert } from "shared/assert";
 import { filterMasterPlaylist, getQueryParamsFromFilter } from "./filters";
 import { getAssets, getStaticDateRanges } from "./interstitials";
@@ -30,7 +29,6 @@ export async function formatMasterPlaylist(
     variant.uri = makeMediaUrl({
       url,
       session: options.session,
-      type: "VIDEO",
     });
   }
 
@@ -49,17 +47,17 @@ export async function formatMasterPlaylist(
 
 export async function formatMediaPlaylist(
   session: Session,
-  mediaType: string,
   mediaUrl: string,
+  renditionType?: string,
 ) {
   const { startTime } = session;
   assert(startTime, "No startTime in session");
 
   const media = await fetchMediaPlaylist(mediaUrl);
 
-  // Type is the actual value of EXT-X-MEDIA, thus it's in capital. Let's lowercase it first.
-  const type = mediaType.toLowerCase();
-
+  // We're in a video playlist when we have no renditionType passed along,
+  // this means it does not belong to EXT-X-MEDIA, or when we explicitly VIDEO.
+  const videoPlaylist = !renditionType || renditionType === "VIDEO";
   const firstSegment = media.segments[0];
 
   if (media.endlist) {
@@ -67,7 +65,7 @@ export async function formatMediaPlaylist(
     firstSegment.programDateTime = startTime;
   }
 
-  if (type === "video" && media.endlist && firstSegment?.programDateTime) {
+  if (videoPlaylist && firstSegment?.programDateTime) {
     // If we have an endlist and a PDT, we can add static date ranges based on this.
     media.dateRanges = getStaticDateRanges(
       firstSegment.programDateTime,
@@ -85,9 +83,8 @@ export async function formatMediaPlaylist(
   return stringifyMediaPlaylist(media);
 }
 
-export async function formatAssetList(session: Session, startDate: string) {
-  const lookupDate = DateTime.fromISO(startDate);
-  const assets = await getAssets(session, lookupDate);
+export async function formatAssetList(session: Session, timeOffset?: number) {
+  const assets = await getAssets(session, timeOffset);
   return {
     ASSETS: assets,
   };
@@ -133,13 +130,13 @@ export function makeMasterUrl(params: {
 }
 
 function makeMediaUrl(params: {
-  type: string;
   url: string;
   session?: Session;
+  type?: string;
 }) {
   return makeUrl("out/playlist.m3u8", {
-    type: params.type,
     eurl: encrypt(params.url),
     sid: params.session?.id,
+    type: params.type,
   });
 }
