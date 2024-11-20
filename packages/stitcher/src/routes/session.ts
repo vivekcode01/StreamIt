@@ -1,7 +1,6 @@
 import { Elysia, t } from "elysia";
-import { getFilterFromQuery, getQueryParamsFromFilter } from "../filters";
+import { getFilterFromQuery } from "../filters";
 import { decrypt } from "../lib/crypto";
-import { makeUrl } from "../lib/url";
 import {
   formatAssetList,
   formatMasterPlaylist,
@@ -22,8 +21,10 @@ export const sessionRoutes = new Elysia()
 
       const filter = body.filter ?? {};
 
-      const url = makeUrl(`session/${session.id}/master.m3u8`, {
-        ...getQueryParamsFromFilter(filter),
+      const url = makeMasterUrl({
+        url: session.url,
+        filter,
+        session,
       });
 
       return { url };
@@ -84,27 +85,6 @@ export const sessionRoutes = new Elysia()
             minimum: 60,
           }),
         ),
-      }),
-    },
-  )
-  .get(
-    "/session/:sessionId/master.m3u8",
-    async ({ params, query, redirect }) => {
-      const session = await getSession(params.sessionId);
-      const url = makeMasterUrl({
-        url: session.url,
-        filter: getFilterFromQuery(query),
-        session,
-      });
-      return redirect(url, 302);
-    },
-    {
-      params: t.Object({
-        sessionId: t.String(),
-      }),
-      query: t.Object({
-        "filter.resolution": t.Optional(t.String()),
-        "filter.audioLanguage": t.Optional(t.String()),
       }),
     },
   )

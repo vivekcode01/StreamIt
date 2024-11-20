@@ -7,8 +7,9 @@ interface KeyValue {
 
 export let kv: KeyValue;
 
-if (env.SERVERLESS) {
+// Map each KV adapter here to their corresponding import.
+if (env.KV === "cloudflare-kv") {
   kv = await import("./cloudflare-kv");
-} else {
+} else if (env.KV === "redis") {
   kv = await import("./redis");
 }
