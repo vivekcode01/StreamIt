@@ -162,9 +162,9 @@ export const sessionRoutes = new Elysia()
     },
   )
   .get(
-    "/session/:sessionId/asset-list.json",
-    async ({ params, query }) => {
-      const session = await getSession(params.sessionId);
+    "/out/asset-list.json",
+    async ({ query }) => {
+      const session = await getSession(query.sid);
 
       return await formatAssetList(session, query.timeOffset);
     },
@@ -172,11 +172,9 @@ export const sessionRoutes = new Elysia()
       detail: {
         hide: true,
       },
-      params: t.Object({
-        sessionId: t.String(),
-      }),
       query: t.Object({
         timeOffset: t.Optional(t.Number()),
+        sid: t.String(),
         _HLS_primary_id: t.Optional(t.String()),
       }),
     },

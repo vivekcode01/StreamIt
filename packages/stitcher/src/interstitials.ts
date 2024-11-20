@@ -1,10 +1,11 @@
 import { Group } from "./lib/group";
 import { makeUrl, resolveUri } from "./lib/url";
 import { fetchDuration } from "./playlist";
-import { type AdMedia, getAdMediasFromAdBreak } from "./vast";
+import { getAdMediasFromAdBreak } from "./vast";
 import { toAdBreakTimeOffset } from "./vmap";
 import type { DateRange } from "./parser";
 import type { Session } from "./session";
+import type { AdMedia } from "./vast";
 import type { VmapResponse } from "./vmap";
 import type { DateTime } from "luxon";
 
@@ -46,8 +47,9 @@ export function getStaticDateRanges(startTime: DateTime, session: Session) {
   group.forEach((timeOffset, types) => {
     const startDate = startTime.plus({ seconds: timeOffset });
 
-    const assetListUrl = makeUrl(`session/${session.id}/asset-list.json`, {
+    const assetListUrl = makeAssetListUrl({
       timeOffset,
+      session,
     });
 
     const clientAttributes: Record<string, number | string> = {
@@ -140,4 +142,11 @@ async function getAssetsFromGroup(
   }
 
   return assets;
+}
+
+function makeAssetListUrl(params: { timeOffset: number; session?: Session }) {
+  return makeUrl("out/asset-list.json", {
+    timeOffset: params.timeOffset,
+    sid: params.session?.id,
+  });
 }
