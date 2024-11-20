@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { DateTime } from "luxon";
-import { kv } from "./kv";
+import { kv } from "./adapters/kv";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
 import { fetchVmap } from "./vmap";
