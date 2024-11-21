@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { getFilterFromQuery } from "../filters";
+import { filterSchema } from "../filters";
 import { decrypt } from "../lib/crypto";
 import {
   formatAssetList,
@@ -95,11 +95,10 @@ export const sessionRoutes = new Elysia()
 
       await processSessionOnMasterReq(session);
 
-      const filter = getFilterFromQuery(query);
       const url = decrypt(query.eurl);
       const playlist = await formatMasterPlaylist(url, {
         session,
-        filter,
+        filter: query.fil,
       });
 
       set.headers["content-type"] = "application/x-mpegURL";
@@ -113,8 +112,7 @@ export const sessionRoutes = new Elysia()
       query: t.Object({
         eurl: t.String(),
         sid: t.String(),
-        "filter.resolution": t.Optional(t.String()),
-        "filter.audioLanguage": t.Optional(t.String()),
+        fil: filterSchema,
       }),
     },
   )

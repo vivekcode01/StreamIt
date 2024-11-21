@@ -1,5 +1,5 @@
 import { assert } from "shared/assert";
-import { filterMasterPlaylist, getQueryParamsFromFilter } from "./filters";
+import { filterMasterPlaylist, formatFilterToQueryParam } from "./filters";
 import { getAssets, getStaticDateRanges } from "./interstitials";
 import { encrypt } from "./lib/crypto";
 import { joinUrl, makeUrl, resolveUri } from "./lib/url";
@@ -125,7 +125,7 @@ export function makeMasterUrl(params: {
   return makeUrl("out/master.m3u8", {
     eurl: encrypt(params.url),
     sid: params.session?.id,
-    ...getQueryParamsFromFilter(params.filter),
+    fil: formatFilterToQueryParam(params.filter),
   });
 }
 
