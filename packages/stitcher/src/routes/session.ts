@@ -42,13 +42,13 @@ export const sessionRoutes = new Elysia()
 
       const filter = body.filter;
 
-      const { url, outUrl } = makeMasterUrl({
+      const { url } = makeMasterUrl({
         url: session.url,
         filter,
         session,
       });
 
-      return { url, outUrl };
+      return { url };
     },
     {
       detail: {
