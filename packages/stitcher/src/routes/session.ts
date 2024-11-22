@@ -101,7 +101,7 @@ export const sessionRoutes = new Elysia()
         filter: query.fil,
       });
 
-      set.headers["content-type"] = "application/x-mpegURL";
+      set.headers["content-type"] = "application/vnd.apple.mpegurl";
 
       return playlist;
     },
@@ -124,7 +124,7 @@ export const sessionRoutes = new Elysia()
       const url = decrypt(query.eurl);
       const playlist = await formatMediaPlaylist(session, url, query.type);
 
-      set.headers["content-type"] = "application/x-mpegURL";
+      set.headers["content-type"] = "application/vnd.apple.mpegurl";
 
       return playlist;
     },
