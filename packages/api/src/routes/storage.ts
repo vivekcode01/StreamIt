@@ -38,7 +38,6 @@ export const storage = new Elysia()
       const ext = query.path.split(".").pop();
       switch (ext) {
         case "m4v":
-        case "m4a":
         case "mp4":
         case "mkv":
           return {
@@ -52,6 +51,13 @@ export const storage = new Elysia()
             mode: "url",
             url: await getStorageFileUrl(query.path),
             type: "image",
+          };
+        case "m4a":
+        case "mp3":
+          return {
+            mode: "url",
+            url: await getStorageFileUrl(query.path),
+            type: "audio",
           };
         case "m3u8":
         case "json":
