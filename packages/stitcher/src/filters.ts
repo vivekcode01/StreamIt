@@ -1,9 +1,24 @@
+import { t } from "elysia";
 import type { MasterPlaylist } from "./parser";
 
 export interface Filter {
   resolution?: string;
   audioLanguage?: string;
 }
+
+export function formatFilterToQueryParam(filter?: Filter) {
+  if (!filter) {
+    return undefined;
+  }
+  return btoa(JSON.stringify(filter));
+}
+
+export const filterSchema = t.Optional(
+  t
+    .Transform(t.String())
+    .Decode((value) => JSON.parse(atob(value)) as Filter)
+    .Encode((filter) => btoa(JSON.stringify(filter))),
+);
 
 function parseRange(input: string): [number, number] | null {
   const match = input.match(/^(\d+)-(\d+)$/);
@@ -76,22 +91,4 @@ export function filterMasterPlaylist(master: MasterPlaylist, filter: Filter) {
       );
     });
   }
-}
-
-export function parseFilterQuery(query: Record<string, string>) {
-  const filter: Filter = {};
-  if ("filter.resolution" in query) {
-    filter.resolution = query["filter.resolution"];
-  }
-  if ("filter.audioLanguage" in query) {
-    filter.audioLanguage = query["filter.audioLanguage"];
-  }
-  return filter;
-}
-
-export function filterQuery(filter?: Filter) {
-  return {
-    "filter.resolution": filter?.resolution,
-    "filter.audioLanguage": filter?.audioLanguage,
-  };
 }

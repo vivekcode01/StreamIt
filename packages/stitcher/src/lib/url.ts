@@ -1,7 +1,5 @@
 import * as path from "path";
-import { encrypt } from "./crypto";
 import { env } from "../env";
-import type { Session } from "../session";
 
 const uuidRegex = /^[a-z,0-9,-]{36,36}$/;
 
@@ -61,22 +59,9 @@ export function joinUrl(urlFile: string, filePath: string) {
   return `${url.protocol}//${url.host}${path.join(url.pathname, filePath)}`;
 }
 
-export function toAssetProtocol(uuid: string) {
-  return `${ASSET_PROTOCOL}:${uuid}`;
-}
-
-export function buildProxyUrl(
-  file: string,
-  options: {
-    url?: string;
-    session?: Session;
-    params?: Record<string, string | undefined>;
-  } = {},
+export function makeUrl(
+  path: string,
+  params: Record<string, string | number | undefined | null> = {},
 ) {
-  const { url, session, params } = options;
-  return buildUrl(`${env.PUBLIC_STITCHER_ENDPOINT}/out/${file}`, {
-    eurl: url ? encrypt(url) : undefined,
-    sid: session?.id,
-    ...params,
-  });
+  return buildUrl(`${env.PUBLIC_STITCHER_ENDPOINT}/${path}`, params);
 }

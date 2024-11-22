@@ -1,7 +1,7 @@
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@matvp91/elysia-swagger";
 import { Elysia } from "elysia";
-import { session } from "./routes/session";
+import { sessionRoutes } from "./routes/session";
 
 interface CreateAppOptions {
   aot: boolean;
@@ -25,4 +25,4 @@ export const createApp = ({ aot }: CreateAppOptions) =>
         },
       }),
     )
-    .use(session);
+    .use(sessionRoutes);

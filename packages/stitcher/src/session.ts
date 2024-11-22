@@ -1,19 +1,21 @@
 import { randomUUID } from "crypto";
 import { DateTime } from "luxon";
-import { kv } from "./kv";
+import { kv } from "./adapters/kv";
+import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
 import { fetchVmap } from "./vmap";
 import type { Interstitial, InterstitialType } from "./interstitials";
-import type { VmapResponse } from "./vmap";
+import type { VmapParams, VmapResponse } from "./vmap";
 
 export interface Session {
   id: string;
   url: string;
-  startTime?: DateTime;
   expiry: number;
-  vmap?: {
-    url: string;
-  };
+
+  startTime?: DateTime;
+
+  // User defined options
+  vmap?: VmapParams;
   vmapResponse?: VmapResponse;
   interstitials?: Interstitial[];
 }
@@ -24,8 +26,9 @@ export async function createSession(params: {
     url: string;
   };
   interstitials?: {
-    timeOffset: number;
+    position: number;
     uri: string;
+    duration?: number;
     type?: InterstitialType;
   }[];
   expiry?: number;
@@ -40,11 +43,12 @@ export async function createSession(params: {
     expiry: params.expiry ?? 60 * 60 * 3,
   };
 
-  if (params.interstitials?.length) {
+  if (params.interstitials) {
     session.interstitials = params.interstitials.map((interstitial) => {
       return {
-        timeOffset: interstitial.timeOffset,
+        position: interstitial.position,
         url: resolveUri(interstitial.uri),
+        duration: interstitial.duration,
         type: interstitial.type,
       };
     });
@@ -52,7 +56,8 @@ export async function createSession(params: {
 
   // We'll initially store the session for 10 minutes, if it's not been consumed
   // within the timeframe, it's gone.
-  await kv.set(`session:${id}`, serializeSession(session), 60 * 10);
+  const value = JSON.stringify(session);
+  await kv.set(`session:${id}`, value, 60 * 10);
 
   return session;
 }
@@ -62,10 +67,10 @@ export async function getSession(id: string) {
   if (!data) {
     throw new Error(`No session found for id ${id}`);
   }
-  return deserializeSession(id, data);
+  return JSON.parse<Session>(data);
 }
 
-export async function formatSessionByMasterRequest(session: Session) {
+export async function processSessionOnMasterReq(session: Session) {
   // Check if we have a startTime, if so, the master playlist has been requested
   // before and we no longer need it.
   if (session.startTime) {
@@ -75,32 +80,10 @@ export async function formatSessionByMasterRequest(session: Session) {
   session.startTime = DateTime.now();
 
   if (session.vmap) {
-    session.vmapResponse = await fetchVmap(session.vmap.url);
+    session.vmapResponse = await fetchVmap(session.vmap);
     delete session.vmap;
   }
 
-  await kv.set(
-    `session:${session.id}`,
-    serializeSession(session),
-    session.expiry,
-  );
-}
-
-function serializeSession(session: Session) {
-  const copy = {
-    ...session,
-    id: undefined,
-    startTime: session.startTime?.toISO(),
-  };
-  return JSON.stringify(copy);
-}
-
-function deserializeSession(id: string, value: string): Session {
-  const copy = JSON.parse(value);
-  const session = {
-    ...copy,
-    id,
-    startTime: copy.startTime ? DateTime.fromISO(copy.startTime) : undefined,
-  };
-  return session;
+  const value = JSON.stringify(session);
+  await kv.set(`session:${session.id}`, value, session.expiry);
 }
