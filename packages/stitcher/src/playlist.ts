@@ -4,40 +4,41 @@ import { getAssets, getStaticDateRanges } from "./interstitials";
 import { encrypt } from "./lib/crypto";
 import { joinUrl, makeUrl, resolveUri } from "./lib/url";
 import {
-  groupRenditions,
   parseMasterPlaylist,
   parseMediaPlaylist,
   stringifyMasterPlaylist,
   stringifyMediaPlaylist,
 } from "./parser";
+import { getRenditions } from "./parser/helpers";
 import type { Filter } from "./filters";
 import type { Session } from "./session";
 
-export async function formatMasterPlaylist(
-  masterUrl: string,
-  options: {
-    filter: Filter;
-    session?: Session;
-  },
-) {
-  const master = await fetchMasterPlaylist(masterUrl);
+export async function formatMasterPlaylist(params: {
+  origUrl: string;
+  sessionId?: string;
+  filter?: Filter;
+}) {
+  const master = await fetchMasterPlaylist(params.origUrl);
 
-  filterMasterPlaylist(master, options.filter);
+  if (params.filter) {
+    filterMasterPlaylist(master, params.filter);
+  }
 
   for (const variant of master.variants) {
-    const url = joinUrl(masterUrl, variant.uri);
+    const url = joinUrl(params.origUrl, variant.uri);
     variant.uri = makeMediaUrl({
       url,
-      session: options.session,
+      sessionId: params.sessionId,
     });
   }
 
-  const renditions = groupRenditions(master.variants);
+  const renditions = getRenditions(master.variants);
+
   renditions.forEach((rendition) => {
-    const url = joinUrl(masterUrl, rendition.uri);
+    const url = joinUrl(params.origUrl, rendition.uri);
     rendition.uri = makeMediaUrl({
       url,
-      session: options.session,
+      sessionId: params.sessionId,
       type: rendition.type,
     });
   });
@@ -46,13 +47,10 @@ export async function formatMasterPlaylist(
 }
 
 export async function formatMediaPlaylist(
-  session: Session,
   mediaUrl: string,
+  session?: Session,
   renditionType?: string,
 ) {
-  const { startTime } = session;
-  assert(startTime, "No startTime in session");
-
   const media = await fetchMediaPlaylist(mediaUrl);
 
   // We're in a video playlist when we have no renditionType passed along,
@@ -60,17 +58,22 @@ export async function formatMediaPlaylist(
   const videoPlaylist = !renditionType || renditionType === "VIDEO";
   const firstSegment = media.segments[0];
 
-  if (media.endlist) {
-    assert(firstSegment);
-    firstSegment.programDateTime = startTime;
-  }
+  if (session) {
+    // If we have a session, we must have a startTime thus meaning we started.
+    assert(session.startTime);
 
-  if (videoPlaylist && firstSegment?.programDateTime) {
-    // If we have an endlist and a PDT, we can add static date ranges based on this.
-    media.dateRanges = getStaticDateRanges(
-      firstSegment.programDateTime,
-      session,
-    );
+    if (media.endlist) {
+      assert(firstSegment);
+      firstSegment.programDateTime = session.startTime;
+    }
+
+    if (videoPlaylist && firstSegment?.programDateTime) {
+      // If we have an endlist and a PDT, we can add static date ranges based on this.
+      media.dateRanges = getStaticDateRanges(
+        firstSegment.programDateTime,
+        session,
+      );
+    }
   }
 
   media.segments.forEach((segment) => {
@@ -119,24 +122,34 @@ export async function fetchDuration(uri: string) {
 
 export function makeMasterUrl(params: {
   url: string;
-  filter: Filter;
+  filter?: Filter;
   session?: Session;
 }) {
-  return makeUrl("out/master.m3u8", {
+  const fil = formatFilterToQueryParam(params.filter);
+
+  const outUrl = makeUrl("out/master.m3u8", {
     eurl: encrypt(params.url),
     sid: params.session?.id,
-    fil: formatFilterToQueryParam(params.filter),
+    fil,
   });
+
+  const url = params.session
+    ? makeUrl(`session/${params.session.id}/master.m3u8`, {
+        fil,
+      })
+    : undefined;
+
+  return { url, outUrl };
 }
 
 function makeMediaUrl(params: {
   url: string;
-  session?: Session;
+  sessionId?: string;
   type?: string;
 }) {
   return makeUrl("out/playlist.m3u8", {
     eurl: encrypt(params.url),
-    sid: params.session?.id,
+    sid: params.sessionId,
     type: params.type,
   });
 }

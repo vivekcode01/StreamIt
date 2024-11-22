@@ -6,14 +6,19 @@ export interface Filter {
   audioLanguage?: string;
 }
 
-export function formatFilterToQueryParam(filter: Filter) {
+export function formatFilterToQueryParam(filter?: Filter) {
+  if (!filter) {
+    return undefined;
+  }
   return btoa(JSON.stringify(filter));
 }
 
-export const filterSchema = t
-  .Transform(t.String())
-  .Decode((value) => JSON.parse(atob(value)) as Filter)
-  .Encode(formatFilterToQueryParam);
+export const filterSchema = t.Optional(
+  t
+    .Transform(t.String())
+    .Decode((value) => JSON.parse(atob(value)) as Filter)
+    .Encode((filter) => btoa(JSON.stringify(filter))),
+);
 
 function parseRange(input: string): [number, number] | null {
   const match = input.match(/^(\d+)-(\d+)$/);
