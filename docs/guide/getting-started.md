@@ -39,7 +39,6 @@ services:
     env_file: config.env
     environment:
       - REDIS_HOST=superstreamer-redis
-      - REDIS_PORT=6379
       - DATABASE_URI=postgresql://postgres:sprs@superstreamer-postgres/sprs
 
   superstreamer-stitcher:
@@ -52,7 +51,6 @@ services:
     env_file: config.env
     environment:
       - REDIS_HOST=superstreamer-redis
-      - REDIS_PORT=6379
       - PUBLIC_API_ENDPOINT=http://localhost:52001
       - PUBLIC_STITCHER_ENDPOINT=http://localhost:52002
 
@@ -64,7 +62,6 @@ services:
     env_file: config.env
     environment:
       - REDIS_HOST=superstreamer-redis
-      - REDIS_PORT=6379
 
   superstreamer-redis:
     image: redis/redis-stack-server:7.2.0-v6
@@ -129,7 +126,21 @@ In a scalable architecture, you probably do not want to run the ffmpeg and trans
 
 If you'd like to change the port of each service individually, provide the `PORT` environment variable for each service individually.
 
+- [AWS S3](https://aws.amazon.com/s3/)
+- [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/)
+
 :::
+
+### Use S3
+
+Superstreamer supports any S3 compliant service. Just add the appropriate credentials to your `config.env` file, and you're all set.
+
+### Use local
+
+If you'd like to emulate or provide S3-like object storage environments locally, we'd suggest you pick one of the following projects:
+
+- [MinIO](https://min.io/)
+- [LocalStack](https://www.localstack.cloud/)
 
 ## Local builds
 

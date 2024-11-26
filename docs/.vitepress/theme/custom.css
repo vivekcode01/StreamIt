@@ -99,12 +99,14 @@
   font-weight: bold;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   display: flex;
   align-items: center;
 }
 
-.image {
+.image-rounded {
   border-radius: 1rem;
   width: 100%;
   border: 2px solid #f1f1f1;

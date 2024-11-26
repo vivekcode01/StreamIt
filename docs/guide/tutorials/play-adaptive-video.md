@@ -30,7 +30,7 @@ If you want fine grained control, take a look at the API docs in order to specif
 
 Once the transcode job is finished, a unique UUID is assigned to this asset. In our example, Superstreamer created the new UUID `56bfe1d6-ce51-4a28-b688-bc64a89508b6`. From now on, if we want to do something with this transcode result, we'll simply provide this id.
 
-<img src="/tutorials/play-adaptive-video-storage-transcode.png" class="image"></img>
+<img src="/tutorials/play-adaptive-video-storage-transcode.png" class="image-rounded"></img>
 
 We'll now see in the Storage tab that Superstreamer produced several video and audio tracks.
 
