@@ -1,11 +1,11 @@
 import { Group } from "./lib/group";
 import { makeUrl, resolveUri } from "./lib/url";
 import { fetchDuration } from "./playlist";
-import { getAdMediasFromAdBreak } from "./vast";
+import { extractPlayableAdSlots } from "./vast";
 import { toAdBreakTimeOffset } from "./vmap";
 import type { DateRange } from "./parser";
 import type { Session } from "./session";
-import type { AdMedia } from "./vast";
+import type { AdSlot } from "./vast";
 import type { VmapResponse } from "./vmap";
 import type { DateTime } from "luxon";
 
@@ -88,7 +88,7 @@ export async function getAssets(session: Session, timeOffset?: number) {
     }
 
     if (session.interstitials) {
-      const items = await getAssetsFromGroup(session.interstitials, timeOffset);
+      const items = await getAssetsFromList(session.interstitials, timeOffset);
       assets.push(...items);
     }
   }
@@ -102,15 +102,16 @@ async function getAssetsFromVmap(vmap: VmapResponse, timeOffset: number) {
   );
   const assets: InterstitialAsset[] = [];
 
-  const adMedias: AdMedia[] = [];
+  const adSlots: AdSlot[] = [];
   for (const adBreak of adBreaks) {
-    adMedias.push(...(await getAdMediasFromAdBreak(adBreak)));
+    const playableAdSlots = await extractPlayableAdSlots(adBreak);
+    adSlots.push(...playableAdSlots);
   }
 
-  for (const adMedia of adMedias) {
+  for (const adSlot of adSlots) {
     assets.push({
-      URI: resolveUri(`asset://${adMedia.assetId}`),
-      DURATION: adMedia.duration,
+      URI: resolveUri(`asset://${adSlot.id}`),
+      DURATION: adSlot.duration,
       "SPRS-TYPE": "ad",
     });
   }
@@ -118,7 +119,7 @@ async function getAssetsFromVmap(vmap: VmapResponse, timeOffset: number) {
   return assets;
 }
 
-async function getAssetsFromGroup(
+async function getAssetsFromList(
   interstitials: Interstitial[],
   timeOffset: number,
 ) {
