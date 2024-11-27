@@ -22,6 +22,7 @@ interface InterstitialAsset {
   URI: string;
   DURATION: number;
   "SPRS-TYPE"?: InterstitialType;
+  "X-AD-CREATIVE-SIGNALING"?: object;
 }
 
 export function getStaticDateRanges(startTime: DateTime, session: Session) {
@@ -78,7 +79,14 @@ export function getStaticDateRanges(startTime: DateTime, session: Session) {
   return dateRanges;
 }
 
-export async function getAssets(session: Session, timeOffset?: number) {
+export async function formatAssetList(session: Session, timeOffset?: number) {
+  const assets = await getAssets(session, timeOffset);
+  return {
+    ASSETS: assets,
+  };
+}
+
+async function getAssets(session: Session, timeOffset?: number) {
   const assets: InterstitialAsset[] = [];
 
   if (timeOffset !== undefined) {
@@ -108,12 +116,15 @@ async function getAssetsFromVmap(vmap: VmapResponse, timeOffset: number) {
     adSlots.push(...playableAdSlots);
   }
 
+  let startTime = 0;
   for (const adSlot of adSlots) {
     assets.push({
       URI: resolveUri(`asset://${adSlot.id}`),
       DURATION: adSlot.duration,
       "SPRS-TYPE": "ad",
+      "X-AD-CREATIVE-SIGNALING": getSlotCreativeSignaling(adSlot, startTime),
     });
+    startTime += adSlot.duration;
   }
 
   return assets;
@@ -150,4 +161,19 @@ function makeAssetListUrl(params: { timeOffset: number; session?: Session }) {
     timeOffset: params.timeOffset,
     sid: params.session?.id,
   });
+}
+
+function getSlotCreativeSignaling(adSlot: AdSlot, startTime: number) {
+  return {
+    version: 2,
+    type: "slot",
+    payload: [
+      {
+        type: "linear",
+        start: startTime,
+        duration: adSlot.duration,
+        tracking: adSlot.impressions,
+      },
+    ],
+  };
 }

@@ -156,5 +156,38 @@ function getAdId(creative: VastCreativeLinear) {
 }
 
 function getImpressions(creative: VastCreativeLinear) {
-  return [];
+  const result: AdSlotImpression[] = [];
+
+  result.push(
+    {
+      type: "quartile",
+      start: creative.duration * 0.25,
+      urls: creative.trackingEvents.firstQuartile,
+    },
+    {
+      type: "quartile",
+      start: creative.duration * 0.5,
+      urls: creative.trackingEvents.midpoint,
+    },
+    {
+      type: "quartile",
+      start: creative.duration * 0.75,
+      urls: creative.trackingEvents.thirdQuartile,
+    },
+    {
+      type: "quartile",
+      start: creative.duration,
+      urls: creative.trackingEvents.complete,
+    },
+  );
+
+  if (creative.trackingEvents["start"]) {
+    result.push({
+      type: "impression",
+      start: 0,
+      urls: creative.trackingEvents["start"],
+    });
+  }
+
+  return result;
 }
