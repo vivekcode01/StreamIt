@@ -38,7 +38,7 @@ To users, video seems simple – it just plays, right? But delivering a smooth e
 
 - Optimize for speed and quality
 
-  Need your videos to load faster and look great? This tool makes sure your videos play quickly and at the best quality, no matter the device. If your viewers have slow internet, the [transcode tool](/guide/process#start-a-transcode) can adjust the video quality so it still plays smoothly without buffering.
+  Need your videos to load faster and look great? This tool makes sure your videos play quickly and at the best quality, no matter the device. If your viewers have slow internet, the [transcode tool](/guide/video-processing#start-a-transcode) step can adjust the video quality so it still plays smoothly without buffering.
 
 - Convert to different formats
 
@@ -50,11 +50,11 @@ To users, video seems simple – it just plays, right? But delivering a smooth e
 
 - Package for streaming
 
-  Ready to show your video online? Our [package tool](/guide/process#create-a-package) packages your video so it streams smoothly to your viewers, no matter where they are.
+  Ready to show your video online? Our [package tool](/guide/video-processing#start-a-package) packages your video so it streams smoothly to your viewers, no matter where they are.
 
 - Create custom playlists
 
-  Want to give your viewers a personalized video experience? Our [stitcher tool](/guide/stitch) lets you change the video order in real-time, so each viewer gets something unique.
+  Want to give your viewers a personalized video experience? Our [stitcher tool](/guide/video-personalization#create-a-session) lets you change the video order in real-time, so each viewer gets something unique.
 
 - Client streaming library
 
