@@ -10,14 +10,20 @@ import {
   stringifyMediaPlaylist,
 } from "./parser";
 import { getRenditions } from "./parser/helpers";
+import { updateSession } from "./session";
+import { fetchVmap } from "./vmap";
 import type { Filter } from "./filters";
 import type { Session } from "./session";
 
 export async function formatMasterPlaylist(params: {
   origUrl: string;
-  sessionId?: string;
+  session?: Session;
   filter?: Filter;
 }) {
+  if (params.session) {
+    updateSessionOnMaster(params.session);
+  }
+
   const master = await fetchMasterPlaylist(params.origUrl);
 
   if (params.filter) {
@@ -28,7 +34,7 @@ export async function formatMasterPlaylist(params: {
     const url = joinUrl(params.origUrl, variant.uri);
     variant.uri = makeMediaUrl({
       url,
-      sessionId: params.sessionId,
+      sessionId: params.session?.id,
     });
   }
 
@@ -38,7 +44,7 @@ export async function formatMasterPlaylist(params: {
     const url = joinUrl(params.origUrl, rendition.uri);
     rendition.uri = makeMediaUrl({
       url,
-      sessionId: params.sessionId,
+      sessionId: params.session?.id,
       type: rendition.type,
     });
   });
@@ -59,20 +65,15 @@ export async function formatMediaPlaylist(
   const firstSegment = media.segments[0];
 
   if (session) {
-    // If we have a session, we must have a startTime thus meaning we started.
-    assert(session.startTime);
+    assert(firstSegment);
 
     if (media.endlist) {
-      assert(firstSegment);
       firstSegment.programDateTime = session.startTime;
     }
 
-    if (videoPlaylist && firstSegment?.programDateTime) {
+    if (videoPlaylist) {
       // If we have an endlist and a PDT, we can add static date ranges based on this.
-      media.dateRanges = getStaticDateRanges(
-        firstSegment.programDateTime,
-        session,
-      );
+      media.dateRanges = getStaticDateRanges(session.startTime, session);
     }
   }
 
@@ -152,4 +153,18 @@ function makeMediaUrl(params: {
     sid: params.sessionId,
     type: params.type,
   });
+}
+
+async function updateSessionOnMaster(session: Session) {
+  let update = false;
+
+  if (session.vmap) {
+    session.vmapResponse = await fetchVmap(session.vmap);
+    delete session.vmap;
+    update = true;
+  }
+
+  if (update) {
+    updateSession(session);
+  }
 }

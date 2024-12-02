@@ -7,32 +7,7 @@ import {
   formatMediaPlaylist,
   makeMasterUrl,
 } from "../playlist";
-import {
-  createSession,
-  getSession,
-  processSessionOnMasterReq,
-} from "../session";
-import type { Filter } from "../filters";
-import type { Session } from "../session";
-
-async function handleMasterPlaylist(
-  origUrl: string,
-  session?: Session,
-  filter?: Filter,
-) {
-  if (session) {
-    await processSessionOnMasterReq(session);
-  }
-
-  const sessionId = session?.id;
-  const playlist = await formatMasterPlaylist({
-    origUrl,
-    sessionId,
-    filter,
-  });
-
-  return playlist;
-}
+import { createSession, getSession } from "../session";
 
 export const sessionRoutes = new Elysia()
   .post(
@@ -114,11 +89,11 @@ export const sessionRoutes = new Elysia()
     async ({ set, params, query }) => {
       const session = await getSession(params.sessionId);
 
-      const playlist = await handleMasterPlaylist(
-        session.url,
+      const playlist = await formatMasterPlaylist({
+        origUrl: session.url,
         session,
-        query.fil,
-      );
+        filter: query.fil,
+      });
 
       set.headers["content-type"] = "application/vnd.apple.mpegurl";
 
@@ -139,7 +114,12 @@ export const sessionRoutes = new Elysia()
       const url = decrypt(query.eurl);
 
       const session = query.sid ? await getSession(query.sid) : undefined;
-      const playlist = await handleMasterPlaylist(url, session, query.fil);
+
+      const playlist = await formatMasterPlaylist({
+        origUrl: url,
+        session,
+        filter: query.fil,
+      });
 
       set.headers["content-type"] = "application/vnd.apple.mpegurl";
 

@@ -3,7 +3,6 @@ import { DateTime } from "luxon";
 import { kv } from "./adapters/kv";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
-import { fetchVmap } from "./vmap";
 import type { Interstitial, InterstitialType } from "./interstitials";
 import type { VmapParams, VmapResponse } from "./vmap";
 
@@ -11,8 +10,10 @@ export interface Session {
   id: string;
   url: string;
   expiry: number;
+  startTime: DateTime;
 
-  startTime?: DateTime;
+  // Media playlist persistency options.
+  programDateTime?: DateTime;
 
   // User defined options
   vmap?: VmapParams;
@@ -39,6 +40,7 @@ export async function createSession(params: {
     id,
     url: resolveUri(params.uri),
     vmap: params.vmap,
+    startTime: DateTime.now(),
     // A session is valid for 3 hours by default.
     expiry: params.expiry ?? 60 * 60 * 3,
   };
@@ -70,20 +72,7 @@ export async function getSession(id: string) {
   return JSON.parse<Session>(data);
 }
 
-export async function processSessionOnMasterReq(session: Session) {
-  // Check if we have a startTime, if so, the master playlist has been requested
-  // before and we no longer need it.
-  if (session.startTime) {
-    return;
-  }
-
-  session.startTime = DateTime.now();
-
-  if (session.vmap) {
-    session.vmapResponse = await fetchVmap(session.vmap);
-    delete session.vmap;
-  }
-
+export async function updateSession(session: Session) {
   const value = JSON.stringify(session);
   await kv.set(`session:${session.id}`, value, session.expiry);
 }
