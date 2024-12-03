@@ -22,7 +22,7 @@ export async function formatMasterPlaylist(params: {
   filter?: Filter;
 }) {
   if (params.session) {
-    updateSessionOnMaster(params.session);
+    await updateSessionOnMaster(params.session);
   }
 
   const master = await fetchMasterPlaylist(params.origUrl);
@@ -166,6 +166,6 @@ async function updateSessionOnMaster(session: Session) {
   }
 
   if (update) {
-    updateSession(session);
+    await updateSession(session);
   }
 }
