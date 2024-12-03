@@ -4,7 +4,6 @@ import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
 import { api } from "./lib/api-client";
 import { resolveUri } from "./lib/url";
-import type { VmapAdBreak } from "./vmap";
 import type { VastAd, VastCreativeLinear, VastResponse } from "vast-client";
 
 const NAMESPACE_UUID_AD = "5b212a7e-d6a2-43bf-bd30-13b1ca1f9b13";
@@ -14,32 +13,25 @@ export interface AdMedia {
   duration: number;
 }
 
-export async function getAdMediasFromAdBreak(
-  adBreak: VmapAdBreak,
-): Promise<AdMedia[]> {
-  const vastResponse = await getVastResponse(adBreak);
-
-  if (!vastResponse) {
-    return [];
-  }
-
-  return await getAdMediasFromVastResponse(vastResponse);
-}
-
-async function getVastResponse(adBreak: VmapAdBreak) {
+export async function getAdMediasFromVastParams(params: {
+  url?: string;
+  data?: string;
+}) {
   const vastClient = new VASTClient();
 
-  if (adBreak.vastUrl) {
-    return await vastClient.get(adBreak.vastUrl);
+  if (params.url) {
+    const vastResponse = await vastClient.get(params.url);
+    return getAdMediasFromVastResponse(vastResponse);
   }
 
-  if (adBreak.vastData) {
+  if (params.data) {
     const parser = new DOMParser();
-    const xml = parser.parseFromString(adBreak.vastData, "text/xml");
-    return await vastClient.parseVAST(xml);
+    const xml = parser.parseFromString(params.data, "text/xml");
+    const vastResponse = await vastClient.parseVAST(xml);
+    return getAdMediasFromVastResponse(vastResponse);
   }
 
-  return null;
+  return [];
 }
 
 async function scheduleForPackage(assetId: string, url: string) {

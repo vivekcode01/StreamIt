@@ -11,7 +11,7 @@ import {
 } from "./parser";
 import { getRenditions } from "./parser/helpers";
 import { updateSession } from "./session";
-import { fetchVmap } from "./vmap";
+import { fetchVmap, toAdBreakTimeOffset } from "./vmap";
 import type { Filter } from "./filters";
 import type { Session } from "./session";
 import type { DateTime } from "luxon";
@@ -157,15 +157,36 @@ function makeMediaUrl(params: {
 }
 
 async function updateSessionOnMaster(session: Session) {
-  let update = false;
+  let storeSession = false;
 
   if (session.vmap) {
-    session.vmapResponse = await fetchVmap(session.vmap);
+    const vmap = await fetchVmap(session.vmap);
     delete session.vmap;
-    update = true;
+
+    if (!session.interstitials) {
+      session.interstitials = [];
+    }
+
+    for (const adBreak of vmap.adBreaks) {
+      const timeOffset = toAdBreakTimeOffset(adBreak);
+
+      if (timeOffset === null) {
+        continue;
+      }
+
+      session.interstitials.push({
+        dateTime: session.startTime.plus({ seconds: timeOffset }),
+        vast: {
+          url: adBreak.vastUrl,
+          data: adBreak.vastData,
+        },
+      });
+    }
+
+    storeSession = true;
   }
 
-  if (update) {
+  if (storeSession) {
     await updateSession(session);
   }
 }

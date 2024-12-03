@@ -4,7 +4,7 @@ import { kv } from "./adapters/kv";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
 import type { Interstitial, InterstitialType } from "./interstitials";
-import type { VmapParams, VmapResponse } from "./vmap";
+import type { VmapParams } from "./vmap";
 
 export interface Session {
   id: string;
@@ -12,12 +12,8 @@ export interface Session {
   expiry: number;
   startTime: DateTime;
 
-  // Media playlist persistency options.
-  programDateTime?: DateTime;
-
   // User defined options
   vmap?: VmapParams;
-  vmapResponse?: VmapResponse;
   interstitials?: Interstitial[];
 }
 
@@ -27,34 +23,45 @@ export async function createSession(params: {
     url: string;
   };
   interstitials?: {
-    timeOffset: number;
-    uri: string;
-    duration?: number;
-    type?: InterstitialType;
+    time: string | number;
+    vast?: {
+      url: string;
+    };
+    assets?: {
+      uri: string;
+      duration?: number;
+      type?: InterstitialType;
+    }[];
   }[];
   expiry?: number;
 }) {
   const id = randomUUID();
+  const startTime = DateTime.now();
 
   const session: Session = {
     id,
     url: resolveUri(params.uri),
     vmap: params.vmap,
-    startTime: DateTime.now(),
+    startTime,
     // A session is valid for 3 hours by default.
     expiry: params.expiry ?? 60 * 60 * 3,
   };
 
-  if (params.interstitials) {
-    session.interstitials = params.interstitials.map((interstitial) => {
-      return {
-        timeOffset: interstitial.timeOffset,
-        url: resolveUri(interstitial.uri),
-        duration: interstitial.duration,
-        type: interstitial.type,
-      };
-    });
-  }
+  session.interstitials = params.interstitials?.map((interstitial) => {
+    return {
+      dateTime:
+        typeof interstitial.time === "string"
+          ? DateTime.fromISO(interstitial.time)
+          : startTime.plus({ seconds: interstitial.time }),
+      vast: interstitial.vast,
+      assets: interstitial.assets?.map((asset) => {
+        return {
+          url: resolveUri(asset.uri),
+          type: asset.type,
+        };
+      }),
+    };
+  });
 
   // We'll initially store the session for 10 minutes, if it's not been consumed
   // within the timeframe, it's gone.
