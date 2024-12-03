@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { CodeEditor } from "../../../components/CodeEditor";
 import { Form } from "../../../components/Form";
-import { Player } from "../../../components/Player";
+import { PlayerTest } from "../../../components/PlayerTest";
 import { useSwaggerSchema } from "../../../hooks/useSwaggerSchema";
 import type { FormRef } from "../../../components/Form";
 
@@ -24,7 +24,7 @@ function RouteComponent() {
   return (
     <div className="h-screen p-8 flex gap-4">
       <div className="grow">
-        <Player url={url} lang="eng" metadata={{}} />
+        <PlayerTest url={url} />
         <Card className="mt-4 p-4">
           <Form
             ref={formRef}

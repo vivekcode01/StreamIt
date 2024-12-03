@@ -5,6 +5,7 @@ export default defineConfig({
   entry: {
     index: "./src/facade/index.ts",
     react: "./src/react/index.tsx",
+    player: "./src/player/index.ts",
   },
   splitting: false,
   sourcemap: true,
