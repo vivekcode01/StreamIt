@@ -1,4 +1,5 @@
 import { Elysia, t } from "elysia";
+import { DateTime } from "luxon";
 import { filterSchema } from "../filters";
 import { decrypt } from "../lib/crypto";
 import {
@@ -165,18 +166,18 @@ export const sessionRoutes = new Elysia()
     "/out/asset-list.json",
     async ({ query }) => {
       const sessionId = query.sid;
-      const timeOffset = query.timeOffset;
+      const dateTime = DateTime.fromISO(query.dt);
 
       const session = await getSession(sessionId);
 
-      return await formatAssetList(session, timeOffset);
+      return await formatAssetList(session, dateTime);
     },
     {
       detail: {
         hide: true,
       },
       query: t.Object({
-        timeOffset: t.Optional(t.Number()),
+        dt: t.String(),
         sid: t.String(),
         _HLS_primary_id: t.Optional(t.String()),
       }),

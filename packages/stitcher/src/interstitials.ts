@@ -1,5 +1,6 @@
+import { DateTime } from "luxon";
 import { Group } from "./lib/group";
-import { makeUrl, resolveUri } from "./lib/url";
+import { makeUrl } from "./lib/url";
 import { fetchDuration } from "./playlist";
 import { getAdMediasFromAdBreak } from "./vast";
 import { toAdBreakTimeOffset } from "./vmap";
@@ -7,7 +8,6 @@ import type { DateRange } from "./parser";
 import type { Session } from "./session";
 import type { AdMedia } from "./vast";
 import type { VmapResponse } from "./vmap";
-import type { DateTime } from "luxon";
 
 export type InterstitialType = "ad" | "bumper";
 
@@ -24,31 +24,39 @@ interface InterstitialAsset {
   "SPRS-TYPE"?: InterstitialType;
 }
 
-export function getStaticDateRanges(startTime: DateTime, session: Session) {
+export function getStaticDateRanges(session: Session) {
   const group = new Group<number, InterstitialType>();
 
   if (session.vmapResponse) {
     for (const adBreak of session.vmapResponse.adBreaks) {
       const timeOffset = toAdBreakTimeOffset(adBreak);
       if (timeOffset !== null) {
-        group.add(timeOffset, "ad");
+        const unixTime = session.startTime
+          .plus({
+            seconds: timeOffset,
+          })
+          .toMillis();
+        group.add(unixTime, "ad");
       }
     }
   }
 
   if (session.interstitials) {
     for (const interstitial of session.interstitials) {
-      group.add(interstitial.timeOffset, interstitial.type);
+      const unixTime = session.startTime
+        .plus({
+          seconds: interstitial.timeOffset,
+        })
+        .toMillis();
+      group.add(unixTime, interstitial.type);
     }
   }
 
-  const dateRanges: DateRange[] = [];
-
-  group.forEach((timeOffset, types) => {
-    const startDate = startTime.plus({ seconds: timeOffset });
+  return group.map<DateRange>((unixTime, types) => {
+    const dateTime = DateTime.fromMillis(unixTime);
 
     const assetListUrl = makeAssetListUrl({
-      timeOffset,
+      dateTime,
       session,
     });
 
@@ -59,7 +67,7 @@ export function getStaticDateRanges(startTime: DateTime, session: Session) {
       CUE: "ONCE",
     };
 
-    if (timeOffset === 0) {
+    if (dateTime.equals(session.startTime)) {
       clientAttributes["CUE"] += ",PRE";
     }
 
@@ -67,30 +75,28 @@ export function getStaticDateRanges(startTime: DateTime, session: Session) {
       clientAttributes["SPRS-TYPES"] = types.join(",");
     }
 
-    dateRanges.push({
+    return {
       classId: "com.apple.hls.interstitial",
-      id: `sdr${timeOffset}`,
-      startDate,
+      id: `${dateTime.toUnixInteger()}`,
+      startDate: dateTime,
       clientAttributes,
-    });
+    };
   });
-
-  return dateRanges;
 }
 
-export async function getAssets(session: Session, timeOffset?: number) {
+export async function getAssets(session: Session, dateTime: DateTime) {
+  const timeOffset = dateTime.diff(session.startTime, "seconds").seconds;
+
   const assets: InterstitialAsset[] = [];
 
-  if (timeOffset !== undefined) {
-    if (session.vmapResponse) {
-      const items = await getAssetsFromVmap(session.vmapResponse, timeOffset);
-      assets.push(...items);
-    }
+  if (session.vmapResponse) {
+    const items = await getAssetsFromVmap(session.vmapResponse, timeOffset);
+    assets.push(...items);
+  }
 
-    if (session.interstitials) {
-      const items = await getAssetsFromGroup(session.interstitials, timeOffset);
-      assets.push(...items);
-    }
+  if (session.interstitials) {
+    const items = await getAssetsFromGroup(session.interstitials, timeOffset);
+    assets.push(...items);
   }
 
   return assets;
@@ -100,16 +106,18 @@ async function getAssetsFromVmap(vmap: VmapResponse, timeOffset: number) {
   const adBreaks = vmap.adBreaks.filter(
     (adBreak) => toAdBreakTimeOffset(adBreak) === timeOffset,
   );
+
   const assets: InterstitialAsset[] = [];
 
   const adMedias: AdMedia[] = [];
   for (const adBreak of adBreaks) {
-    adMedias.push(...(await getAdMediasFromAdBreak(adBreak)));
+    const list = await getAdMediasFromAdBreak(adBreak);
+    adMedias.push(...list);
   }
 
   for (const adMedia of adMedias) {
     assets.push({
-      URI: resolveUri(`asset://${adMedia.assetId}`),
+      URI: adMedia.masterUrl,
       DURATION: adMedia.duration,
       "SPRS-TYPE": "ad",
     });
@@ -144,9 +152,9 @@ async function getAssetsFromGroup(
   return assets;
 }
 
-function makeAssetListUrl(params: { timeOffset: number; session?: Session }) {
+function makeAssetListUrl(params: { dateTime: DateTime; session?: Session }) {
   return makeUrl("out/asset-list.json", {
-    timeOffset: params.timeOffset,
+    dt: params.dateTime.toISO(),
     sid: params.session?.id,
   });
 }

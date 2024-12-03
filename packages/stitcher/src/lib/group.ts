@@ -1,11 +1,11 @@
 export class Group<K = unknown, V = unknown> {
-  constructor(public map = new Map<K, Set<V>>()) {}
+  private map_ = new Map<K, Set<V>>();
 
   add(key: K, value?: V) {
-    let set = this.map.get(key);
+    let set = this.map_.get(key);
     if (!set) {
       set = new Set();
-      this.map.set(key, set);
+      this.map_.set(key, set);
     }
     if (value !== undefined) {
       set.add(value);
@@ -13,14 +13,17 @@ export class Group<K = unknown, V = unknown> {
   }
 
   forEach(callback: (value: K, items: V[]) => void) {
-    Array.from(this.map.entries()).forEach(([key, set]) => {
+    Array.from(this.map_.entries()).forEach(([key, set]) => {
       const items = Array.from(set.values());
       callback(key, items);
     });
   }
 
-  get(key: K) {
-    const set = this.map.get(key);
-    return set ? Array.from(set.values()) : [];
+  map<R>(callback: (value: K, items: V[]) => R) {
+    const result: R[] = [];
+    this.forEach((value, items) => {
+      result.push(callback(value, items));
+    });
+    return result;
   }
 }

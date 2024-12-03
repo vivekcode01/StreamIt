@@ -14,6 +14,7 @@ import { updateSession } from "./session";
 import { fetchVmap } from "./vmap";
 import type { Filter } from "./filters";
 import type { Session } from "./session";
+import type { DateTime } from "luxon";
 
 export async function formatMasterPlaylist(params: {
   origUrl: string;
@@ -73,7 +74,7 @@ export async function formatMediaPlaylist(
 
     if (videoPlaylist) {
       // If we have an endlist and a PDT, we can add static date ranges based on this.
-      media.dateRanges = getStaticDateRanges(session.startTime, session);
+      media.dateRanges = getStaticDateRanges(session);
     }
   }
 
@@ -87,8 +88,8 @@ export async function formatMediaPlaylist(
   return stringifyMediaPlaylist(media);
 }
 
-export async function formatAssetList(session: Session, timeOffset?: number) {
-  const assets = await getAssets(session, timeOffset);
+export async function formatAssetList(session: Session, dateTime: DateTime) {
+  const assets = await getAssets(session, dateTime);
   return {
     ASSETS: assets,
   };
