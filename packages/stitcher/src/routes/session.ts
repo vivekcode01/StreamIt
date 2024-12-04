@@ -3,10 +3,10 @@ import { DateTime } from "luxon";
 import { filterSchema } from "../filters";
 import { decrypt } from "../lib/crypto";
 import {
+  createMasterUrl,
   formatAssetList,
   formatMasterPlaylist,
   formatMediaPlaylist,
-  makeMasterUrl,
 } from "../playlist";
 import { createSession, getSession } from "../session";
 
@@ -18,7 +18,7 @@ export const sessionRoutes = new Elysia()
 
       const filter = body.filter;
 
-      const { url } = makeMasterUrl({
+      const { url } = createMasterUrl({
         url: session.url,
         filter,
         session,

@@ -2,17 +2,18 @@ import { assert } from "shared/assert";
 import { filterMasterPlaylist, formatFilterToQueryParam } from "./filters";
 import { getAssets, getStaticDateRanges } from "./interstitials";
 import { encrypt } from "./lib/crypto";
-import { joinUrl, makeUrl, resolveUri } from "./lib/url";
+import { createUrl, joinUrl, resolveUri } from "./lib/url";
 import {
+  getRenditions,
   parseMasterPlaylist,
   parseMediaPlaylist,
   stringifyMasterPlaylist,
   stringifyMediaPlaylist,
 } from "./parser";
-import { getRenditions } from "./parser/helpers";
 import { updateSession } from "./session";
 import { fetchVmap, toAdBreakTimeOffset } from "./vmap";
 import type { Filter } from "./filters";
+import type { RenditionType } from "./parser";
 import type { Session } from "./session";
 import type { DateTime } from "luxon";
 
@@ -33,7 +34,7 @@ export async function formatMasterPlaylist(params: {
 
   for (const variant of master.variants) {
     const url = joinUrl(params.origUrl, variant.uri);
-    variant.uri = makeMediaUrl({
+    variant.uri = createMediaUrl({
       url,
       sessionId: params.session?.id,
     });
@@ -43,7 +44,7 @@ export async function formatMasterPlaylist(params: {
 
   renditions.forEach((rendition) => {
     const url = joinUrl(params.origUrl, rendition.uri);
-    rendition.uri = makeMediaUrl({
+    rendition.uri = createMediaUrl({
       url,
       sessionId: params.session?.id,
       type: rendition.type,
@@ -61,8 +62,8 @@ export async function formatMediaPlaylist(
   const media = await fetchMediaPlaylist(mediaUrl);
 
   // We're in a video playlist when we have no renditionType passed along,
-  // this means it does not belong to EXT-X-MEDIA, or when we explicitly VIDEO.
-  const videoPlaylist = !renditionType || renditionType === "VIDEO";
+  // this means it does not belong to EXT-X-MEDIA.
+  const videoPlaylist = renditionType === undefined;
   const firstSegment = media.segments[0];
 
   if (session) {
@@ -123,21 +124,21 @@ export async function fetchDuration(uri: string) {
   }, 0);
 }
 
-export function makeMasterUrl(params: {
+export function createMasterUrl(params: {
   url: string;
   filter?: Filter;
   session?: Session;
 }) {
   const fil = formatFilterToQueryParam(params.filter);
 
-  const outUrl = makeUrl("out/master.m3u8", {
+  const outUrl = createUrl("out/master.m3u8", {
     eurl: encrypt(params.url),
     sid: params.session?.id,
     fil,
   });
 
   const url = params.session
-    ? makeUrl(`session/${params.session.id}/master.m3u8`, {
+    ? createUrl(`session/${params.session.id}/master.m3u8`, {
         fil,
       })
     : undefined;
@@ -145,12 +146,12 @@ export function makeMasterUrl(params: {
   return { url, outUrl };
 }
 
-function makeMediaUrl(params: {
+function createMediaUrl(params: {
   url: string;
   sessionId?: string;
-  type?: string;
+  type?: RenditionType;
 }) {
-  return makeUrl("out/playlist.m3u8", {
+  return createUrl("out/playlist.m3u8", {
     eurl: encrypt(params.url),
     sid: params.sessionId,
     type: params.type,

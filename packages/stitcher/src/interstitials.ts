@@ -1,4 +1,4 @@
-import { makeUrl } from "./lib/url";
+import { createUrl } from "./lib/url";
 import { fetchDuration } from "./playlist";
 import { getAdMediasFromVast } from "./vast";
 import type { Session } from "./session";
@@ -31,7 +31,7 @@ export function getStaticDateRanges(session: Session, isLive: boolean) {
   }
 
   return group.map((item) => {
-    const assetListUrl = makeAssetListUrl({
+    const assetListUrl = createAssetListUrl({
       dateTime: item.dateTime,
       session,
     });
@@ -98,8 +98,8 @@ export async function getAssets(session: Session, dateTime: DateTime) {
   return assets;
 }
 
-function makeAssetListUrl(params: { dateTime: DateTime; session?: Session }) {
-  return makeUrl("out/asset-list.json", {
+function createAssetListUrl(params: { dateTime: DateTime; session?: Session }) {
+  return createUrl("out/asset-list.json", {
     dt: params.dateTime.toISO(),
     sid: params.session?.id,
   });
