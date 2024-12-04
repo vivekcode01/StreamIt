@@ -12,6 +12,4 @@ if (env.KV === "cloudflare-kv") {
   kv = await import("./cloudflare-kv");
 } else if (env.KV === "redis") {
   kv = await import("./redis");
-} else if (env.KV === "memory") {
-  kv = await import("./memory");
 }
