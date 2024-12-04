@@ -74,7 +74,8 @@ export async function formatMediaPlaylist(
 
     if (videoPlaylist) {
       // If we have an endlist and a PDT, we can add static date ranges based on this.
-      media.dateRanges = getStaticDateRanges(session);
+      const isLive = !media.endlist;
+      media.dateRanges = getStaticDateRanges(session, isLive);
     }
   }
 

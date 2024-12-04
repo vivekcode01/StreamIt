@@ -5,7 +5,7 @@ import type { Session } from "./session";
 import type { Interstitial, InterstitialAssetType } from "./types";
 import type { DateTime } from "luxon";
 
-export function getStaticDateRanges(session: Session) {
+export function getStaticDateRanges(session: Session, isLive: boolean) {
   const group: {
     dateTime: DateTime;
     types: InterstitialAssetType[];
@@ -38,12 +38,17 @@ export function getStaticDateRanges(session: Session) {
 
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",
-      "RESUME-OFFSET": 0,
       "ASSET-LIST": assetListUrl,
       CUE: "ONCE",
     };
 
-    if (item.dateTime.equals(session.startTime)) {
+    const isPreroll = item.dateTime.equals(session.startTime);
+
+    if (!isLive || isPreroll) {
+      clientAttributes["RESUME-OFFSET"] = 0;
+    }
+
+    if (isPreroll) {
       clientAttributes["CUE"] += ",PRE";
     }
 
