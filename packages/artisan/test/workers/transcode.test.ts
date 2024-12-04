@@ -1,5 +1,5 @@
 import "bun";
-import { AudioCodec, VideoCodec } from "bolt";
+import { AudioCodec, VideoCodec } from "bolt/types";
 import { describe, expect, test } from "bun:test";
 import {
   getMatches,

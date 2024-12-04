@@ -6,10 +6,10 @@ import { syncFromS3, syncToS3 } from "../lib/s3";
 import type {
   PackageData,
   PackageResult,
-  Stream,
   WorkerCallback,
   WorkerDir,
 } from "bolt";
+import type { Stream } from "bolt/types";
 import type { Job } from "bullmq";
 
 const packagerBin = await getBinaryPath("packager");

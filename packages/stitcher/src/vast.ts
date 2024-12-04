@@ -1,5 +1,5 @@
 import { DOMParser } from "@xmldom/xmldom";
-import { AudioCodec, VideoCodec } from "bolt";
+import { AudioCodec, VideoCodec } from "bolt/types";
 import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
 import { api } from "./lib/api-client";
