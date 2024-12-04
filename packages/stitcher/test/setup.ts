@@ -5,8 +5,9 @@ setSystemTime(new Date(2021, 4, 2, 10, 12, 5, 250));
 
 process.env = {
   TZ: "UTC",
+  KV: "memory",
   PUBLIC_S3_ENDPOINT: "s3-endpoint",
   PUBLIC_STITCHER_ENDPOINT: "stitcher-endpoint",
   PUBLIC_API_ENDPOINT: "api-endpoint",
-  KV: "memory",
+  SUPER_SECRET: "secret",
 };
