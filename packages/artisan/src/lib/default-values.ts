@@ -1,4 +1,4 @@
-import { AudioCodec, VideoCodec } from "bolt/types";
+import { AudioCodec, VideoCodec } from "bolt";
 
 const DEFAULT_AUDIO_BITRATE: Record<number, Record<AudioCodec, number>> = {
   2: {

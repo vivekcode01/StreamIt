@@ -17,11 +17,14 @@ import type { MetaStruct } from "../lib/file-helpers";
 import type {
   FfmpegResult,
   FfprobeResult,
+  Input,
+  PartialInput,
+  PartialStream,
+  Stream,
   TranscodeData,
   TranscodeResult,
   WorkerCallback,
 } from "bolt";
-import type { Input, PartialInput, PartialStream, Stream } from "bolt/types";
 import type { Job } from "bullmq";
 
 enum Step {

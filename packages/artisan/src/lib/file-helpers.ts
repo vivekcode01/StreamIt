@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import { getS3SignedUrl } from "./s3";
-import type { PartialInput, Stream } from "bolt/types";
+import type { PartialInput, Stream } from "bolt";
 
 export async function getBinaryPath(name: string) {
   const direct = `${process.cwd()}/bin/${name}`;
