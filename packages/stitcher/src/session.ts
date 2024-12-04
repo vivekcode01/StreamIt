@@ -3,12 +3,7 @@ import { DateTime } from "luxon";
 import { kv } from "./adapters/kv";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
-import type {
-  Interstitial,
-  InterstitialAsset,
-  InterstitialType,
-  InterstitialVastData,
-} from "./interstitials";
+import type { Interstitial, InterstitialAssetType } from "./types";
 import type { VmapParams } from "./vmap";
 
 export interface Session {
@@ -29,14 +24,9 @@ export async function createSession(params: {
   };
   interstitials?: {
     time: string | number;
-    vast?: {
-      url: string;
-    };
-    assets?: {
-      uri: string;
-      duration?: number;
-      type?: InterstitialType;
-    }[];
+    vastUrl?: string;
+    uri?: string;
+    type?: InterstitialAssetType;
   }[];
   expiry?: number;
 }) {
@@ -55,31 +45,27 @@ export async function createSession(params: {
 
   if (params.interstitials) {
     params.interstitials.forEach((interstitial) => {
-      const assets: InterstitialAsset[] = [];
-      if (interstitial.assets) {
-        for (const asset of interstitial.assets) {
-          assets.push({
-            url: resolveUri(asset.uri),
-            type: asset.type,
-          });
-        }
-      }
-
-      const vastData: InterstitialVastData[] = [];
-      if (interstitial.vast) {
-        vastData.push({ type: "url", url: interstitial.vast.url });
-      }
-
       const dateTime =
         typeof interstitial.time === "string"
           ? DateTime.fromISO(interstitial.time)
           : startTime.plus({ seconds: interstitial.time });
 
-      session.interstitials.push({
-        dateTime,
-        vastData,
-        assets,
-      });
+      if (interstitial.uri) {
+        session.interstitials.push({
+          dateTime,
+          asset: {
+            url: resolveUri(interstitial.uri),
+            type: interstitial.type,
+          },
+        });
+      }
+
+      if (interstitial.vastUrl) {
+        session.interstitials.push({
+          dateTime,
+          vastUrl: interstitial.vastUrl,
+        });
+      }
     });
   }
 

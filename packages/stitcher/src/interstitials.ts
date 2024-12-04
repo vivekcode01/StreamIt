@@ -1,52 +1,38 @@
 import { makeUrl } from "./lib/url";
 import { fetchDuration } from "./playlist";
-import { getAdMediasFromVastData } from "./vast";
+import { getAdMediasFromVast } from "./vast";
 import type { Session } from "./session";
+import type { Interstitial, InterstitialAssetType } from "./types";
 import type { DateTime } from "luxon";
 
-export type InterstitialType = "ad" | "bumper";
-
-export interface Interstitial {
-  dateTime: DateTime;
-  vastData: InterstitialVastData[];
-  assets: InterstitialAsset[];
-}
-
-export type InterstitialVastData =
-  | {
-      type: "url";
-      url: string;
-    }
-  | {
-      type: "data";
-      data: string;
-    };
-
-export interface InterstitialAsset {
-  url: string;
-  type?: InterstitialType;
-}
-
-interface ResultAsset {
-  URI: string;
-  DURATION: number;
-  "SPRS-TYPE"?: InterstitialType;
-}
-
 export function getStaticDateRanges(session: Session) {
-  if (!session.interstitials) {
-    return [];
+  const group: {
+    dateTime: DateTime;
+    types: InterstitialAssetType[];
+  }[] = [];
+
+  for (const interstitial of session.interstitials) {
+    let item = group.find((item) =>
+      item.dateTime.equals(interstitial.dateTime),
+    );
+
+    if (!item) {
+      item = {
+        dateTime: interstitial.dateTime,
+        types: [],
+      };
+      group.push(item);
+    }
+
+    const type = getInterstitialType(interstitial);
+    if (type && !item.types.includes(type)) {
+      item.types.push(type);
+    }
   }
 
-  return session.interstitials.map((interstitial) => {
-    const types = interstitial.assets?.map((asset) => asset.type) ?? [];
-
-    if (interstitial.vastData && !types.includes("ad")) {
-      types.push("ad");
-    }
-
+  return group.map((item) => {
     const assetListUrl = makeAssetListUrl({
-      dateTime: interstitial.dateTime,
+      dateTime: item.dateTime,
       session,
     });
 
@@ -57,36 +43,36 @@ export function getStaticDateRanges(session: Session) {
       CUE: "ONCE",
     };
 
-    if (interstitial.dateTime.equals(session.startTime)) {
+    if (item.dateTime.equals(session.startTime)) {
       clientAttributes["CUE"] += ",PRE";
     }
 
-    if (types.length) {
-      clientAttributes["SPRS-TYPES"] = types.join(",");
+    if (item.types.length) {
+      clientAttributes["SPRS-TYPES"] = item.types.join(",");
     }
 
     return {
       classId: "com.apple.hls.interstitial",
-      id: `${interstitial.dateTime.toUnixInteger()}`,
-      startDate: interstitial.dateTime,
+      id: `${item.dateTime.toUnixInteger()}`,
+      startDate: item.dateTime,
       clientAttributes,
     };
   });
 }
 
 export async function getAssets(session: Session, dateTime: DateTime) {
-  const assets: ResultAsset[] = [];
+  const assets: {
+    URI: string;
+    DURATION: number;
+    "SPRS-TYPE"?: InterstitialAssetType;
+  }[] = [];
 
-  const interstitial = session.interstitials?.find((interstitial) =>
+  const interstitials = session.interstitials.filter((interstitial) =>
     interstitial.dateTime.equals(dateTime),
   );
 
-  if (!interstitial) {
-    return [];
-  }
-
-  if (interstitial.vastData) {
-    const adMedias = await getAdMediasFromVastData(interstitial.vastData);
+  for (const interstitial of interstitials) {
+    const adMedias = await getAdMediasFromVast(interstitial);
     for (const adMedia of adMedias) {
       assets.push({
         URI: adMedia.masterUrl,
@@ -94,14 +80,12 @@ export async function getAssets(session: Session, dateTime: DateTime) {
         "SPRS-TYPE": "ad",
       });
     }
-  }
 
-  if (interstitial.assets) {
-    for (const asset of interstitial.assets) {
+    if (interstitial.asset) {
       assets.push({
-        URI: asset.url,
-        DURATION: await fetchDuration(asset.url),
-        "SPRS-TYPE": asset.type,
+        URI: interstitial.asset.url,
+        DURATION: await fetchDuration(interstitial.asset.url),
+        "SPRS-TYPE": interstitial.asset.type,
       });
     }
   }
@@ -114,4 +98,13 @@ function makeAssetListUrl(params: { dateTime: DateTime; session?: Session }) {
     dt: params.dateTime.toISO(),
     sid: params.session?.id,
   });
+}
+
+function getInterstitialType(
+  interstitial: Interstitial,
+): InterstitialAssetType | undefined {
+  if (interstitial.vastData || interstitial.vastUrl) {
+    return "ad";
+  }
+  return interstitial.asset?.type;
 }

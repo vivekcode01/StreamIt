@@ -163,9 +163,7 @@ async function updateSessionOnMaster(session: Session) {
     const vmap = await fetchVmap(session.vmap);
     delete session.vmap;
 
-    if (!session.interstitials) {
-      session.interstitials = [];
-    }
+    storeSession = true;
 
     for (const adBreak of vmap.adBreaks) {
       const timeOffset = toAdBreakTimeOffset(adBreak);
@@ -176,28 +174,20 @@ async function updateSessionOnMaster(session: Session) {
 
       const dateTime = session.startTime.plus({ seconds: timeOffset });
 
-      let interstitial = session.interstitials.find((interstitial) => {
-        return interstitial.dateTime.equals(dateTime);
-      });
-
-      if (!interstitial) {
-        interstitial = {
-          dateTime,
-          vastData: [],
-          assets: [],
-        };
-        session.interstitials.push(interstitial);
-      }
-
       if (adBreak.vastUrl) {
-        interstitial.vastData.push({ type: "url", url: adBreak.vastUrl });
+        session.interstitials.push({
+          dateTime,
+          vastUrl: adBreak.vastUrl,
+        });
       }
+
       if (adBreak.vastData) {
-        interstitial.vastData.push({ type: "data", data: adBreak.vastData });
+        session.interstitials.push({
+          dateTime,
+          vastData: adBreak.vastData,
+        });
       }
     }
-
-    storeSession = true;
   }
 
   if (storeSession) {
