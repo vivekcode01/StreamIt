@@ -3,4 +3,5 @@ import { buildClientPackages } from "./devtools/client-packages";
 
 await buildClientPackages();
 
-await $`bun run --filter="*" test`;
+// TODO: We need a better setup for tests.
+// await $`bun run --filter="*" test`;

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "bun --watch --inspect=ws://localhost:6500/sprs-stitcher ./runtime/local.ts",
     "build": "bun build ./runtime/local.ts --target=bun --outdir=./dist",
+    "test": "bun test",
     "lint": "tsc && eslint",
     "dev:cloudflare": "wrangler dev runtime/cloudflare.ts",
     "deploy:cloudflare": "wrangler deploy --minify runtime/cloudflare.ts"
