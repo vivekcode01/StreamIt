@@ -4,6 +4,7 @@ import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
 import { api } from "./lib/api-client";
 import { resolveUri } from "./lib/url";
+import type { InterstitialVastData } from "./interstitials";
 import type { VastAd, VastCreativeLinear, VastResponse } from "vast-client";
 
 const NAMESPACE_UUID_AD = "5b212a7e-d6a2-43bf-bd30-13b1ca1f9b13";
@@ -13,25 +14,30 @@ export interface AdMedia {
   duration: number;
 }
 
-export async function getAdMediasFromVastParams(params: {
-  url?: string;
-  data?: string;
-}) {
+export async function getAdMediasFromVastData(
+  vastData: InterstitialVastData[],
+) {
   const vastClient = new VASTClient();
 
-  if (params.url) {
-    const vastResponse = await vastClient.get(params.url);
-    return getAdMediasFromVastResponse(vastResponse);
+  const adMedias: AdMedia[] = [];
+
+  for (const data of vastData) {
+    if (data.type === "url") {
+      const vastResponse = await vastClient.get(data.url);
+      const items = await getAdMediasFromVastResponse(vastResponse);
+      adMedias.push(...items);
+    }
+
+    if (data.type === "data") {
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(data.data, "text/xml");
+      const vastResponse = await vastClient.parseVAST(xml);
+      const items = await getAdMediasFromVastResponse(vastResponse);
+      adMedias.push(...items);
+    }
   }
 
-  if (params.data) {
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(params.data, "text/xml");
-    const vastResponse = await vastClient.parseVAST(xml);
-    return getAdMediasFromVastResponse(vastResponse);
-  }
-
-  return [];
+  return adMedias;
 }
 
 async function scheduleForPackage(assetId: string, url: string) {

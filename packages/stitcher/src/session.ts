@@ -3,7 +3,12 @@ import { DateTime } from "luxon";
 import { kv } from "./adapters/kv";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
-import type { Interstitial, InterstitialType } from "./interstitials";
+import type {
+  Interstitial,
+  InterstitialAsset,
+  InterstitialType,
+  InterstitialVastData,
+} from "./interstitials";
 import type { VmapParams } from "./vmap";
 
 export interface Session {
@@ -14,7 +19,7 @@ export interface Session {
 
   // User defined options
   vmap?: VmapParams;
-  interstitials?: Interstitial[];
+  interstitials: Interstitial[];
 }
 
 export async function createSession(params: {
@@ -43,25 +48,40 @@ export async function createSession(params: {
     url: resolveUri(params.uri),
     vmap: params.vmap,
     startTime,
+    interstitials: [],
     // A session is valid for 3 hours by default.
     expiry: params.expiry ?? 60 * 60 * 3,
   };
 
-  session.interstitials = params.interstitials?.map((interstitial) => {
-    return {
-      dateTime:
+  if (params.interstitials) {
+    params.interstitials.forEach((interstitial) => {
+      const assets: InterstitialAsset[] = [];
+      if (interstitial.assets) {
+        for (const asset of interstitial.assets) {
+          assets.push({
+            url: resolveUri(asset.uri),
+            type: asset.type,
+          });
+        }
+      }
+
+      const vastData: InterstitialVastData[] = [];
+      if (interstitial.vast) {
+        vastData.push({ type: "url", url: interstitial.vast.url });
+      }
+
+      const dateTime =
         typeof interstitial.time === "string"
           ? DateTime.fromISO(interstitial.time)
-          : startTime.plus({ seconds: interstitial.time }),
-      vast: interstitial.vast,
-      assets: interstitial.assets?.map((asset) => {
-        return {
-          url: resolveUri(asset.uri),
-          type: asset.type,
-        };
-      }),
-    };
-  });
+          : startTime.plus({ seconds: interstitial.time });
+
+      session.interstitials.push({
+        dateTime,
+        vastData,
+        assets,
+      });
+    });
+  }
 
   // We'll initially store the session for 10 minutes, if it's not been consumed
   // within the timeframe, it's gone.

@@ -1,6 +1,6 @@
 import { makeUrl } from "./lib/url";
 import { fetchDuration } from "./playlist";
-import { getAdMediasFromVastParams } from "./vast";
+import { getAdMediasFromVastData } from "./vast";
 import type { Session } from "./session";
 import type { DateTime } from "luxon";
 
@@ -8,14 +8,21 @@ export type InterstitialType = "ad" | "bumper";
 
 export interface Interstitial {
   dateTime: DateTime;
-  vast?: {
-    url?: string;
-    data?: string;
-  };
-  assets?: InterstitialAsset[];
+  vastData: InterstitialVastData[];
+  assets: InterstitialAsset[];
 }
 
-interface InterstitialAsset {
+export type InterstitialVastData =
+  | {
+      type: "url";
+      url: string;
+    }
+  | {
+      type: "data";
+      data: string;
+    };
+
+export interface InterstitialAsset {
   url: string;
   type?: InterstitialType;
 }
@@ -34,7 +41,7 @@ export function getStaticDateRanges(session: Session) {
   return session.interstitials.map((interstitial) => {
     const types = interstitial.assets?.map((asset) => asset.type) ?? [];
 
-    if (interstitial.vast && !types.includes("ad")) {
+    if (interstitial.vastData && !types.includes("ad")) {
       types.push("ad");
     }
 
@@ -78,10 +85,8 @@ export async function getAssets(session: Session, dateTime: DateTime) {
     return [];
   }
 
-  if (interstitial.vast) {
-    // TODO: We can have multiple vast data, we should think of making it an array.
-    // A VMAP AdBreak can be repeated with the same timeOffset, potentially with multiple URLs too.
-    const adMedias = await getAdMediasFromVastParams(interstitial.vast);
+  if (interstitial.vastData) {
+    const adMedias = await getAdMediasFromVastData(interstitial.vastData);
     for (const adMedia of adMedias) {
       assets.push({
         URI: adMedia.masterUrl,

@@ -174,13 +174,27 @@ async function updateSessionOnMaster(session: Session) {
         continue;
       }
 
-      session.interstitials.push({
-        dateTime: session.startTime.plus({ seconds: timeOffset }),
-        vast: {
-          url: adBreak.vastUrl,
-          data: adBreak.vastData,
-        },
+      const dateTime = session.startTime.plus({ seconds: timeOffset });
+
+      let interstitial = session.interstitials.find((interstitial) => {
+        return interstitial.dateTime.equals(dateTime);
       });
+
+      if (!interstitial) {
+        interstitial = {
+          dateTime,
+          vastData: [],
+          assets: [],
+        };
+        session.interstitials.push(interstitial);
+      }
+
+      if (adBreak.vastUrl) {
+        interstitial.vastData.push({ type: "url", url: adBreak.vastUrl });
+      }
+      if (adBreak.vastData) {
+        interstitial.vastData.push({ type: "data", data: adBreak.vastData });
+      }
     }
 
     storeSession = true;
