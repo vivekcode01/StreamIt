@@ -4,7 +4,7 @@ export const env = parseEnv((z) => ({
   PORT: z.coerce.number().default(52002),
   HOST: z.string().optional(),
 
-  KV: z.enum(["redis", "cloudflare-kv"]).default("redis"),
+  KV: z.enum(["memory", "redis", "cloudflare-kv"]).default("redis"),
   REDIS_HOST: z.string().default("localhost"),
   REDIS_PORT: z.coerce.number().default(6379),
 
