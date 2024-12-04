@@ -1,7 +1,6 @@
 import { DateTime } from "luxon";
 import type { MasterPlaylist, MediaPlaylist } from "../src/parser";
 import type { Session } from "../src/session";
-import type { Interstitial } from "../src/types";
 
 export function mockMaster(): MasterPlaylist {
   return {

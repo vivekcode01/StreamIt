@@ -78,6 +78,10 @@ async function scheduleForPackage(assetId: string, url: string) {
 }
 
 async function fetchAsset(id: string) {
+  if (!api) {
+    // If we have no api configured, we cannot use it.
+    return null;
+  }
   const { data, status } = await api.assets({ id }).get();
   if (status === 404) {
     return null;
