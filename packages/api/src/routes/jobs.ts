@@ -7,7 +7,7 @@ import {
   pipelineQueue,
   transcodeQueue,
 } from "bolt";
-import { AudioCodec, VideoCodec } from "bolt";
+import { AudioCodec, VideoCodec } from "bolt/types";
 import { Elysia, t } from "elysia";
 import { auth } from "../auth";
 import { DeliberateError } from "../errors";

@@ -1,7 +1,8 @@
 import { ffmpeg } from "../lib/ffmpeg";
 import { mapInputToPublicUrl } from "../lib/file-helpers";
 import { uploadToS3 } from "../lib/s3";
-import type { FfmpegData, FfmpegResult, Stream, WorkerCallback } from "bolt";
+import type { FfmpegData, FfmpegResult, WorkerCallback } from "bolt";
+import type { Stream } from "bolt/types";
 
 export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
   job,
