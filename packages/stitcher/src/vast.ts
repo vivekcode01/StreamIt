@@ -38,6 +38,11 @@ export async function getAdMediasFromVast(params: {
 }
 
 async function scheduleForPackage(assetId: string, url: string) {
+  if (!api) {
+    // API is not configured, we cannot schedule for packaging.
+    return;
+  }
+
   await api.pipeline.post({
     assetId,
     group: "ad",
