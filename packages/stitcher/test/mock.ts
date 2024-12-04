@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
 import type { MasterPlaylist, MediaPlaylist } from "../src/parser";
 import type { Session } from "../src/session";
+import type { Interstitial } from "../src/types";
 
 export function mockMaster(): MasterPlaylist {
   return {
@@ -75,4 +76,52 @@ export function mockSession(): Session {
     startTime: DateTime.now(),
     interstitials: [],
   };
+}
+
+export function mockSessionWithInterstitials(): Session {
+  const session = mockSession();
+
+  const startDate = DateTime.now();
+
+  session.interstitials = [
+    {
+      dateTime: startDate,
+      vastUrl: "https://mock.com/vast.xml",
+    },
+    {
+      dateTime: startDate.plus({ seconds: 10 }),
+      vastUrl: "<CDATA>mocked VAST data</CDATA>",
+    },
+    // Manual bumper interstitial
+    {
+      dateTime: startDate.plus({ seconds: 30 }),
+      asset: {
+        url: "https://mock.com/interstitial/bumper.m3u8",
+        type: "bumper",
+      },
+    },
+    // Manual ad interstitial
+    {
+      dateTime: startDate.plus({ seconds: 40 }),
+      asset: {
+        url: "https://mock.com/interstitial/ad.m3u8",
+        type: "ad",
+      },
+    },
+    // Multiple manual interstitials
+    {
+      dateTime: startDate.plus({ seconds: 100 }),
+      asset: {
+        url: "https://mock.com/interstitial/master1.m3u8",
+      },
+    },
+    {
+      dateTime: startDate.plus({ seconds: 100 }),
+      asset: {
+        url: "https://mock.com/interstitial/master2.m3u8",
+      },
+    },
+  ];
+
+  return session;
 }

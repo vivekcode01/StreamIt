@@ -1,5 +1,4 @@
-import "bun";
-import { beforeEach, describe, expect, setSystemTime, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import {
   mockMaster,
   mockMediaWithAbsSeg,
@@ -14,11 +13,6 @@ import {
 } from "../src/playlist";
 
 describe("rewriteMasterPlaylistUrls", () => {
-  beforeEach(() => {
-    // The day my son was born!
-    setSystemTime(new Date(2021, 4, 2, 10, 12, 5, 250));
-  });
-
   test("should rewrite", () => {
     const master = mockMaster();
 
