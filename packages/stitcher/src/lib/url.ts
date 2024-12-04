@@ -59,7 +59,7 @@ export function joinUrl(urlFile: string, filePath: string) {
   return `${url.protocol}//${url.host}${path.join(url.pathname, filePath)}`;
 }
 
-export function makeUrl(
+export function createUrl(
   path: string,
   params: Record<string, string | number | undefined | null> = {},
 ) {

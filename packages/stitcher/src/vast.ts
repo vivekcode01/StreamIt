@@ -3,45 +3,30 @@ import { AudioCodec, VideoCodec } from "bolt";
 import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
 import { api } from "./lib/api-client";
-import type { VmapAdBreak } from "./vmap";
+import { resolveUri } from "./lib/url";
 import type { VastAd, VastCreativeLinear, VastResponse } from "vast-client";
 
 const NAMESPACE_UUID_AD = "5b212a7e-d6a2-43bf-bd30-13b1ca1f9b13";
 
 export interface AdMedia {
-  assetId: string;
-  fileUrl: string;
+  masterUrl: string;
   duration: number;
 }
 
-export async function getAdMediasFromAdBreak(adBreak: VmapAdBreak) {
-  const adMedias = await getAdMedias(adBreak);
-  const result: AdMedia[] = [];
-
-  for (const adMedia of adMedias) {
-    const asset = await fetchAsset(adMedia.assetId);
-    if (!asset) {
-      await scheduleForPackage(adMedia);
-    } else {
-      // If we have an asset registered for the ad media,
-      // add it to the result.
-      result.push(adMedia);
-    }
-  }
-
-  return result;
-}
-
-async function getAdMedias(adBreak: VmapAdBreak): Promise<AdMedia[]> {
+export async function getAdMediasFromVast(params: {
+  vastUrl?: string;
+  vastData?: string;
+}) {
   const vastClient = new VASTClient();
-  const parser = new DOMParser();
-
   let vastResponse: VastResponse | undefined;
 
-  if (adBreak.vastUrl) {
-    vastResponse = await vastClient.get(adBreak.vastUrl);
-  } else if (adBreak.vastData) {
-    const xml = parser.parseFromString(adBreak.vastData, "text/xml");
+  if (params.vastUrl) {
+    vastResponse = await vastClient.get(params.vastUrl);
+  }
+
+  if (params.vastData) {
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(params.vastData, "text/xml");
     vastResponse = await vastClient.parseVAST(xml);
   }
 
@@ -49,20 +34,25 @@ async function getAdMedias(adBreak: VmapAdBreak): Promise<AdMedia[]> {
     return [];
   }
 
-  return await formatVastResponse(vastResponse);
+  return await getAdMediasFromVastResponse(vastResponse);
 }
 
-async function scheduleForPackage(adMedia: AdMedia) {
+async function scheduleForPackage(assetId: string, url: string) {
+  if (!api) {
+    // API is not configured, we cannot schedule for packaging.
+    return;
+  }
+
   await api.pipeline.post({
-    assetId: adMedia.assetId,
+    assetId,
     group: "ad",
     inputs: [
       {
-        path: adMedia.fileUrl,
+        path: url,
         type: "video",
       },
       {
-        path: adMedia.fileUrl,
+        path: url,
         type: "audio",
         language: "eng",
       },
@@ -88,6 +78,10 @@ async function scheduleForPackage(adMedia: AdMedia) {
 }
 
 async function fetchAsset(id: string) {
+  if (!api) {
+    // If we have no api configured, we cannot use it.
+    return null;
+  }
   const { data, status } = await api.assets({ id }).get();
   if (status === 404) {
     return null;
@@ -98,35 +92,74 @@ async function fetchAsset(id: string) {
   throw new Error(`Failed to fetch asset, got status ${status}`);
 }
 
-async function formatVastResponse(response: VastResponse) {
-  return response.ads.reduce<AdMedia[]>((acc, ad) => {
-    const creative = getCreative(ad);
-    if (!creative) {
-      return acc;
+async function mapAdMedia(ad: VastAd): Promise<AdMedia | null> {
+  const creative = getCreative(ad);
+  if (!creative) {
+    return null;
+  }
+
+  const id = getAdId(creative);
+
+  let masterUrl = getCreativeStreamingUrl(creative);
+
+  if (!masterUrl) {
+    const asset = await fetchAsset(id);
+
+    if (asset) {
+      masterUrl = resolveUri(`asset://${id}`);
+    } else {
+      const fileUrl = getCreativeStaticUrl(creative);
+      if (fileUrl) {
+        await scheduleForPackage(id, fileUrl);
+      }
     }
+  }
 
-    const mediaFile = getMediaFile(creative);
-    if (!mediaFile?.fileURL) {
-      return acc;
-    }
+  if (!masterUrl) {
+    return null;
+  }
 
-    const adId = getAdId(creative);
-
-    acc.push({
-      assetId: adId,
-      fileUrl: mediaFile.fileURL,
-      duration: creative.duration,
-    });
-
-    return acc;
-  }, []);
+  return {
+    masterUrl,
+    duration: creative.duration,
+  };
 }
 
-function getMediaFile(creative: VastCreativeLinear) {
-  const mediaFiles = creative.mediaFiles
-    .filter((mediaFile) => mediaFile.mimeType === "video/mp4")
-    .sort((a, b) => b.height - a.height);
-  return mediaFiles[0] ?? null;
+async function getAdMediasFromVastResponse(response: VastResponse) {
+  const adMedias: AdMedia[] = [];
+
+  for (const ad of response.ads) {
+    const adMedia = await mapAdMedia(ad);
+    if (!adMedia) {
+      continue;
+    }
+    adMedias.push(adMedia);
+  }
+
+  return adMedias;
+}
+
+function getCreativeStaticUrl(creative: VastCreativeLinear) {
+  let fileUrl: string | null = null;
+  let lastHeight = 0;
+
+  for (const mediaFile of creative.mediaFiles) {
+    if (mediaFile.mimeType === "video/mp4" && mediaFile.height > lastHeight) {
+      lastHeight = mediaFile.height;
+      fileUrl = mediaFile.fileURL;
+    }
+  }
+
+  return fileUrl;
+}
+
+function getCreativeStreamingUrl(creative: VastCreativeLinear) {
+  for (const mediaFile of creative.mediaFiles) {
+    if (mediaFile.mimeType === "application/x-mpegURL") {
+      return mediaFile.fileURL;
+    }
+  }
+  return null;
 }
 
 function getCreative(ad: VastAd) {

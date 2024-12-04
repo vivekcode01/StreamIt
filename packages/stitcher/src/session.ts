@@ -3,21 +3,18 @@ import { DateTime } from "luxon";
 import { kv } from "./adapters/kv";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
-import { fetchVmap } from "./vmap";
-import type { Interstitial, InterstitialType } from "./interstitials";
-import type { VmapParams, VmapResponse } from "./vmap";
+import type { Interstitial, InterstitialAssetType } from "./types";
+import type { VmapParams } from "./vmap";
 
 export interface Session {
   id: string;
   url: string;
   expiry: number;
-
-  startTime?: DateTime;
+  startTime: DateTime;
 
   // User defined options
   vmap?: VmapParams;
-  vmapResponse?: VmapResponse;
-  interstitials?: Interstitial[];
+  interstitials: Interstitial[];
 }
 
 export async function createSession(params: {
@@ -26,31 +23,49 @@ export async function createSession(params: {
     url: string;
   };
   interstitials?: {
-    timeOffset: number;
-    uri: string;
-    duration?: number;
-    type?: InterstitialType;
+    time: string | number;
+    vastUrl?: string;
+    uri?: string;
+    type?: InterstitialAssetType;
   }[];
   expiry?: number;
 }) {
   const id = randomUUID();
+  const startTime = DateTime.now();
 
   const session: Session = {
     id,
     url: resolveUri(params.uri),
     vmap: params.vmap,
+    startTime,
+    interstitials: [],
     // A session is valid for 3 hours by default.
     expiry: params.expiry ?? 60 * 60 * 3,
   };
 
   if (params.interstitials) {
-    session.interstitials = params.interstitials.map((interstitial) => {
-      return {
-        timeOffset: interstitial.timeOffset,
-        url: resolveUri(interstitial.uri),
-        duration: interstitial.duration,
-        type: interstitial.type,
-      };
+    params.interstitials.forEach((interstitial) => {
+      const dateTime =
+        typeof interstitial.time === "string"
+          ? DateTime.fromISO(interstitial.time)
+          : startTime.plus({ seconds: interstitial.time });
+
+      if (interstitial.uri) {
+        session.interstitials.push({
+          dateTime,
+          asset: {
+            url: resolveUri(interstitial.uri),
+            type: interstitial.type,
+          },
+        });
+      }
+
+      if (interstitial.vastUrl) {
+        session.interstitials.push({
+          dateTime,
+          vastUrl: interstitial.vastUrl,
+        });
+      }
     });
   }
 
@@ -70,20 +85,7 @@ export async function getSession(id: string) {
   return JSON.parse<Session>(data);
 }
 
-export async function processSessionOnMasterReq(session: Session) {
-  // Check if we have a startTime, if so, the master playlist has been requested
-  // before and we no longer need it.
-  if (session.startTime) {
-    return;
-  }
-
-  session.startTime = DateTime.now();
-
-  if (session.vmap) {
-    session.vmapResponse = await fetchVmap(session.vmap);
-    delete session.vmap;
-  }
-
+export async function updateSession(session: Session) {
   const value = JSON.stringify(session);
   await kv.set(`session:${session.id}`, value, session.expiry);
 }

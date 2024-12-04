@@ -15,7 +15,9 @@ interface PlayerProps {
 
 export function Player({ url, lang, metadata }: PlayerProps) {
   const [hls] = useState(() => new Hls());
-  const controller = useController(hls);
+  const controller = useController(hls, {
+    multipleVideoElements: false,
+  });
 
   useEffect(() => {
     if (url) {
