@@ -6,8 +6,8 @@ import {
   outcomeQueue,
   waitForChildren,
 } from "bolt";
+import { by639_2T } from "iso-language-codes";
 import { assert } from "shared/assert";
-import { getLangCode } from "shared/lang";
 import {
   getDefaultAudioBitrate,
   getDefaultVideoBitrate,
@@ -352,4 +352,11 @@ function defaultReason<T extends Stream["type"]>(
     `Could not extract a default value for "${type}" "${prop.toString()}", ` +
     "You will have to provide it in the stream instead."
   );
+}
+
+function getLangCode(value?: string) {
+  if (value && value in by639_2T) {
+    return value;
+  }
+  return null;
 }
