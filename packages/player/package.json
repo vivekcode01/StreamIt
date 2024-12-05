@@ -30,11 +30,10 @@
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsc && tsup",
-   "lint": "tsc && eslint",
+    "lint": "tsc && eslint",
     "typedoc": "typedoc --tsconfig tsconfig.typedoc.json"
   },
   "peerDependencies": {
-    "hls.js": "^1.6.0-beta.1",
     "react": "^18.3.1"
   },
   "dependencies": {
@@ -42,7 +41,8 @@
     "eventemitter3": "^5.0.1",
     "screenfull": "^6.0.2",
     "use-sync-external-store": "^1.2.2",
-    "zustand": "^5.0.0"
+    "zustand": "^5.0.0",
+    "hls.js": "^1.6.0-beta.1"
   },
   "devDependencies": {
     "@types/eventemitter3": "^2.0.2",

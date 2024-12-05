@@ -1,21 +1,37 @@
 import Hls from "hls.js";
 import { EventManager } from "./event-manager";
+import { State } from "./state";
 
 export class HlsPlayer {
-  private media_: HTMLMediaElement;
+  private primaryMedia_: HTMLMediaElement;
 
   private assetMedias_: [HTMLMediaElement, HTMLMediaElement];
 
-  private hlsMap_ = new Map<HTMLMediaElement, Hls>();
+  private assetMediaIndex_ = 0;
 
   private eventManager_ = new EventManager();
 
+  private activeMedia_: HTMLMediaElement;
+
+  private hls_: Hls | null = null;
+
+  private state_: State | null = null;
+
   constructor(public container: HTMLDivElement) {
-    this.media_ = this.createMedia_();
+    this.primaryMedia_ = this.activeMedia_ = this.createMedia_();
 
     this.assetMedias_ = [this.createMedia_(), this.createMedia_()];
 
-    this.setActiveMedia_(this.media_);
+    this.allMedias_.forEach((media) => {
+      this.addMediaListeners_(media);
+    });
+
+    this.setActiveMedia_(this.primaryMedia_);
+
+    // Temporary, for debug purposes.
+    Object.assign(window, {
+      player: this,
+    });
   }
 
   private createMedia_() {
@@ -31,42 +47,97 @@ export class HlsPlayer {
   }
 
   load(url: string) {
-    const hls = new Hls();
-    hls.attachMedia(this.media_);
+    const hls = this.createHls_();
 
-    this.hlsMap_.set(this.media_, hls);
+    this.state_ = new State({
+      getTiming() {
+        const { media } = hls;
+        return media ? [media.currentTime, media.duration] : null;
+      },
+    });
 
-    this.bindListeners_(hls);
-
+    hls.attachMedia(this.primaryMedia_);
     hls.loadSource(url);
+
+    this.hls_ = hls;
   }
 
   reset() {
     this.eventManager_.removeAll();
 
-    const hls = this.hlsMap_.get(this.media_);
-    if (hls) {
-      hls.destroy();
-      this.hlsMap_.delete(this.media_);
+    if (this.hls_) {
+      this.hls_.destroy();
+      this.hls_ = null;
     }
   }
 
-  private bindListeners_(hls: Hls) {
+  private createHls_() {
+    const hls = new Hls();
+
     const listen = this.eventManager_.listen(hls);
 
-    listen(Hls.Events.MANIFEST_LOADED, () => {
-      console.log("LOADED IT");
+    listen(Hls.Events.INTERSTITIAL_STARTED, () => {
+      this.assetMediaIndex_ = 0;
     });
 
-    listen(Hls.Events.INTERSTITIAL_ASSET_PLAYER_CREATED, (event) => {});
+    listen(Hls.Events.INTERSTITIAL_ASSET_STARTED, (_, data) => {
+      const media = this.claimMedia_(false);
+      data.player.attachMedia(media);
+    });
 
-    listen(Hls.Events.INTERSTITIAL_ASSET_STARTED, () => {});
+    listen(Hls.Events.INTERSTITIALS_PRIMARY_RESUMED, () => {
+      this.claimMedia_(true);
+    });
+
+    return hls;
+  }
+
+  private claimMedia_(primary: boolean) {
+    let media = this.primaryMedia_;
+
+    if (!primary) {
+      const idx = this.assetMediaIndex_;
+      media = this.assetMedias_[idx];
+      this.assetMediaIndex_ = (idx + 1) % this.assetMedias_.length;
+    }
+
+    this.setActiveMedia_(media);
+
+    return media;
   }
 
   private setActiveMedia_(media: HTMLMediaElement) {
-    const allMedias = [this.media_, ...this.assetMedias_];
-    allMedias.forEach((element) => {
+    this.allMedias_.forEach((element) => {
       element.style.opacity = element === media ? "1" : "0";
+    });
+
+    this.activeMedia_ = media;
+  }
+
+  private get allMedias_() {
+    return [this.primaryMedia_, ...this.assetMedias_];
+  }
+
+  private addMediaListeners_(media: HTMLMediaElement) {
+    const listen = this.eventManager_.listen(media);
+
+    const isActive = () => this.activeMedia_ === media;
+
+    listen("canplay", () => {
+      this.state_?.setReady();
+    });
+
+    listen("playing", () => {
+      this.state_?.setStarted();
+      if (isActive()) {
+        this.state_?.setPlayhead("playing");
+      }
+    });
+
+    listen("pause", () => {
+      if (isActive()) {
+        this.state_?.setPlayhead("pause");
+      }
     });
   }
 }
