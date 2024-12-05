@@ -323,8 +323,8 @@ export function mergeInput(
     const info = probeResult.audio[partial.path];
     assert(info);
 
-    const language = partial.language ?? getLangCode(info.language);
-    assert(language, defaultReason("audio", "language"));
+    // Get the language code, if not found, we fallback to undecided.
+    const language = partial.language ?? getLangCode(info.language) ?? "und";
 
     // Assume when no channel metadata is found, we'll fallback to 2.
     const channels = partial.channels ?? info.channels ?? 2;
