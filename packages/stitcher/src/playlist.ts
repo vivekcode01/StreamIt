@@ -2,46 +2,38 @@ import { assert } from "shared/assert";
 import { filterMasterPlaylist, formatFilterToQueryParam } from "./filters";
 import { getAssets, getStaticDateRanges } from "./interstitials";
 import { encrypt } from "./lib/crypto";
-import { joinUrl, makeUrl, resolveUri } from "./lib/url";
+import { createUrl, joinUrl, resolveUri } from "./lib/url";
 import {
+  getRenditions,
   parseMasterPlaylist,
   parseMediaPlaylist,
   stringifyMasterPlaylist,
   stringifyMediaPlaylist,
 } from "./parser";
-import { getRenditions } from "./parser/helpers";
+import { updateSession } from "./session";
+import { fetchVmap, toAdBreakTimeOffset } from "./vmap";
 import type { Filter } from "./filters";
+import type { MasterPlaylist, MediaPlaylist, RenditionType } from "./parser";
 import type { Session } from "./session";
+import type { VmapAdBreak } from "./vmap";
+import type { DateTime } from "luxon";
 
 export async function formatMasterPlaylist(params: {
   origUrl: string;
-  sessionId?: string;
+  session?: Session;
   filter?: Filter;
 }) {
+  if (params.session) {
+    await initSessionOnMasterReq(params.session);
+  }
+
   const master = await fetchMasterPlaylist(params.origUrl);
 
   if (params.filter) {
     filterMasterPlaylist(master, params.filter);
   }
 
-  for (const variant of master.variants) {
-    const url = joinUrl(params.origUrl, variant.uri);
-    variant.uri = makeMediaUrl({
-      url,
-      sessionId: params.sessionId,
-    });
-  }
-
-  const renditions = getRenditions(master.variants);
-
-  renditions.forEach((rendition) => {
-    const url = joinUrl(params.origUrl, rendition.uri);
-    rendition.uri = makeMediaUrl({
-      url,
-      sessionId: params.sessionId,
-      type: rendition.type,
-    });
-  });
+  rewriteMasterPlaylistUrls(master, params);
 
   return stringifyMasterPlaylist(master);
 }
@@ -54,40 +46,31 @@ export async function formatMediaPlaylist(
   const media = await fetchMediaPlaylist(mediaUrl);
 
   // We're in a video playlist when we have no renditionType passed along,
-  // this means it does not belong to EXT-X-MEDIA, or when we explicitly VIDEO.
-  const videoPlaylist = !renditionType || renditionType === "VIDEO";
+  // this means it does not belong to EXT-X-MEDIA.
+  const videoPlaylist = renditionType === undefined;
   const firstSegment = media.segments[0];
 
   if (session) {
-    // If we have a session, we must have a startTime thus meaning we started.
-    assert(session.startTime);
+    assert(firstSegment);
 
     if (media.endlist) {
-      assert(firstSegment);
       firstSegment.programDateTime = session.startTime;
     }
 
-    if (videoPlaylist && firstSegment?.programDateTime) {
+    if (videoPlaylist) {
       // If we have an endlist and a PDT, we can add static date ranges based on this.
-      media.dateRanges = getStaticDateRanges(
-        firstSegment.programDateTime,
-        session,
-      );
+      const isLive = !media.endlist;
+      media.dateRanges = getStaticDateRanges(session, isLive);
     }
   }
 
-  media.segments.forEach((segment) => {
-    if (segment.map?.uri === "init.mp4") {
-      segment.map.uri = joinUrl(mediaUrl, segment.map.uri);
-    }
-    segment.uri = joinUrl(mediaUrl, segment.uri);
-  });
+  rewriteMediaPlaylistUrls(media, mediaUrl);
 
   return stringifyMediaPlaylist(media);
 }
 
-export async function formatAssetList(session: Session, timeOffset?: number) {
-  const assets = await getAssets(session, timeOffset);
+export async function formatAssetList(session: Session, dateTime: DateTime) {
+  const assets = await getAssets(session, dateTime);
   return {
     ASSETS: assets,
   };
@@ -120,21 +103,21 @@ export async function fetchDuration(uri: string) {
   }, 0);
 }
 
-export function makeMasterUrl(params: {
+export function createMasterUrl(params: {
   url: string;
   filter?: Filter;
   session?: Session;
 }) {
   const fil = formatFilterToQueryParam(params.filter);
 
-  const outUrl = makeUrl("out/master.m3u8", {
+  const outUrl = createUrl("out/master.m3u8", {
     eurl: encrypt(params.url),
     sid: params.session?.id,
     fil,
   });
 
   const url = params.session
-    ? makeUrl(`session/${params.session.id}/master.m3u8`, {
+    ? createUrl(`session/${params.session.id}/master.m3u8`, {
         fil,
       })
     : undefined;
@@ -142,14 +125,98 @@ export function makeMasterUrl(params: {
   return { url, outUrl };
 }
 
-function makeMediaUrl(params: {
+function createMediaUrl(params: {
   url: string;
   sessionId?: string;
-  type?: string;
+  type?: RenditionType;
 }) {
-  return makeUrl("out/playlist.m3u8", {
+  return createUrl("out/playlist.m3u8", {
     eurl: encrypt(params.url),
     sid: params.sessionId,
     type: params.type,
   });
+}
+
+export function rewriteMasterPlaylistUrls(
+  master: MasterPlaylist,
+  params: {
+    origUrl: string;
+    session?: Session;
+  },
+) {
+  for (const variant of master.variants) {
+    const url = joinUrl(params.origUrl, variant.uri);
+    variant.uri = createMediaUrl({
+      url,
+      sessionId: params.session?.id,
+    });
+  }
+
+  const renditions = getRenditions(master.variants);
+
+  renditions.forEach((rendition) => {
+    const url = joinUrl(params.origUrl, rendition.uri);
+    rendition.uri = createMediaUrl({
+      url,
+      sessionId: params.session?.id,
+      type: rendition.type,
+    });
+  });
+}
+
+export function rewriteMediaPlaylistUrls(
+  media: MediaPlaylist,
+  mediaUrl: string,
+) {
+  media.segments.forEach((segment) => {
+    if (segment.map?.uri === "init.mp4") {
+      segment.map.uri = joinUrl(mediaUrl, segment.map.uri);
+    }
+    segment.uri = joinUrl(mediaUrl, segment.uri);
+  });
+}
+
+async function initSessionOnMasterReq(session: Session) {
+  let storeSession = false;
+
+  if (session.vmap) {
+    const vmap = await fetchVmap(session.vmap);
+    delete session.vmap;
+    mapAdBreaksToSessionInterstitials(session, vmap.adBreaks);
+
+    storeSession = true;
+  }
+
+  if (storeSession) {
+    await updateSession(session);
+  }
+}
+
+export function mapAdBreaksToSessionInterstitials(
+  session: Session,
+  adBreaks: VmapAdBreak[],
+) {
+  for (const adBreak of adBreaks) {
+    const timeOffset = toAdBreakTimeOffset(adBreak);
+
+    if (timeOffset === null) {
+      continue;
+    }
+
+    const dateTime = session.startTime.plus({ seconds: timeOffset });
+
+    if (adBreak.vastUrl) {
+      session.interstitials.push({
+        dateTime,
+        vastUrl: adBreak.vastUrl,
+      });
+    }
+
+    if (adBreak.vastData) {
+      session.interstitials.push({
+        dateTime,
+        vastData: adBreak.vastData,
+      });
+    }
+  }
 }

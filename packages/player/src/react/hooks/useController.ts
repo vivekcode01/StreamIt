@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { HlsFacade } from "..";
+import type { HlsFacadeOptions } from "..";
 import type Hls from "hls.js";
 
 type MediaRefCallback = (media: HTMLMediaElement | null) => void;
 
 export type Controller = ReturnType<typeof createController>;
 
-export function useController(hls: Hls) {
-  const [facade] = useState<HlsFacade>(() => new HlsFacade(hls));
+export function useController(
+  hls: Hls,
+  userOptions?: Partial<HlsFacadeOptions>,
+) {
+  const [facade] = useState<HlsFacade>(() => new HlsFacade(hls, userOptions));
   const lastMediaRef = useRef<HTMLMediaElement | null>(null);
 
   useEffect(() => {

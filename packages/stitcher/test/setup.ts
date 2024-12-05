@@ -1,8 +1,27 @@
+import { mock, setSystemTime } from "bun:test";
+
+mock.module("redis", () => ({
+  createClient() {
+    const items = new Map<string, string>();
+    return {
+      connect: () => Promise.resolve(),
+      set: (key: string, value: string) => {
+        items.set(key, value);
+      },
+      get: (key: string) => {
+        return items.get(key) ?? null;
+      },
+    };
+  },
+}));
+
+// The day my son was born!
+setSystemTime(new Date(2021, 4, 2, 10, 12, 5, 250));
+
 process.env = {
+  NODE_ENV: "test",
   TZ: "UTC",
-  S3_ENDPOINT: "s3-endpoint",
-  S3_REGION: "s3-region",
-  S3_ACCESS_KEY: "s3-access-key",
-  S3_SECRET_KEY: "s3-secret-key",
-  S3_BUCKET: "s3-bucket",
+  PUBLIC_S3_ENDPOINT: "s3-endpoint",
+  PUBLIC_STITCHER_ENDPOINT: "stitcher-endpoint",
+  SUPER_SECRET: "secret",
 };

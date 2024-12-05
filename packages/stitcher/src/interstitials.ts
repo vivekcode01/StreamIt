@@ -1,152 +1,114 @@
-import { Group } from "./lib/group";
-import { makeUrl, resolveUri } from "./lib/url";
+import { createUrl } from "./lib/url";
 import { fetchDuration } from "./playlist";
-import { getAdMediasFromAdBreak } from "./vast";
-import { toAdBreakTimeOffset } from "./vmap";
-import type { DateRange } from "./parser";
+import { getAdMediasFromVast } from "./vast";
 import type { Session } from "./session";
-import type { AdMedia } from "./vast";
-import type { VmapResponse } from "./vmap";
+import type { Interstitial, InterstitialAssetType } from "./types";
 import type { DateTime } from "luxon";
 
-export type InterstitialType = "ad" | "bumper";
+export function getStaticDateRanges(session: Session, isLive: boolean) {
+  const group: {
+    dateTime: DateTime;
+    types: InterstitialAssetType[];
+  }[] = [];
 
-export interface Interstitial {
-  timeOffset: number;
-  url: string;
-  duration?: number;
-  type?: InterstitialType;
-}
+  for (const interstitial of session.interstitials) {
+    let item = group.find((item) =>
+      item.dateTime.equals(interstitial.dateTime),
+    );
 
-interface InterstitialAsset {
-  URI: string;
-  DURATION: number;
-  "SPRS-TYPE"?: InterstitialType;
-}
+    if (!item) {
+      item = {
+        dateTime: interstitial.dateTime,
+        types: [],
+      };
+      group.push(item);
+    }
 
-export function getStaticDateRanges(startTime: DateTime, session: Session) {
-  const group = new Group<number, InterstitialType>();
-
-  if (session.vmapResponse) {
-    for (const adBreak of session.vmapResponse.adBreaks) {
-      const timeOffset = toAdBreakTimeOffset(adBreak);
-      if (timeOffset !== null) {
-        group.add(timeOffset, "ad");
-      }
+    const type = getInterstitialType(interstitial);
+    if (type && !item.types.includes(type)) {
+      item.types.push(type);
     }
   }
 
-  if (session.interstitials) {
-    for (const interstitial of session.interstitials) {
-      group.add(interstitial.timeOffset, interstitial.type);
-    }
-  }
-
-  const dateRanges: DateRange[] = [];
-
-  group.forEach((timeOffset, types) => {
-    const startDate = startTime.plus({ seconds: timeOffset });
-
-    const assetListUrl = makeAssetListUrl({
-      timeOffset,
+  return group.map((item) => {
+    const assetListUrl = createAssetListUrl({
+      dateTime: item.dateTime,
       session,
     });
 
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",
-      "RESUME-OFFSET": 0,
       "ASSET-LIST": assetListUrl,
       CUE: "ONCE",
     };
 
-    if (timeOffset === 0) {
+    if (!isLive) {
+      clientAttributes["RESUME-OFFSET"] = 0;
+    }
+
+    const isPreroll = item.dateTime.equals(session.startTime);
+    if (isPreroll) {
       clientAttributes["CUE"] += ",PRE";
     }
 
-    if (types.length) {
-      clientAttributes["SPRS-TYPES"] = types.join(",");
+    if (item.types.length) {
+      clientAttributes["SPRS-TYPES"] = item.types.join(",");
     }
 
-    dateRanges.push({
+    return {
       classId: "com.apple.hls.interstitial",
-      id: `sdr${timeOffset}`,
-      startDate,
+      id: `${item.dateTime.toUnixInteger()}`,
+      startDate: item.dateTime,
       clientAttributes,
-    });
+    };
   });
-
-  return dateRanges;
 }
 
-export async function getAssets(session: Session, timeOffset?: number) {
-  const assets: InterstitialAsset[] = [];
+export async function getAssets(session: Session, dateTime: DateTime) {
+  const assets: {
+    URI: string;
+    DURATION: number;
+    "SPRS-TYPE"?: InterstitialAssetType;
+  }[] = [];
 
-  if (timeOffset !== undefined) {
-    if (session.vmapResponse) {
-      const items = await getAssetsFromVmap(session.vmapResponse, timeOffset);
-      assets.push(...items);
-    }
-
-    if (session.interstitials) {
-      const items = await getAssetsFromGroup(session.interstitials, timeOffset);
-      assets.push(...items);
-    }
-  }
-
-  return assets;
-}
-
-async function getAssetsFromVmap(vmap: VmapResponse, timeOffset: number) {
-  const adBreaks = vmap.adBreaks.filter(
-    (adBreak) => toAdBreakTimeOffset(adBreak) === timeOffset,
+  const interstitials = session.interstitials.filter((interstitial) =>
+    interstitial.dateTime.equals(dateTime),
   );
-  const assets: InterstitialAsset[] = [];
-
-  const adMedias: AdMedia[] = [];
-  for (const adBreak of adBreaks) {
-    adMedias.push(...(await getAdMediasFromAdBreak(adBreak)));
-  }
-
-  for (const adMedia of adMedias) {
-    assets.push({
-      URI: resolveUri(`asset://${adMedia.assetId}`),
-      DURATION: adMedia.duration,
-      "SPRS-TYPE": "ad",
-    });
-  }
-
-  return assets;
-}
-
-async function getAssetsFromGroup(
-  interstitials: Interstitial[],
-  timeOffset: number,
-) {
-  const assets: InterstitialAsset[] = [];
 
   for (const interstitial of interstitials) {
-    if (interstitial.timeOffset !== timeOffset) {
-      continue;
+    const adMedias = await getAdMediasFromVast(interstitial);
+    for (const adMedia of adMedias) {
+      assets.push({
+        URI: adMedia.masterUrl,
+        DURATION: adMedia.duration,
+        "SPRS-TYPE": "ad",
+      });
     }
 
-    let duration = interstitial.duration;
-    if (!duration) {
-      duration = await fetchDuration(interstitial.url);
+    if (interstitial.asset) {
+      assets.push({
+        URI: interstitial.asset.url,
+        DURATION: await fetchDuration(interstitial.asset.url),
+        "SPRS-TYPE": interstitial.asset.type,
+      });
     }
-
-    assets.push({
-      URI: interstitial.url,
-      DURATION: duration,
-      "SPRS-TYPE": interstitial.type,
-    });
   }
 
   return assets;
 }
 
-function makeAssetListUrl(params: { timeOffset: number; session?: Session }) {
-  return makeUrl("out/asset-list.json", {
-    timeOffset: params.timeOffset,
+function createAssetListUrl(params: { dateTime: DateTime; session?: Session }) {
+  return createUrl("out/asset-list.json", {
+    dt: params.dateTime.toISO(),
     sid: params.session?.id,
   });
+}
+
+function getInterstitialType(
+  interstitial: Interstitial,
+): InterstitialAssetType | undefined {
+  if (interstitial.vastData || interstitial.vastUrl) {
+    return "ad";
+  }
+  return interstitial.asset?.type;
 }
