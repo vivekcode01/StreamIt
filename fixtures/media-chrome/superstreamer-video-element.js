@@ -87,6 +87,9 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
         this.dispatchEvent(new Event("durationchange"));
         this.dispatchEvent(new Event("loadcomplete"));
 
+        this.#createVideoTracks();
+        this.#createAudioTracks();
+
         this.#readyState = 1;
       });
 
@@ -158,6 +161,49 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
 
   pause() {
     this.#player.playOrPause();
+  }
+
+  #createVideoTracks() {
+    let videoTrack = this.videoTracks.getTrackById('main');
+
+    if (!videoTrack) {
+      videoTrack = this.addVideoTrack('main');
+      videoTrack.id = 'main';
+      videoTrack.selected = true;
+    }
+
+    this.#player.qualities.forEach(quality => {
+      const videoRendition = videoTrack.addRendition(
+        undefined,
+        quality.height,
+        quality.height,
+        undefined,
+        undefined,
+      );
+      videoRendition.id = quality.height;
+    });
+
+    this.videoRenditions.addEventListener("change", (event) => {
+      if (event.target.selectedIndex < 0) {
+        this.#player.setQuality(null);
+      } else {
+        const rendition = this.videoRenditions[event.target.selectedIndex];
+        this.#player.setQuality(rendition.height);
+      }
+    });
+  }
+
+  #createAudioTracks() {
+    this.#player.audioTracks.forEach(a => {
+      const audioTrack = this.addAudioTrack("main", a.label, a.label);
+      audioTrack.id = a.id;
+      audioTrack.enabled = a.active;
+    });
+
+    this.audioTracks.addEventListener('change', () => {
+      const id = [...this.audioTracks].find(a => a.enabled)?.id;
+      this.#player.setAudioTrack(id);
+    });
   }
 }
 

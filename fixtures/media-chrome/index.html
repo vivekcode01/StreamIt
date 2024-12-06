@@ -34,18 +34,20 @@
     <media-controller>
       <superstreamer-video  
         slot="media"
-        src="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">
+        src="http://localhost:52002/session/0e4ed631-2fff-4458-af23-0419f7a9cc20/master.m3u8">
       </superstreamer-video>
       <media-loading-indicator slot="centered-chrome" no-auto-hide></media-loading-indicator>
       <media-rendition-menu hidden anchor="auto"></media-rendition-menu>
+      <media-audio-track-menu hidden anchor="auto"></media-audio-track-menu>
       <media-control-bar>
         <media-play-button></media-play-button>
-        <media-seek-forward-button ></media-seek-forward-button>
+        <media-seek-forward-button></media-seek-forward-button>
         <media-mute-button></media-mute-button>
         <media-volume-range></media-volume-range>
         <media-time-range></media-time-range>
         <media-time-display show-duration></media-time-display>
         <media-rendition-menu-button></media-rendition-menu-button>
+        <media-audio-track-menu-button></media-audio-track-menu-button>
         <media-fullscreen-button></media-fullscreen-button>
       </media-control-bar>
     </media-controller>
