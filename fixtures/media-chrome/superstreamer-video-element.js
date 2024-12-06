@@ -86,6 +86,7 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
         this.dispatchEvent(new Event("loadedmetadata"));
         this.dispatchEvent(new Event("durationchange"));
         this.dispatchEvent(new Event("loadcomplete"));
+
         this.#readyState = 1;
       });
 
