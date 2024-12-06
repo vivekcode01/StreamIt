@@ -3,7 +3,7 @@ import { MediaTracksMixin } from "media-tracks";
 
 function getTemplateHTML() {
   return `
-     <style>
+    <style>
       :host {
         width: 100%;
         height: 100%;
@@ -25,6 +25,8 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
   static observedAttributes = ["src"];
 
   #player;
+
+  #readyState = 0;
 
   get src() {
     return this.getAttribute("src");
@@ -51,12 +53,12 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
       this.shadowRoot.innerHTML = getTemplateHTML();
     }
 
+    this.#readyState = 0;
+    this.dispatchEvent(new Event("emptied"));
+
     if (!this.#player) {
       const container = this.shadowRoot.querySelector(".container");
       const player = (this.#player = new HlsPlayer(container));
-
-      // TODO: Remove this.
-      Object.assign(window, { player });
 
       player.on(Events.PLAYHEAD_CHANGE, () => {
         switch (player.playhead) {
@@ -84,10 +86,20 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
         this.dispatchEvent(new Event("loadedmetadata"));
         this.dispatchEvent(new Event("durationchange"));
         this.dispatchEvent(new Event("loadcomplete"));
+        this.#readyState = 1;
+      });
+
+      player.on(Events.STARTED, () => {
+        this.#readyState = 3;
       });
     }
 
     this.#player.load(this.src);
+
+    // TODO: Remove this.
+    Object.assign(window, {
+      player: this.#player,
+    });
   }
 
   get currentTime() {
@@ -114,7 +126,7 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
   }
 
   get readyState() {
-    return 3;
+    return this.#readyState;
   }
 
   get muted() {
