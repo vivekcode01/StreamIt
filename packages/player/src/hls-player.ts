@@ -131,6 +131,16 @@ export class HlsPlayer {
     }
   }
 
+  seekTo(time: number) {
+    assert(this.hls_);
+
+    if (this.hls_.interstitialsManager) {
+      this.hls_.interstitialsManager.primary.seekTo(time);
+    } else {
+      this.primaryMedia_.currentTime = time;
+    }
+  }
+
   setQuality(height: number | null) {
     assert(this.hls_);
 

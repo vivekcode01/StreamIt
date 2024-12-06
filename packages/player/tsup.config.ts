@@ -9,4 +9,5 @@ export default defineConfig({
   clean: false,
   dts: true,
   format: "esm",
+  noExternal: ["shared", "tseep"],
 });
