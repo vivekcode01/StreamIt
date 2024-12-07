@@ -155,8 +155,6 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
   }
 
   #createVideoTracks() {
-    console.log(this.addAudioTrack);
-    
     let videoTrack = this.videoTracks.getTrackById("main");
 
     if (!videoTrack) {
