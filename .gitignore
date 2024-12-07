@@ -37,3 +37,7 @@ config.env*
 !config.env.example
 
 .wrangler
+
+# Dev Folder
+docker/volume
+docker/sprs-localstack-data
