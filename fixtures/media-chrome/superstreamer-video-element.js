@@ -111,9 +111,6 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
   }
 
   set currentTime(val) {
-    if (this.currentTime === val) {
-      return;
-    }
     this.#player.seekTo(val);
   }
 
@@ -138,10 +135,7 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
   }
 
   set muted(val) {
-    if (this.muted || !val) {
-      return;
-    }
-    this.#player.setVolume(0);
+    this.#player.setVolume(val ? 0 : 1);
   }
 
   get volume() {
@@ -149,9 +143,6 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
   }
 
   set volume(val) {
-    if (this.volume === val) {
-      return;
-    }
     this.#player.setVolume(val);
   }
 
@@ -164,15 +155,17 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
   }
 
   #createVideoTracks() {
-    let videoTrack = this.videoTracks.getTrackById('main');
+    console.log(this.addAudioTrack);
+    
+    let videoTrack = this.videoTracks.getTrackById("main");
 
     if (!videoTrack) {
-      videoTrack = this.addVideoTrack('main');
-      videoTrack.id = 'main';
+      videoTrack = this.addVideoTrack("main");
+      videoTrack.id = "main";
       videoTrack.selected = true;
     }
 
-    this.#player.qualities.forEach(quality => {
+    this.#player.qualities.forEach((quality) => {
       const videoRendition = videoTrack.addRendition(
         undefined,
         quality.height,
@@ -194,14 +187,14 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
   }
 
   #createAudioTracks() {
-    this.#player.audioTracks.forEach(a => {
+    this.#player.audioTracks.forEach((a) => {
       const audioTrack = this.addAudioTrack("main", a.label, a.label);
       audioTrack.id = a.id;
       audioTrack.enabled = a.active;
     });
 
-    this.audioTracks.addEventListener('change', () => {
-      const id = [...this.audioTracks].find(a => a.enabled)?.id;
+    this.audioTracks.addEventListener("change", () => {
+      const id = [...this.audioTracks].find((a) => a.enabled)?.id;
       this.#player.setAudioTrack(id);
     });
   }
