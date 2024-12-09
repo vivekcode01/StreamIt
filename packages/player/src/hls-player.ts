@@ -2,7 +2,7 @@ import Hls from "hls.js";
 import { assert } from "shared/assert";
 import { EventEmitter } from "tseep";
 import { EventManager } from "./event-manager";
-import { formatListAsset, getLangCode } from "./helpers";
+import { getLangCode } from "./helpers";
 import { getState, State } from "./state";
 import type {
   AudioTrack,
@@ -271,13 +271,15 @@ export class HlsPlayer {
         this.setActiveMedia_(media);
       }
 
-      const listResponseAsset =
-        data.event.assetListResponse?.ASSETS[data.assetListIndex];
-      const assetData = formatListAsset(listResponseAsset);
+      const listResponseAsset = data.event.assetListResponse?.ASSETS[
+        data.assetListIndex
+      ] as {
+        "SPRS-KIND"?: "ad" | "bumper";
+      };
 
       this.state_?.setAsset({
         player: data.player,
-        type: assetData.type,
+        type: listResponseAsset["SPRS-KIND"],
       });
     });
 
@@ -317,13 +319,7 @@ export class HlsPlayer {
     listen(Hls.Events.INTERSTITIALS_UPDATED, (_, data) => {
       const cuepoints: number[] = [];
       data.schedule.forEach((item) => {
-        const tags = item.event?.dateRange.attr.enumeratedStringList(
-          "X-SPRS-TYPES",
-          { ad: false, bumper: false },
-        );
-        if (tags?.ad) {
-          cuepoints.push(item.start);
-        }
+        // TODO: Make each item with a proper timeline tag.
       });
       this.state_?.setCuepoints(cuepoints);
     });

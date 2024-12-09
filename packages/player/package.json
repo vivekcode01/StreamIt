@@ -21,9 +21,6 @@
     "lint": "tsc && eslint",
     "typedoc": "typedoc --tsconfig tsconfig.typedoc.json"
   },
-  "peerDependencies": {
-    "react": "^18.3.1"
-  },
   "dependencies": {
     "hls.js": "^1.6.0-beta.1",
     "tseep": "^1.3.1",

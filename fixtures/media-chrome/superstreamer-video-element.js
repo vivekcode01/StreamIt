@@ -99,11 +99,6 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
     }
 
     this.#player.load(this.src);
-
-    // TODO: Remove this.
-    Object.assign(window, {
-      player: this.#player,
-    });
   }
 
   get currentTime() {

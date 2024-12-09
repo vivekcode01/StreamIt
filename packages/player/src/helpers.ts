@@ -10,22 +10,6 @@ export function getLangCode(key?: string) {
   return `${value[0].toUpperCase()}${value.slice(1)}`;
 }
 
-interface CustomListAsset {
-  type?: "ad" | "bumper";
-}
-
-export function formatListAsset(
-  values?: Record<string, string>,
-): CustomListAsset {
-  const data: CustomListAsset = {};
-  if (values) {
-    if ("SPRS-TYPE" in values) {
-      data.type = values["SPRS-TYPE"] as unknown as CustomListAsset["type"];
-    }
-  }
-  return data;
-}
-
 // Inspired by iso-language-codes.
 // See https://github.com/pubcore/iso-language-codes/blob/master/src/data.ts
 const langCodes: Record<string, string> = {
