@@ -1,19 +1,21 @@
 import type { DateTime } from "luxon";
 
-export type Interstitial = {
+export interface InterstitialVast {
+  url?: string;
+  data?: string;
+}
+
+export interface InterstitialAsset {
+  url: string;
+  duration?: number;
+  kind?: "ad" | "bumper";
+}
+
+export interface Interstitial {
   dateTime: DateTime;
-} & (
-  | {
-      type: "asset";
-      url: string;
-    }
-  | {
-      type: "vast";
-      url?: string;
-      data?: string;
-    }
-  | {
-      type: "assetList";
-      url: string;
-    }
-);
+  asset?: InterstitialAsset;
+  vast?: InterstitialVast;
+  assetList?: {
+    url: string;
+  };
+}

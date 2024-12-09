@@ -71,8 +71,17 @@ export async function formatMediaPlaylist(
 
 export async function formatAssetList(session: Session, dateTime: DateTime) {
   const assets = await getAssets(session, dateTime);
+
+  const assetsPromises = assets.map(async (asset) => {
+    return {
+      URI: asset.url,
+      DURATION: asset.duration ?? (await fetchDuration(asset.url)),
+      "SPRS-KIND": asset.kind,
+    };
+  });
+
   return {
-    ASSETS: assets,
+    ASSETS: await Promise.all(assetsPromises),
   };
 }
 
@@ -207,9 +216,10 @@ export function mapAdBreaksToSessionInterstitials(
 
     session.interstitials.push({
       dateTime,
-      type: "vast",
-      url: adBreak.vastUrl,
-      data: adBreak.vastData,
+      vast: {
+        url: adBreak.vastUrl,
+        data: adBreak.vastData,
+      },
     });
   }
 }

@@ -1,32 +1,20 @@
+import { DateTime } from "luxon";
 import { createUrl } from "./lib/url";
-import { fetchDuration } from "./playlist";
-import { getAdMediasFromVast } from "./vast";
+import { getAssetsFromVast } from "./vast";
+import type { DateRange } from "./parser";
 import type { Session } from "./session";
-import type { DateTime } from "luxon";
+import type { Interstitial, InterstitialAsset } from "./types";
 
 export function getStaticDateRanges(session: Session, isLive: boolean) {
-  const group: {
-    dateTime: DateTime;
-  }[] = [];
+  const group = getGroupedInterstitials(session.interstitials);
 
-  for (const interstitial of session.interstitials) {
-    let item = group.find((item) =>
-      item.dateTime.equals(interstitial.dateTime),
-    );
+  const dateRanges: DateRange[] = [];
 
-    if (!item) {
-      item = {
-        dateTime: interstitial.dateTime,
-      };
-      group.push(item);
-    }
-  }
+  for (const [ts, interstitials] of group.entries()) {
+    const startDate = DateTime.fromMillis(ts);
 
-  return group.map((item) => {
-    const assetListUrl = createAssetListUrl({
-      dateTime: item.dateTime,
-      session,
-    });
+    const assetListUrl = getAssetListUrl(startDate, interstitials, session);
+    const kinds = getInterstitialsKinds(interstitials);
 
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",
@@ -38,55 +26,88 @@ export function getStaticDateRanges(session: Session, isLive: boolean) {
       clientAttributes["RESUME-OFFSET"] = 0;
     }
 
-    const isPreroll = item.dateTime.equals(session.startTime);
-    if (isPreroll) {
+    const atStart = startDate.equals(session.startTime);
+    if (atStart) {
       clientAttributes["CUE"] += ",PRE";
     }
 
-    return {
+    if (kinds.length) {
+      clientAttributes["SPRS-INCLUDES-KIND"] = kinds.join(",");
+    }
+
+    dateRanges.push({
       classId: "com.apple.hls.interstitial",
-      id: `${item.dateTime.toUnixInteger()}`,
-      startDate: item.dateTime,
+      id: `${ts}`,
+      startDate,
       clientAttributes,
-    };
-  });
+    });
+  }
+
+  return dateRanges;
 }
 
 export async function getAssets(session: Session, dateTime: DateTime) {
-  const assets: {
-    URI: string;
-    DURATION: number;
-  }[] = [];
+  const assets: InterstitialAsset[] = [];
 
   const interstitials = session.interstitials.filter((interstitial) =>
     interstitial.dateTime.equals(dateTime),
   );
 
   for (const interstitial of interstitials) {
-    if (interstitial.type === "vast") {
-      const adMedias = await getAdMediasFromVast(interstitial);
-      for (const adMedia of adMedias) {
-        assets.push({
-          URI: adMedia.masterUrl,
-          DURATION: adMedia.duration,
-        });
-      }
+    if (interstitial.vast) {
+      const nextAssets = await getAssetsFromVast(interstitial.vast);
+      assets.push(...nextAssets);
     }
 
-    if (interstitial.type === "asset") {
-      assets.push({
-        URI: interstitial.url,
-        DURATION: await fetchDuration(interstitial.url),
-      });
+    if (interstitial.asset) {
+      assets.push(interstitial.asset);
     }
   }
 
   return assets;
 }
 
-function createAssetListUrl(params: { dateTime: DateTime; session?: Session }) {
+function getGroupedInterstitials(interstitials: Interstitial[]) {
+  const result = new Map<number, Interstitial[]>();
+
+  for (const interstitial of interstitials) {
+    const ts = interstitial.dateTime.toMillis();
+    let items = result.get(ts);
+    if (!items) {
+      items = [];
+      result.set(ts, items);
+    }
+    items.push(interstitial);
+  }
+
+  return result;
+}
+
+function getAssetListUrl(
+  dateTime: DateTime,
+  interstitials: Interstitial[],
+  session?: Session,
+) {
+  if (interstitials.length === 1 && interstitials[0]?.assetList) {
+    return interstitials[0].assetList.url;
+  }
+
   return createUrl("out/asset-list.json", {
-    dt: params.dateTime.toISO(),
-    sid: params.session?.id,
+    dt: dateTime.toISO(),
+    sid: session?.id,
   });
+}
+
+function getInterstitialsKinds(interstitials: Interstitial[]) {
+  return interstitials
+    .map((interstitial) => {
+      if (interstitial.asset?.kind) {
+        return interstitial.asset.kind;
+      }
+      if (interstitial.vast) {
+        return "ad";
+      }
+      return null;
+    })
+    .filter((kind) => kind !== null);
 }
