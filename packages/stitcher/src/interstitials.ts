@@ -14,25 +14,26 @@ export function getStaticDateRanges(session: Session, isLive: boolean) {
     const startDate = DateTime.fromMillis(ts);
 
     const assetListUrl = getAssetListUrl(startDate, interstitials, session);
-    const kinds = getInterstitialsKinds(interstitials);
 
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",
       "ASSET-LIST": assetListUrl,
-      CUE: "ONCE",
+      "CONTENT-MAY-VARY": "YES",
+      "TIMELINE-OCCUPIES": "POINT",
+      "TIMELINE-STYLE": getTimelineStyle(interstitials),
     };
 
     if (!isLive) {
       clientAttributes["RESUME-OFFSET"] = 0;
     }
 
-    const atStart = startDate.equals(session.startTime);
-    if (atStart) {
-      clientAttributes["CUE"] += ",PRE";
+    const cue: string[] = ["ONCE"];
+    if (startDate.equals(session.startTime)) {
+      cue.push("PRE");
     }
 
-    if (kinds.length) {
-      clientAttributes["SPRS-INCLUDES-KIND"] = kinds.join(",");
+    if (cue.length) {
+      clientAttributes["CUE"] = cue.join(",");
     }
 
     dateRanges.push({
@@ -98,16 +99,16 @@ function getAssetListUrl(
   });
 }
 
-function getInterstitialsKinds(interstitials: Interstitial[]) {
-  return interstitials
-    .map((interstitial) => {
-      if (interstitial.asset?.kind) {
-        return interstitial.asset.kind;
-      }
-      if (interstitial.vast) {
-        return "ad";
-      }
-      return null;
-    })
-    .filter((kind) => kind !== null);
+function getTimelineStyle(interstitials: Interstitial[]) {
+  for (const interstitial of interstitials) {
+    if (
+      // If interstitial is an ad.
+      interstitial.asset?.kind === "ad" ||
+      // If interstitial is a VAST, thus it contains ads.
+      interstitial.vast
+    ) {
+      return "HIGHLIGHT";
+    }
+  }
+  return "PRIMARY";
 }
