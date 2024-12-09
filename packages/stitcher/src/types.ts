@@ -11,11 +11,13 @@ export interface InterstitialAsset {
   kind?: "ad" | "bumper";
 }
 
+export interface InterstitialAssetList {
+  url: string;
+}
+
 export interface Interstitial {
   dateTime: DateTime;
-  asset?: InterstitialAsset;
+  assets?: InterstitialAsset[];
   vast?: InterstitialVast;
-  assetList?: {
-    url: string;
-  };
+  assetList?: InterstitialAssetList;
 }

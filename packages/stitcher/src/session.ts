@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { DateTime } from "luxon";
 import { kv } from "./adapters/kv";
+import { appendInterstitials } from "./interstitials";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
 import type { Interstitial } from "./types";
@@ -17,17 +18,19 @@ export interface Session {
   interstitials: Interstitial[];
 }
 
-type SessionInterstitial = {
+interface SessionInterstitial {
   time: number | string;
-} & (
-  | {
-      type: "asset";
-      uri: string;
-      kind?: "ad" | "bumper";
-    }
-  | { type: "vast"; url: string }
-  | { type: "assetList"; url: string }
-);
+  assets?: {
+    uri: string;
+    kind?: "ad" | "bumper";
+  }[];
+  vast?: {
+    url: string;
+  };
+  assetList?: {
+    url: string;
+  };
+}
 
 export async function createSession(params: {
   uri: string;
@@ -49,10 +52,11 @@ export async function createSession(params: {
   };
 
   if (params.interstitials) {
-    session.interstitials = mapSessionInterstitials(
+    const interstitials = mapSessionInterstitials(
       startTime,
       params.interstitials,
     );
+    appendInterstitials(session.interstitials, interstitials);
   }
 
   // We'll initially store the session for 10 minutes, if it's not been consumed
@@ -79,33 +83,21 @@ export async function updateSession(session: Session) {
 function mapSessionInterstitials(
   startTime: DateTime,
   interstitials: SessionInterstitial[],
-): Interstitial[] {
-  return interstitials.reduce<Interstitial[]>((acc, item) => {
+) {
+  return interstitials.map<Interstitial>((item) => {
+    const { time, assets, ...rest } = item;
     const dateTime =
-      typeof item.time === "string"
-        ? DateTime.fromISO(item.time)
-        : startTime.plus({ seconds: item.time });
+      typeof time === "string"
+        ? DateTime.fromISO(time)
+        : startTime.plus({ seconds: time });
 
-    if (item.type === "asset") {
-      acc.push({
-        dateTime,
-        asset: {
-          url: resolveUri(item.uri),
-          kind: item.kind,
-        },
-      });
-    } else if (item.type === "vast") {
-      acc.push({
-        dateTime,
-        vast: { url: item.url },
-      });
-    } else if (item.type === "assetList") {
-      acc.push({
-        dateTime,
-        assetList: { url: item.url },
-      });
-    }
-
-    return acc;
-  }, []);
+    return {
+      dateTime,
+      assets: assets?.map((asset) => {
+        const { uri, ...rest } = asset;
+        return { url: resolveUri(uri), ...rest };
+      }),
+      ...rest,
+    };
+  });
 }

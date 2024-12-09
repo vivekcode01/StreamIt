@@ -1,6 +1,10 @@
 import { assert } from "shared/assert";
 import { filterMasterPlaylist, formatFilterToQueryParam } from "./filters";
-import { getAssets, getStaticDateRanges } from "./interstitials";
+import {
+  appendInterstitials,
+  getAssets,
+  getStaticDateRanges,
+} from "./interstitials";
 import { encrypt } from "./lib/crypto";
 import { createUrl, joinUrl, resolveUri } from "./lib/url";
 import {
@@ -15,6 +19,7 @@ import { fetchVmap, toAdBreakTimeOffset } from "./vmap";
 import type { Filter } from "./filters";
 import type { MasterPlaylist, MediaPlaylist, RenditionType } from "./parser";
 import type { Session } from "./session";
+import type { Interstitial } from "./types";
 import type { VmapAdBreak } from "./vmap";
 import type { DateTime } from "luxon";
 
@@ -190,8 +195,14 @@ async function initSessionOnMasterReq(session: Session) {
 
   if (session.vmap) {
     const vmap = await fetchVmap(session.vmap);
+
     delete session.vmap;
-    mapAdBreaksToSessionInterstitials(session, vmap.adBreaks);
+
+    const interstitials = mapAdBreaksToSessionInterstitials(
+      session,
+      vmap.adBreaks,
+    );
+    appendInterstitials(session.interstitials, interstitials);
 
     storeSession = true;
   }
@@ -205,6 +216,8 @@ export function mapAdBreaksToSessionInterstitials(
   session: Session,
   adBreaks: VmapAdBreak[],
 ) {
+  const interstitials: Interstitial[] = [];
+
   for (const adBreak of adBreaks) {
     const timeOffset = toAdBreakTimeOffset(adBreak);
 
@@ -214,7 +227,7 @@ export function mapAdBreaksToSessionInterstitials(
 
     const dateTime = session.startTime.plus({ seconds: timeOffset });
 
-    session.interstitials.push({
+    interstitials.push({
       dateTime,
       vast: {
         url: adBreak.vastUrl,
@@ -222,4 +235,6 @@ export function mapAdBreaksToSessionInterstitials(
       },
     });
   }
+
+  return interstitials;
 }

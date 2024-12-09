@@ -1,26 +1,21 @@
-import { DateTime } from "luxon";
 import { createUrl } from "./lib/url";
 import { getAssetsFromVast } from "./vast";
 import type { DateRange } from "./parser";
 import type { Session } from "./session";
 import type { Interstitial, InterstitialAsset } from "./types";
+import type { DateTime } from "luxon";
 
 export function getStaticDateRanges(session: Session, isLive: boolean) {
-  const group = getGroupedInterstitials(session.interstitials);
-
-  const dateRanges: DateRange[] = [];
-
-  for (const [ts, interstitials] of group.entries()) {
-    const startDate = DateTime.fromMillis(ts);
-
-    const assetListUrl = getAssetListUrl(startDate, interstitials, session);
+  return session.interstitials.map<DateRange>((interstitial) => {
+    const startDate = interstitial.dateTime;
+    const assetListUrl = getAssetListUrl(interstitial, session);
 
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",
       "ASSET-LIST": assetListUrl,
       "CONTENT-MAY-VARY": "YES",
       "TIMELINE-OCCUPIES": "POINT",
-      "TIMELINE-STYLE": getTimelineStyle(interstitials),
+      "TIMELINE-STYLE": getTimelineStyle(interstitial),
     };
 
     if (!isLive) {
@@ -36,79 +31,88 @@ export function getStaticDateRanges(session: Session, isLive: boolean) {
       clientAttributes["CUE"] = cue.join(",");
     }
 
-    dateRanges.push({
+    return {
       classId: "com.apple.hls.interstitial",
-      id: `${ts}`,
+      id: `${startDate.toMillis()}`,
       startDate,
       clientAttributes,
-    });
-  }
-
-  return dateRanges;
+    };
+  });
 }
 
 export async function getAssets(session: Session, dateTime: DateTime) {
   const assets: InterstitialAsset[] = [];
 
-  const interstitials = session.interstitials.filter((interstitial) =>
+  const interstitial = session.interstitials.find((interstitial) =>
     interstitial.dateTime.equals(dateTime),
   );
 
-  for (const interstitial of interstitials) {
-    if (interstitial.vast) {
-      const nextAssets = await getAssetsFromVast(interstitial.vast);
-      assets.push(...nextAssets);
-    }
+  if (interstitial?.vast) {
+    const nextAssets = await getAssetsFromVast(interstitial.vast);
+    assets.push(...nextAssets);
+  }
 
-    if (interstitial.asset) {
-      assets.push(interstitial.asset);
-    }
+  if (interstitial?.assets) {
+    assets.push(...interstitial.assets);
   }
 
   return assets;
 }
 
-function getGroupedInterstitials(interstitials: Interstitial[]) {
-  const result = new Map<number, Interstitial[]>();
-
+export function appendInterstitials(
+  source: Interstitial[],
+  interstitials: Interstitial[],
+) {
   for (const interstitial of interstitials) {
-    const ts = interstitial.dateTime.toMillis();
-    let items = result.get(ts);
-    if (!items) {
-      items = [];
-      result.set(ts, items);
-    }
-    items.push(interstitial);
-  }
+    const target = source.find((item) =>
+      item.dateTime.equals(interstitial.dateTime),
+    );
 
-  return result;
+    if (!target) {
+      source.push(interstitial);
+      continue;
+    }
+
+    if (interstitial.assets) {
+      if (!target.assets) {
+        target.assets = interstitial.assets;
+      } else {
+        target.assets.push(...interstitial.assets);
+      }
+    }
+
+    if (interstitial.vast) {
+      target.vast = interstitial.vast;
+    }
+
+    if (interstitial.assetList) {
+      target.assetList = interstitial.assetList;
+    }
+  }
 }
 
-function getAssetListUrl(
-  dateTime: DateTime,
-  interstitials: Interstitial[],
-  session?: Session,
-) {
-  if (interstitials.length === 1 && interstitials[0]?.assetList) {
-    return interstitials[0].assetList.url;
+function getAssetListUrl(interstitial: Interstitial, session?: Session) {
+  if (interstitial.assetList) {
+    return interstitial.assetList.url;
   }
-
   return createUrl("out/asset-list.json", {
-    dt: dateTime.toISO(),
+    dt: interstitial.dateTime.toISO(),
     sid: session?.id,
   });
 }
 
-function getTimelineStyle(interstitials: Interstitial[]) {
-  for (const interstitial of interstitials) {
-    if (
-      // If interstitial is an ad.
-      interstitial.asset?.kind === "ad" ||
-      // If interstitial is a VAST, thus it contains ads.
-      interstitial.vast
-    ) {
-      return "HIGHLIGHT";
+function getTimelineStyle(interstitial: Interstitial) {
+  if (interstitial.assets) {
+    for (const asset of interstitial.assets) {
+      if (asset.kind === "ad") {
+        return "HIGHLIGHT";
+      }
     }
   }
+
+  if (interstitial.vast) {
+    return "HIGHLIGHT";
+  }
+
   return "PRIMARY";
 }
