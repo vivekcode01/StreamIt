@@ -323,6 +323,7 @@ export class HlsPlayer {
 
     listen(Hls.Events.INTERSTITIALS_UPDATED, (_, data) => {
       const cuepoints: number[] = [];
+      // @ts-expect-error Will do this later
       data.schedule.forEach((item) => {
         // TODO: Make each item with a proper timeline tag.
       });
