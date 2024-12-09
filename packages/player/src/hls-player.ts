@@ -183,8 +183,13 @@ export class HlsPlayer {
     });
   }
 
-  setSubtitleTrack(id: number) {
+  setSubtitleTrack(id: number | null) {
     assert(this.hls_);
+
+    if (id === null) {
+      this.hls_.subtitleTrack = -1;
+      return;
+    }
 
     const subtitleTrack = this.state_?.subtitleTracks.find(
       (track) => track.id === id,

@@ -13,6 +13,8 @@ function getTemplateHTML() {
   `;
 }
 
+const SymbolTrackId = Symbol("superstreamer.trackId");
+
 class SuperstreamerVideoElement extends MediaTracksMixin(
   globalThis.HTMLElement,
 ) {
@@ -27,6 +29,15 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
   #player;
 
   #readyState = 0;
+
+  constructor() {
+    super();
+
+    const video = document.createElement("video");
+
+    this.textTracks = video.textTracks;
+    this.addTextTrack = video.addTextTrack.bind(video);
+  }
 
   get src() {
     return this.getAttribute("src");
@@ -60,6 +71,9 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
       const container = this.shadowRoot.querySelector(".container");
       const player = (this.#player = new HlsPlayer(container));
 
+      // TODO: For debug purposes.
+      Object.assign(window, { player });
+
       player.on(Events.PLAYHEAD_CHANGE, () => {
         switch (player.playhead) {
           case "play":
@@ -82,13 +96,15 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
         this.dispatchEvent(new Event("volumechange"));
       });
 
-      player.on(Events.READY, () => {
+      player.on(Events.READY, async () => {
         this.dispatchEvent(new Event("loadedmetadata"));
         this.dispatchEvent(new Event("durationchange"));
+        this.dispatchEvent(new Event("volumechange"));
         this.dispatchEvent(new Event("loadcomplete"));
 
         this.#createVideoTracks();
         this.#createAudioTracks();
+        this.#createTextTracks();
 
         this.#readyState = 1;
       });
@@ -97,6 +113,8 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
         this.#readyState = 3;
       });
     }
+
+    this.dispatchEvent(new Event("loadstart"));
 
     this.#player.load(this.src);
   }
@@ -159,14 +177,13 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
     }
 
     this.#player.qualities.forEach((quality) => {
-      const videoRendition = videoTrack.addRendition(
+      videoTrack.addRendition(
         undefined,
         quality.height,
         quality.height,
         undefined,
         undefined,
       );
-      videoRendition.id = quality.height;
     });
 
     this.videoRenditions.addEventListener("change", (event) => {
@@ -182,13 +199,27 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
   #createAudioTracks() {
     this.#player.audioTracks.forEach((a) => {
       const audioTrack = this.addAudioTrack("main", a.label, a.label);
-      audioTrack.id = a.id;
+      audioTrack[SymbolTrackId] = a.id;
       audioTrack.enabled = a.active;
     });
 
     this.audioTracks.addEventListener("change", () => {
-      const id = [...this.audioTracks].find((a) => a.enabled)?.id;
+      const id = [...this.audioTracks].find((a) => a.enabled)?.[SymbolTrackId];
       this.#player.setAudioTrack(id);
+    });
+  }
+
+  #createTextTracks() {
+    this.#player.subtitleTracks.forEach((s) => {
+      const textTrack = this.addTextTrack("subtitles", s.label, s.track.lang);
+      textTrack[SymbolTrackId] = s.id;
+    });
+
+    this.textTracks.addEventListener("change", () => {
+      const id =
+        [...this.textTracks].find((t) => t.mode === "showing")?.[SymbolTrackId] ??
+        null;
+      this.#player.setSubtitleTrack(id);
     });
   }
 }

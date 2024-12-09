@@ -130,7 +130,11 @@ export class State implements StateProperties {
   setSubtitleTracks(subtitleTracks: SubtitleTrack[]) {
     const diff = (items: AudioTrack[]) => items.find((item) => item.active)?.id;
 
-    if (diff(this.subtitleTracks) !== diff(subtitleTracks)) {
+    if (
+      // TODO: Come up with a generic logical check.
+      (!this.subtitleTracks.length && subtitleTracks.length) ||
+      diff(this.subtitleTracks) !== diff(subtitleTracks)
+    ) {
       this.subtitleTracks = subtitleTracks;
       this.emit_(Events.SUBTITLE_TRACKS_CHANGE);
     }
