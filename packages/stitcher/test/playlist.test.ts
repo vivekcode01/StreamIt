@@ -58,7 +58,7 @@ describe("mapAdBreaksToSessionInterstitials", () => {
   test("should handle time based with vastUrl", () => {
     const session = fakeSession();
 
-    mapAdBreaksToSessionInterstitials(session, [
+    const interstitials = mapAdBreaksToSessionInterstitials(session, [
       {
         timeOffset: "start",
         vastUrl: "http://mock.com/vast_1.xml",
@@ -73,20 +73,20 @@ describe("mapAdBreaksToSessionInterstitials", () => {
       },
     ]);
 
-    expect(session.interstitials).toMatchSnapshot();
+    expect(interstitials).toMatchSnapshot();
   });
 
   test("should handle vastData", () => {
     const session = fakeSession();
 
-    mapAdBreaksToSessionInterstitials(session, [
+    const interstitials = mapAdBreaksToSessionInterstitials(session, [
       {
         timeOffset: "00:00:10.000",
         vastData: "<CDATA>mocked VAST data</CDATA>",
       },
     ]);
 
-    expect(session.interstitials).toMatchSnapshot();
+    expect(interstitials).toMatchSnapshot();
   });
 });
 

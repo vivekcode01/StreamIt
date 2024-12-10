@@ -94,31 +94,39 @@ export function addFakeInterstitials(session: Session) {
     // Manual bumper interstitial
     {
       dateTime: session.startTime.plus({ seconds: 30 }),
-      asset: {
-        url: "https://mock.com/interstitial/bumper.m3u8",
-        kind: "bumper",
-      },
+      assets: [
+        {
+          url: "https://mock.com/interstitial/bumper.m3u8",
+          kind: "bumper",
+        },
+      ],
     },
     // Manual ad interstitial
     {
       dateTime: session.startTime.plus({ seconds: 40 }),
-      asset: {
-        url: "https://mock.com/interstitial/ad.m3u8",
-        kind: "ad",
-      },
+      assets: [
+        {
+          url: "https://mock.com/interstitial/ad.m3u8",
+          kind: "ad",
+        },
+      ],
     },
     // Multiple manual interstitials
     {
       dateTime: session.startTime.plus({ seconds: 100 }),
-      asset: {
-        url: "https://mock.com/interstitial/master1.m3u8",
-      },
+      assets: [
+        {
+          url: "https://mock.com/interstitial/master1.m3u8",
+        },
+      ],
     },
     {
       dateTime: session.startTime.plus({ seconds: 100 }),
-      asset: {
-        url: "https://mock.com/interstitial/master2.m3u8",
-      },
+      assets: [
+        {
+          url: "https://mock.com/interstitial/master2.m3u8",
+        },
+      ],
     },
   ];
 }
