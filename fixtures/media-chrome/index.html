@@ -13,6 +13,10 @@
         aspect-ratio: 16 / 9;
         background: #000;
       }
+
+      media-controller[interstitial="1"] media-time-range {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -34,7 +38,7 @@
     <media-controller>
       <superstreamer-video  
         slot="media"
-        src="https://stitcher.superstreamer.xyz/session/fdb3f69b-e418-4753-9a6a-4d51e20f14ca/master.m3u8">
+        src="https://stitcher.superstreamer.xyz/session/6c127f2a-ca33-4eca-aff2-29ab3c3aac7c/master.m3u8">
       </superstreamer-video>
       <media-loading-indicator slot="centered-chrome" noautohide></media-loading-indicator>
       <media-rendition-menu hidden anchor="auto"></media-rendition-menu>

@@ -258,10 +258,6 @@ export class HlsPlayer {
     return getState(this.state_, "volume");
   }
 
-  get cuepoints() {
-    return getState(this.state_, "cuepoints");
-  }
-
   private createHls_() {
     const hls = new Hls();
 
@@ -329,15 +325,6 @@ export class HlsPlayer {
 
     listen(Hls.Events.SUBTITLE_TRACK_SWITCH, () => {
       this.updateSubtitleTracks_();
-    });
-
-    listen(Hls.Events.INTERSTITIALS_UPDATED, (_, data) => {
-      const cuepoints: number[] = [];
-      // @ts-expect-error Will do this later
-      data.schedule.forEach((item) => {
-        // TODO: Make each item with a proper timeline tag.
-      });
-      this.state_?.setCuepoints(cuepoints);
     });
 
     return hls;

@@ -14,7 +14,6 @@ export enum Events {
   AUTO_QUALITY_CHANGE = "autoQualityChange",
   ASSET_CHANGE = "assetChange",
   ASSET_TIME_CHANGE = "assetTimeChange",
-  CUEPOINTS_CHANGE = "cuepointsChange",
   SEEKING_CHANGE = "seekingChange",
 }
 
@@ -30,7 +29,6 @@ export type HlsPlayerEventMap = {
   [Events.AUTO_QUALITY_CHANGE]: () => void;
   [Events.ASSET_CHANGE]: () => void;
   [Events.ASSET_TIME_CHANGE]: () => void;
-  [Events.CUEPOINTS_CHANGE]: () => void;
   [Events.SEEKING_CHANGE]: () => void;
 } & {
   "*": (event: Events) => void;

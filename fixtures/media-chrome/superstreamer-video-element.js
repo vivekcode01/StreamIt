@@ -97,6 +97,13 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
     this.#player.on(Events.STARTED, () => {
       this.#readyState = 3;
     });
+
+    this.#player.on(Events.ASSET_CHANGE, () => {
+      const controller = this.closest("media-controller");
+      if (controller) {
+        controller.setAttribute("interstitial", this.#player.asset ? "1" : "0");
+      }
+    });
   }
 
   get src() {

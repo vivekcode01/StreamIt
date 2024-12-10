@@ -33,7 +33,6 @@ interface StateProperties {
   audioTracks: AudioTrack[];
   subtitleTracks: SubtitleTrack[];
   volume: number;
-  cuepoints: number[];
   seeking: boolean;
 }
 
@@ -49,7 +48,6 @@ const noState: StateProperties = {
   audioTracks: [],
   subtitleTracks: [],
   volume: 1,
-  cuepoints: [],
   seeking: false,
 };
 
@@ -150,11 +148,6 @@ export class State implements StateProperties {
     this.emit_(Events.VOLUME_CHANGE);
   }
 
-  setCuepoints(cuepoints: number[]) {
-    this.cuepoints = cuepoints;
-    this.emit_(Events.CUEPOINTS_CHANGE);
-  }
-
   setSeeking(seeking: boolean) {
     if (seeking === this.seeking) {
       return;
@@ -219,7 +212,6 @@ export class State implements StateProperties {
   audioTracks = noState.audioTracks;
   subtitleTracks = noState.subtitleTracks;
   volume = noState.volume;
-  cuepoints = noState.cuepoints;
   seeking = noState.seeking;
 }
 
