@@ -34,6 +34,7 @@ interface StateProperties {
   subtitleTracks: SubtitleTrack[];
   volume: number;
   cuepoints: number[];
+  seeking: boolean;
 }
 
 const noState: StateProperties = {
@@ -49,6 +50,7 @@ const noState: StateProperties = {
   subtitleTracks: [],
   volume: 1,
   cuepoints: [],
+  seeking: false,
 };
 
 export class State implements StateProperties {
@@ -153,6 +155,14 @@ export class State implements StateProperties {
     this.emit_(Events.CUEPOINTS_CHANGE);
   }
 
+  setSeeking(seeking: boolean) {
+    if (seeking === this.seeking) {
+      return;
+    }
+    this.seeking = seeking;
+    this.emit_(Events.SEEKING_CHANGE);
+  }
+
   requestTimingSync() {
     clearTimeout(this.timerId_);
     this.timerId_ = window.setTimeout(() => {
@@ -210,6 +220,7 @@ export class State implements StateProperties {
   subtitleTracks = noState.subtitleTracks;
   volume = noState.volume;
   cuepoints = noState.cuepoints;
+  seeking = noState.seeking;
 }
 
 export function getState<N extends keyof StateProperties>(

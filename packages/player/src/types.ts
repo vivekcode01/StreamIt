@@ -15,6 +15,7 @@ export enum Events {
   ASSET_CHANGE = "assetChange",
   ASSET_TIME_CHANGE = "assetTimeChange",
   CUEPOINTS_CHANGE = "cuepointsChange",
+  SEEKING_CHANGE = "seekingChange",
 }
 
 export type HlsPlayerEventMap = {
@@ -30,6 +31,7 @@ export type HlsPlayerEventMap = {
   [Events.ASSET_CHANGE]: () => void;
   [Events.ASSET_TIME_CHANGE]: () => void;
   [Events.CUEPOINTS_CHANGE]: () => void;
+  [Events.SEEKING_CHANGE]: () => void;
 } & {
   "*": (event: Events) => void;
 };

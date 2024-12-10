@@ -13,7 +13,7 @@ function getTemplateHTML() {
   `;
 }
 
-const SymbolTrackId = Symbol("superstreamer.trackId");
+const symbolTrackId_ = Symbol("superstreamer.trackId");
 
 class SuperstreamerVideoElement extends MediaTracksMixin(
   globalThis.HTMLElement,
@@ -30,14 +30,7 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
 
   #readyState = 0;
 
-  constructor() {
-    super();
-
-    const video = document.createElement("video");
-
-    this.textTracks = video.textTracks;
-    this.addTextTrack = video.addTextTrack.bind(video);
-  }
+  #video;
 
   get src() {
     return this.getAttribute("src");
@@ -48,6 +41,10 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
       return;
     }
     this.setAttribute("src", val);
+  }
+
+  get textTracks() {
+    return this.#video.textTracks;
   }
 
   attributeChangedCallback(attrName, oldValue, newValue) {
@@ -67,6 +64,8 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
     this.#readyState = 0;
     this.dispatchEvent(new Event("emptied"));
 
+    this.#video = document.createElement("video");
+    
     if (!this.#player) {
       const container = this.shadowRoot.querySelector(".container");
       const player = (this.#player = new HlsPlayer(container));
@@ -95,6 +94,14 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
       player.on(Events.VOLUME_CHANGE, () => {
         this.dispatchEvent(new Event("volumechange"));
       });
+
+      player.on(Events.SEEKING_CHANGE, () => {
+        if (player.seeking) {
+          this.dispatchEvent(new Event("seeking"));
+        } else {
+          this.dispatchEvent(new Event("seeked"));
+        }
+      })
 
       player.on(Events.READY, async () => {
         this.dispatchEvent(new Event("loadedmetadata"));
@@ -199,28 +206,45 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
   #createAudioTracks() {
     this.#player.audioTracks.forEach((a) => {
       const audioTrack = this.addAudioTrack("main", a.label, a.label);
-      audioTrack[SymbolTrackId] = a.id;
+      audioTrack[symbolTrackId_] = a.id;
       audioTrack.enabled = a.active;
     });
 
     this.audioTracks.addEventListener("change", () => {
-      const id = [...this.audioTracks].find((a) => a.enabled)?.[SymbolTrackId];
-      this.#player.setAudioTrack(id);
+      const track = [...this.audioTracks].find((a) => a.enabled);
+      if (track) {
+        const id = track[symbolTrackId_];
+        this.#player.setAudioTrack(id);
+      }
     });
   }
 
   #createTextTracks() {
     this.#player.subtitleTracks.forEach((s) => {
       const textTrack = this.addTextTrack("subtitles", s.label, s.track.lang);
-      textTrack[SymbolTrackId] = s.id;
+      textTrack[symbolTrackId_] = s.id;
     });
 
     this.textTracks.addEventListener("change", () => {
-      const id =
-        [...this.textTracks].find((t) => t.mode === "showing")?.[SymbolTrackId] ??
-        null;
-      this.#player.setSubtitleTrack(id);
+      const track =
+        [...this.textTracks].find((t) => t.mode === "showing");
+      if (track) {
+        const id = track[symbolTrackId_];
+        this.#player.setSubtitleTrack(id);
+      } else {
+        this.#player.setSubtitleTrack(null);
+      }
     });
+  }
+
+  addTextTrack(kind, label, language) {
+    const trackEl = document.createElement('track');
+    trackEl.kind = kind;
+    trackEl.label = label;
+    trackEl.srclang = language;
+    trackEl.track.mode = "hidden";
+    this.#video.append(trackEl);
+    return trackEl.track;
   }
 }
 

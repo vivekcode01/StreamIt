@@ -230,6 +230,10 @@ export class HlsPlayer {
     return getState(this.state_, "duration");
   }
 
+  get seeking() {
+    return getState(this.state_, "seeking");
+  }
+
   get asset() {
     return getState(this.state_, "asset");
   }
@@ -267,6 +271,12 @@ export class HlsPlayer {
       this.updateQualities_();
       this.updateAudioTracks_();
       this.updateSubtitleTracks_();
+    });
+
+    listen(Hls.Events.INTERSTITIAL_STARTED, () => {
+      if (this.assetMedias_.length) {
+        this.primaryMedia_.pause();
+      }
     });
 
     listen(Hls.Events.INTERSTITIAL_ASSET_STARTED, (_, data) => {
@@ -375,6 +385,14 @@ export class HlsPlayer {
 
     listen("volumechange", () => {
       this.state_?.setVolume(media.volume);
+    });
+
+    listen("seeking", () => {
+      this.state_?.setSeeking(true);
+    });
+
+    listen("seeked", () => {
+      this.state_?.setSeeking(false);
     });
   }
 
