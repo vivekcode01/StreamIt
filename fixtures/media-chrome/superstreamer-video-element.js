@@ -32,6 +32,73 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
 
   #video;
 
+  constructor() {
+    super();
+
+    if (!this.shadowRoot) {
+      this.attachShadow({
+        mode: "open",
+      });
+      this.shadowRoot.innerHTML = getTemplateHTML();
+    }
+
+    const container = this.shadowRoot.querySelector(".container");
+    this.#player = new HlsPlayer(container);
+
+    this.#video = document.createElement("video");
+
+    this.#bindListeners();
+  }
+
+  #bindListeners() {
+    this.#player.on(Events.PLAYHEAD_CHANGE, () => {
+      switch (this.#player.playhead) {
+        case "play":
+          this.dispatchEvent(new Event("play"));
+          break;
+        case "playing":
+          this.dispatchEvent(new Event("playing"));
+          break;
+        case "pause":
+          this.dispatchEvent(new Event("pause"));
+          break;
+      }
+    });
+
+    this.#player.on(Events.TIME_CHANGE, () => {
+      this.dispatchEvent(new Event("timeupdate"));
+    });
+
+    this.#player.on(Events.VOLUME_CHANGE, () => {
+      this.dispatchEvent(new Event("volumechange"));
+    });
+
+    this.#player.on(Events.SEEKING_CHANGE, () => {
+      if (this.#player.seeking) {
+        this.dispatchEvent(new Event("seeking"));
+      } else {
+        this.dispatchEvent(new Event("seeked"));
+      }
+    });
+
+    this.#player.on(Events.READY, async () => {
+      this.#readyState = 1;
+
+      this.dispatchEvent(new Event("loadedmetadata"));
+      this.dispatchEvent(new Event("durationchange"));
+      this.dispatchEvent(new Event("volumechange"));
+      this.dispatchEvent(new Event("loadcomplete"));
+
+      this.#createVideoTracks();
+      this.#createAudioTracks();
+      this.#createTextTracks();
+    });
+
+    this.#player.on(Events.STARTED, () => {
+      this.#readyState = 3;
+    });
+  }
+
   get src() {
     return this.getAttribute("src");
   }
@@ -53,77 +120,28 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
     }
   }
 
-  load() {
-    if (!this.shadowRoot) {
-      this.attachShadow({
-        mode: "open",
-      });
-      this.shadowRoot.innerHTML = getTemplateHTML();
+  async load() {
+    this.#readyState = 0;
+
+    while (this.#video.firstChild) {
+      this.#video.firstChild.remove();
     }
 
-    this.#readyState = 0;
+    for (const videoTrack of this.videoTracks) {
+      this.removeVideoTrack(videoTrack);
+    }
+    for (const audioTrack of this.audioTracks) {
+      this.removeAudioTrack(audioTrack);
+    }
+
+    this.#player.unload();
+
     this.dispatchEvent(new Event("emptied"));
 
-    this.#video = document.createElement("video");
-    
-    if (!this.#player) {
-      const container = this.shadowRoot.querySelector(".container");
-      const player = (this.#player = new HlsPlayer(container));
-
-      // TODO: For debug purposes.
-      Object.assign(window, { player });
-
-      player.on(Events.PLAYHEAD_CHANGE, () => {
-        switch (player.playhead) {
-          case "play":
-            this.dispatchEvent(new Event("play"));
-            break;
-          case "playing":
-            this.dispatchEvent(new Event("playing"));
-            break;
-          case "pause":
-            this.dispatchEvent(new Event("pause"));
-            break;
-        }
-      });
-
-      player.on(Events.TIME_CHANGE, () => {
-        this.dispatchEvent(new Event("timeupdate"));
-      });
-
-      player.on(Events.VOLUME_CHANGE, () => {
-        this.dispatchEvent(new Event("volumechange"));
-      });
-
-      player.on(Events.SEEKING_CHANGE, () => {
-        if (player.seeking) {
-          this.dispatchEvent(new Event("seeking"));
-        } else {
-          this.dispatchEvent(new Event("seeked"));
-        }
-      })
-
-      player.on(Events.READY, async () => {
-        this.dispatchEvent(new Event("loadedmetadata"));
-        this.dispatchEvent(new Event("durationchange"));
-        this.dispatchEvent(new Event("volumechange"));
-        this.dispatchEvent(new Event("loadcomplete"));
-
-        this.#createVideoTracks();
-        this.#createAudioTracks();
-        this.#createTextTracks();
-
-        this.#readyState = 1;
-      });
-
-      player.on(Events.STARTED, () => {
-        this.#readyState = 3;
-      });
+    if (this.src) {
+      this.dispatchEvent(new Event("loadstart"));
+      this.#player.load(this.src);
     }
-
-    this.dispatchEvent(new Event("loadstart"));
-
-    this.#player.load(this.src);
   }
 
   get currentTime() {
@@ -168,6 +186,7 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
 
   async play() {
     this.#player.playOrPause();
+    await Promise.resolve();
   }
 
   pause() {
@@ -226,8 +245,7 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
     });
 
     this.textTracks.addEventListener("change", () => {
-      const track =
-        [...this.textTracks].find((t) => t.mode === "showing");
+      const track = [...this.textTracks].find((t) => t.mode === "showing");
       if (track) {
         const id = track[symbolTrackId_];
         this.#player.setSubtitleTrack(id);
@@ -238,7 +256,7 @@ class SuperstreamerVideoElement extends MediaTracksMixin(
   }
 
   addTextTrack(kind, label, language) {
-    const trackEl = document.createElement('track');
+    const trackEl = document.createElement("track");
     trackEl.kind = kind;
     trackEl.label = label;
     trackEl.srclang = language;
