@@ -1,6 +1,6 @@
 # Getting Started
 
-Setting up your video streaming platform has never been easier. With just a few simple steps, you'll be up and running, delivering seamless video experiences. 
+Setting up your video streaming platform has never been easier. With just a few simple steps, you'll be up and running, delivering seamless video experiences.
 
 Let's dive in and get you started!
 
@@ -127,6 +127,7 @@ In a scalable architecture, you probably do not want to run the ffmpeg and trans
 If you'd like to change the port of each service individually, provide the `PORT` environment variable for each service individually.
 
 - [AWS S3](https://aws.amazon.com/s3/)
+
 - [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/)
 
 :::
@@ -231,6 +232,69 @@ We've already covered how to build Superstreamer locally, and we've also made it
 
 ```sh [Terminal]
 $ bun run dev
+```
+
+:::
+
+### Quick Development Environment Setup
+
+We have also created a `docker-compose-dev.yml` so you can setup your development environment faster and start getting hands on!
+
+::: code-group
+
+```sh [Terminal]
+# We have prebuilt development containers, see docker/docker-compose-dev.yml
+cd docker
+docker-compose -f docker-compose-dev.yml up
+```
+
+:::
+
+You can create a file named `config.env.development` for a quick setup. Here is a sample that should work out of the box if default configuration is used:
+
+::: code-group
+
+```sh [config.env.development]
+S3_ENDPOINT=http://s3.localhost.localstack.cloud:4566/
+S3_REGION=us-east-1
+S3_ACCESS_KEY=test
+S3_SECRET_KEY=test
+S3_BUCKET=sprs-bucket
+
+# With Docker, use "redis", use "localhost" when you
+# run Redis on your own device.
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# These are public, they'll end up in client JS.
+PUBLIC_API_ENDPOINT=http://localhost:52001
+PUBLIC_STITCHER_ENDPOINT=http://localhost:52002
+PUBLIC_S3_ENDPOINT=http://s3.localhost.localstack.cloud:4566/sprs-bucket
+
+# Shared secret
+# *** Never EVER expose this publicly, auth tokens are signed with this secret.
+SUPER_SECRET=abc
+
+# Database
+# Provide a PostgreSQL connection string
+DATABASE_URI=postgresql://postgres:sprs@localhost:5432/sprs
+```
+
+:::
+
+Run it with:
+
+::: code-group
+
+```sh [Terminal]
+# Install dependencies
+bun install
+
+# Install binary dependencies, such as ffmpeg
+bun run install-bin
+
+# RUN!
+bun run dev
 ```
 
 :::
