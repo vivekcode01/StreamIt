@@ -1,7 +1,7 @@
 import { Card } from "@nextui-org/react";
 import { HlsPlayer } from "@superstreamer/player";
 import { useEffect, useRef, useState } from "react";
-import { DataDump2 } from "./DataDump2";
+import { ObjectDump } from "./ObjectDump";
 
 interface PlayerProps {
   url?: string | null;
@@ -47,12 +47,18 @@ export function Player({ url }: PlayerProps) {
   }, [player, url]);
 
   return (
-    <div className="flex h-full gap-4">
-      <div className="grow">
-        <div className="relative aspect-video bg-black" ref={ref} />
+    <div className="flex flex-col grow gap-4 h-full">
+      <div className="flex items-center">
+        <div
+          className="relative aspect-video bg-black max-h-[300px] grow"
+          ref={ref}
+        />
       </div>
-      <Card className="w-full h-full max-w-[360px] p-4 text-sm overflow-y-auto">
-        <DataDump2 data={state} redacted={["levels", ".track"]} />
+      <Card className="grow w-full h-full p-4 text-sm overflow-y-auto">
+        <ObjectDump
+          data={state}
+          redacted={["levels", ".track", "asset.player"]}
+        />
       </Card>
     </div>
   );

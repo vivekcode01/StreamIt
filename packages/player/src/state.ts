@@ -193,6 +193,10 @@ export class State implements StateProperties {
     const oldDuration = target.duration;
     target.duration = preciseFloat(timing.duration);
 
+    if (target.time > target.duration) {
+      target.time = target.duration;
+    }
+
     return oldTime !== target.time || oldDuration !== target.duration;
   }
 

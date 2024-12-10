@@ -2,22 +2,14 @@ import type { ReactNode } from "react";
 
 type Data = string | number | object | null | undefined;
 
-interface DataDump2Props {
-  data: object;
-  parent?: string;
-}
-
-export function DataDump2({
-  name,
-  data,
-  parent,
-  redacted,
-}: {
+interface ObjectDumpProps {
   name?: string | number;
   data: Data | Data[];
   parent?: string;
   redacted?: string[];
-}) {
+}
+
+export function ObjectDump({ name, data, parent, redacted }: ObjectDumpProps) {
   const id = `${parent}.${name}`;
 
   for (const check of redacted ?? []) {
@@ -32,7 +24,7 @@ export function DataDump2({
         <Label name={name} />
         {"["}
         {data.map((child, index) => (
-          <DataDump2
+          <ObjectDump
             key={`${id}.${index}`}
             parent={`${id}.${index}`}
             name={index}
@@ -51,7 +43,7 @@ export function DataDump2({
         {"{"}
         {Object.entries(data).map(([name, value]) => {
           return (
-            <DataDump2
+            <ObjectDump
               key={`${id}.${name}`}
               parent={`${id}.${name}`}
               name={name}
@@ -68,54 +60,6 @@ export function DataDump2({
     return <Primitive name={name ?? ""} value={data} />;
   }
   return null;
-}
-
-export function DataDump2_({ data }: DataDump2Props) {
-  return (
-    <div className="text-sm">
-      <Tree data={data} />
-    </div>
-  );
-}
-
-function Tree({ data, parent = "" }: { data: object; parent?: string }) {
-  return Object.entries(data).map(([name, value]) => {
-    const id = `${parent}.${name}`;
-
-    if (id.includes("levels") || id.includes(".track")) {
-      return null;
-    }
-
-    if (value !== Object(value)) {
-      return <Primitive key={id} name={name} value={value} />;
-    }
-
-    if (Array.isArray(value)) {
-      return (
-        <div key={id} className="ml-2">
-          <Label name={name} />
-          {"["}
-          {value.map((child, index) => (
-            <Tree key={`${id}.${index}`} parent={id} data={child} />
-          ))}
-          {"]"}
-        </div>
-      );
-    }
-
-    if (typeof value === "object") {
-      return (
-        <div key={id} className="ml-2">
-          <Label name={name} />
-          {"{"}
-          <Tree parent={id} data={value} />
-          {"}"}
-        </div>
-      );
-    }
-
-    return null;
-  });
 }
 
 function Primitive({ name, value }: { name: string | number; value: Data }) {
