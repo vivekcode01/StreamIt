@@ -34,14 +34,14 @@ function RouteComponent() {
     <div className="h-screen p-8 flex gap-4">
       <PlayerProvider>
         <div className="grow flex flex-col gap-4">
-          <div className="bg-gray-200 rounded-lg overflow-hidden">
+          <div className="bg-gray-200 rounded-lg overflow-hidden shrink-0">
             <div className="max-w-[500px] mx-auto">
               <Player url={url} />
             </div>
           </div>
           <Tabs
             classNames={{
-              panel: "grow",
+              panel: "grow p-0",
             }}
           >
             <Tab title="Config">
@@ -63,11 +63,11 @@ function RouteComponent() {
               </Card>
             </Tab>
             <Tab title="Stats">
-              <div className="relative h-full">
-                <div className="absolute inset-0">
+              <Card className="relative h-full">
+                <div className="absolute inset-0 overflow-y-auto p-4">
                   <PlayerStats />
                 </div>
-              </div>
+              </Card>
             </Tab>
           </Tabs>
         </div>

@@ -1,39 +1,61 @@
-import { Card } from "@nextui-org/react";
+import { useEffect, useState } from "react";
 import { DataView } from "./DataView";
 import { usePlayer } from "../context/PlayerContext";
 
 export function PlayerStats() {
   const { player } = usePlayer();
+  const [state, setState] = useState({});
+
+  useEffect(() => {
+    if (!player) {
+      return;
+    }
+
+    const onUpdate = () => {
+      const state = extractPublicProps(player);
+      setState(state);
+    };
+
+    player.on("*", onUpdate);
+    onUpdate();
+
+    return () => {
+      player.off("*", onUpdate);
+    };
+  }, [player]);
 
   return (
-    <Card className="h-full overflow-y-auto p-4">
-      <DataView
-        data={{
-          nulled: null,
-          undef: undefined,
-          obj: {
-            int: 10,
-            float: 1.5,
-          },
-          items: [
-            {
-              foo: "bar",
-            },
-            {
-              foo: "bar",
-            },
-            {
-              foo: "bar",
-            },
-            {
-              foo: "bar",
-            },
-            {
-              foo: "bar",
-            },
-          ],
-        }}
-      />
-    </Card>
+    <DataView
+      redacted={[
+        "subtitleTracks.*.track",
+        "audioTracks.*.track",
+        "qualities.*.levels",
+        "asset.player",
+      ]}
+      data={state}
+    />
   );
+}
+
+function extractPublicProps(value: object) {
+  if (!("__proto__" in value)) {
+    return {};
+  }
+
+  const descriptors = Object.entries(
+    Object.getOwnPropertyDescriptors(value.__proto__),
+  );
+
+  const state = descriptors
+    // Get public getters only
+    .filter(([name, desc]) => !name.endsWith("_") && desc.get)
+    .map(([name]) => name)
+    // Grab each property by name and add it to an object
+    .reduce((acc, name) => {
+      // @ts-expect-error Named properties
+      acc[name] = player[name];
+      return acc;
+    }, {});
+
+  return state;
 }
