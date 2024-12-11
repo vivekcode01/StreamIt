@@ -7,7 +7,11 @@ type Value = string | number | null | undefined | object;
 
 export function DataView({ data, redacted }: DataViewProps) {
   if (typeof data === "string") {
-    data = JSON.parse(data);
+    if (data.trim().startsWith("{")) {
+      data = JSON.parse(data);
+    } else {
+      return <pre className="text-xs font-mono">{data}</pre>;
+    }
   }
 
   return (
