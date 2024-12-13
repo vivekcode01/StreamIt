@@ -88,7 +88,12 @@ function formatMediaPlaylist(tags: Tag[]): MediaPlaylist {
   const segments: Segment[] = [];
   let segmentStart = -1;
 
-  tags.forEach(([name], index) => {
+  let map: MediaInitializationSection | undefined;
+  tags.forEach(([name, value], index) => {
+    if (name === "EXT-X-MAP") {
+      map = value;
+    }
+
     if (isSegmentTag(name)) {
       segmentStart = index - 1;
     }
@@ -100,7 +105,7 @@ function formatMediaPlaylist(tags: Tag[]): MediaPlaylist {
       const segmentTags = tags.slice(segmentStart, index + 1);
       const uri = nextLiteral(segmentTags, segmentTags.length - 2);
 
-      const segment = parseSegment(segmentTags, uri);
+      const segment = parseSegment(segmentTags, uri, map);
       segments.push(segment);
 
       segmentStart = -1;
@@ -140,18 +145,20 @@ function isSegmentTag(name: Tag[0]) {
   switch (name) {
     case "EXTINF":
     case "EXT-X-DISCONTINUITY":
-    case "EXT-X-MAP":
     case "EXT-X-PROGRAM-DATE-TIME":
       return true;
   }
   return false;
 }
 
-function parseSegment(tags: Tag[], uri: string): Segment {
+function parseSegment(
+  tags: Tag[],
+  uri: string,
+  map?: MediaInitializationSection,
+): Segment {
   let duration: number | undefined;
   let discontinuity: boolean | undefined;
   let programDateTime: DateTime | undefined;
-  let map: MediaInitializationSection | undefined;
 
   tags.forEach(([name, value]) => {
     if (name === "EXTINF") {
@@ -162,9 +169,6 @@ function parseSegment(tags: Tag[], uri: string): Segment {
     }
     if (name === "EXT-X-PROGRAM-DATE-TIME") {
       programDateTime = value;
-    }
-    if (name === "EXT-X-MAP") {
-      map = value;
     }
   });
 

@@ -1,4 +1,8 @@
-import type { MasterPlaylist, MediaPlaylist } from "./types";
+import type {
+  MasterPlaylist,
+  MediaInitializationSection,
+  MediaPlaylist,
+} from "./types";
 
 export function stringifyMasterPlaylist(playlist: MasterPlaylist) {
   const lines: string[] = [];
@@ -94,10 +98,18 @@ export function stringifyMediaPlaylist(playlist: MediaPlaylist) {
     lines.push(`#EXT-X-PLAYLIST-TYPE:${playlist.playlistType}`);
   }
 
+  let lastMap: MediaInitializationSection | undefined;
+
   playlist.segments.forEach((segment) => {
-    if (segment.map) {
-      const attrs = [`URI="${segment.map.uri}"`];
-      lines.push(`#EXT-X-MAP:${attrs.join(",")}`);
+    // See https://datatracker.ietf.org/doc/html/draft-pantos-hls-rfc8216bis-16#section-4.4.4.5
+    // It applies to every Media Segment that appears after it in the Playlist until the next
+    // EXT-X-MAP tag or until the end of the Playlist.
+    if (segment.map !== lastMap) {
+      if (segment.map) {
+        const attrs = [`URI="${segment.map.uri}"`];
+        lines.push(`#EXT-X-MAP:${attrs.join(",")}`);
+      }
+      lastMap = segment.map;
     }
 
     if (segment.discontinuity) {
