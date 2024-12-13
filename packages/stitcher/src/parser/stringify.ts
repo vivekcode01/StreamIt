@@ -1,68 +1,7 @@
-import { assert } from "shared/assert";
-import { Lines } from "./lines";
-import type {
-  DateRange,
-  MasterPlaylist,
-  MediaInitializationSection,
-  MediaPlaylist,
-  Rendition,
-  Segment,
-  Variant,
-} from "./types";
-
-function buildRendition(lines: Lines, rendition: Rendition) {
-  const attrs = [
-    `TYPE=${rendition.type}`,
-    `GROUP-ID="${rendition.groupId}"`,
-    `NAME="${rendition.name}"`,
-  ];
-  if (rendition.language) {
-    attrs.push(`LANGUAGE="${rendition.language}"`);
-  }
-  if (rendition.uri) {
-    attrs.push(`URI="${rendition.uri}"`);
-  }
-  if (rendition.channels) {
-    attrs.push(`CHANNELS="${rendition.channels}"`);
-  }
-  lines.push(`#EXT-X-MEDIA:${attrs.join(",")}`);
-}
-
-function buildVariant(lines: Lines, variant: Variant) {
-  const attrs = [`BANDWIDTH=${variant.bandwidth}`];
-
-  if (variant.codecs) {
-    attrs.push(`CODECS="${variant.codecs}"`);
-  }
-
-  if (variant.resolution) {
-    attrs.push(
-      `RESOLUTION=${variant.resolution.width}x${variant.resolution.height}`,
-    );
-  }
-
-  if (variant.audio.length) {
-    assert(variant.audio[0]);
-    attrs.push(`AUDIO="${variant.audio[0].groupId}"`);
-    for (const rendition of variant.audio) {
-      buildRendition(lines, rendition);
-    }
-  }
-
-  if (variant.subtitles.length) {
-    assert(variant.subtitles[0]);
-    attrs.push(`SUBTITLES="${variant.subtitles[0].groupId}"`);
-    for (const rendition of variant.subtitles) {
-      buildRendition(lines, rendition);
-    }
-  }
-
-  lines.push(`#EXT-X-STREAM-INF:${attrs.join(",")}`);
-  lines.push(variant.uri);
-}
+import type { MasterPlaylist, MediaPlaylist } from "./types";
 
 export function stringifyMasterPlaylist(playlist: MasterPlaylist) {
-  const lines = new Lines();
+  const lines: string[] = [];
 
   lines.push("#EXTM3U", "#EXT-X-VERSION:8");
 
@@ -70,65 +9,66 @@ export function stringifyMasterPlaylist(playlist: MasterPlaylist) {
     lines.push("#EXT-X-INDEPENDENT-SEGMENTS");
   }
 
+  playlist.renditions.forEach((rendition) => {
+    const attrs = [
+      `TYPE=${rendition.type}`,
+      `GROUP-ID="${rendition.groupId}"`,
+      `NAME="${rendition.name}"`,
+    ];
+    if (rendition.language) {
+      attrs.push(`LANGUAGE="${rendition.language}"`);
+    }
+    if (rendition.uri) {
+      attrs.push(`URI="${rendition.uri}"`);
+    }
+    if (rendition.channels) {
+      attrs.push(`CHANNELS="${rendition.channels}"`);
+    }
+    lines.push(`#EXT-X-MEDIA:${attrs.join(",")}`);
+  });
+
   playlist.variants.forEach((variant) => {
-    buildVariant(lines, variant);
+    const attrs = [`BANDWIDTH=${variant.bandwidth}`];
+    if (variant.codecs) {
+      attrs.push(`CODECS="${variant.codecs}"`);
+    }
+    if (variant.resolution) {
+      attrs.push(
+        `RESOLUTION=${variant.resolution.width}x${variant.resolution.height}`,
+      );
+    }
+    if (variant.audio) {
+      if (
+        !playlist.renditions.find(
+          (rendition) =>
+            rendition.type === "AUDIO" && rendition.groupId === variant.audio,
+        )
+      ) {
+        return;
+      }
+      attrs.push(`AUDIO="${variant.audio}"`);
+    }
+    if (variant.subtitles) {
+      if (
+        !playlist.renditions.find(
+          (rendition) =>
+            rendition.type === "SUBTITLES" &&
+            rendition.groupId === variant.subtitles,
+        )
+      ) {
+        return;
+      }
+      attrs.push(`SUBTITLES="${variant.subtitles}"`);
+    }
+    lines.push(`#EXT-X-STREAM-INF:${attrs.join(",")}`);
+    lines.push(variant.uri);
   });
 
   return lines.join("\n");
 }
 
-function buildSegment(lines: Lines, segment: Segment) {
-  if (segment.discontinuity) {
-    lines.push(`#EXT-X-DISCONTINUITY`);
-  }
-
-  if (segment.map) {
-    buildMap(lines, segment.map);
-  }
-
-  if (segment.programDateTime) {
-    lines.push(`#EXT-X-PROGRAM-DATE-TIME:${segment.programDateTime.toISO()}`);
-  }
-
-  let duration = segment.duration.toFixed(3);
-  if (duration.match(/\./)) {
-    duration = duration.replace(/\.?0+$/, "");
-  }
-
-  lines.push(`#EXTINF:${duration}`);
-
-  lines.push(segment.uri);
-}
-
-function buildMap(lines: Lines, map: MediaInitializationSection) {
-  const attrs = [`URI="${map.uri}"`];
-  lines.push(`#EXT-X-MAP:${attrs.join(",")}`);
-}
-
-function buildDateRange(lines: Lines, dateRange: DateRange) {
-  const attrs = [
-    `ID="${dateRange.id}"`,
-    `CLASS="${dateRange.classId}"`,
-    `START-DATE="${dateRange.startDate.toISO()}"`,
-  ];
-
-  if (dateRange.clientAttributes) {
-    const entries = Object.entries(dateRange.clientAttributes);
-    for (const [key, value] of entries) {
-      if (typeof value === "string") {
-        attrs.push(`X-${key}="${value}"`);
-      }
-      if (typeof value === "number") {
-        attrs.push(`X-${key}=${value}`);
-      }
-    }
-  }
-
-  lines.push(`#EXT-X-DATERANGE:${attrs.join(",")}`);
-}
-
 export function stringifyMediaPlaylist(playlist: MediaPlaylist) {
-  const lines = new Lines();
+  const lines: string[] = [];
 
   lines.push(
     "#EXTM3U",
@@ -155,7 +95,26 @@ export function stringifyMediaPlaylist(playlist: MediaPlaylist) {
   }
 
   playlist.segments.forEach((segment) => {
-    buildSegment(lines, segment);
+    if (segment.map) {
+      const attrs = [`URI="${segment.map.uri}"`];
+      lines.push(`#EXT-X-MAP:${attrs.join(",")}`);
+    }
+
+    if (segment.discontinuity) {
+      lines.push(`#EXT-X-DISCONTINUITY`);
+    }
+
+    if (segment.programDateTime) {
+      lines.push(`#EXT-X-PROGRAM-DATE-TIME:${segment.programDateTime.toISO()}`);
+    }
+
+    let duration = segment.duration.toFixed(3);
+    if (duration.match(/\./)) {
+      duration = duration.replace(/\.?0+$/, "");
+    }
+    lines.push(`#EXTINF:${duration}`);
+
+    lines.push(segment.uri);
   });
 
   if (playlist.endlist) {
@@ -163,7 +122,25 @@ export function stringifyMediaPlaylist(playlist: MediaPlaylist) {
   }
 
   playlist.dateRanges.forEach((dateRange) => {
-    buildDateRange(lines, dateRange);
+    const attrs = [
+      `ID="${dateRange.id}"`,
+      `CLASS="${dateRange.classId}"`,
+      `START-DATE="${dateRange.startDate.toISO()}"`,
+    ];
+
+    if (dateRange.clientAttributes) {
+      const entries = Object.entries(dateRange.clientAttributes);
+      for (const [key, value] of entries) {
+        if (typeof value === "string") {
+          attrs.push(`X-${key}="${value}"`);
+        }
+        if (typeof value === "number") {
+          attrs.push(`X-${key}=${value}`);
+        }
+      }
+    }
+
+    lines.push(`#EXT-X-DATERANGE:${attrs.join(",")}`);
   });
 
   return lines.join("\n");
