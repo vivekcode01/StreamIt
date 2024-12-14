@@ -1,4 +1,4 @@
-import type { HlsAssetPlayer, Level, MediaPlaylist } from "hls.js";
+import type { Level, MediaPlaylist } from "hls.js";
 
 export type Playhead = "idle" | "play" | "playing" | "pause" | "ended";
 
@@ -12,8 +12,7 @@ export enum Events {
   AUDIO_TRACKS_CHANGE = "audioTracksChange",
   SUBTITLE_TRACKS_CHANGE = "subtitleTracksChange",
   AUTO_QUALITY_CHANGE = "autoQualityChange",
-  ASSET_CHANGE = "assetChange",
-  ASSET_TIME_CHANGE = "assetTimeChange",
+  INTERSTITIAL_CHANGE = "interstitialChange",
   SEEKING_CHANGE = "seekingChange",
 }
 
@@ -27,8 +26,7 @@ export type HlsPlayerEventMap = {
   [Events.AUDIO_TRACKS_CHANGE]: () => void;
   [Events.SUBTITLE_TRACKS_CHANGE]: () => void;
   [Events.AUTO_QUALITY_CHANGE]: () => void;
-  [Events.ASSET_CHANGE]: () => void;
-  [Events.ASSET_TIME_CHANGE]: () => void;
+  [Events.INTERSTITIAL_CHANGE]: () => void;
   [Events.SEEKING_CHANGE]: () => void;
 } & {
   "*": (event: Events) => void;
@@ -57,6 +55,9 @@ export interface SubtitleTrack {
 export interface Asset {
   time: number;
   duration: number;
-  player: HlsAssetPlayer;
   type?: "ad" | "bumper";
+}
+
+export interface Interstitial {
+  asset: Asset | null;
 }

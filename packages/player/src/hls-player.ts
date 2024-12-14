@@ -12,22 +12,10 @@ import type {
 } from "./types";
 import type { Level } from "hls.js";
 
-export interface HlsPlayerOptions {
-  multiMediaEl?: boolean;
-}
-
 export class HlsPlayer {
-  private primaryMedia_: HTMLMediaElement;
-
-  private assetMedias_: HTMLMediaElement[] = [];
-
-  private assetMediaIndex_ = 0;
+  private media_: HTMLMediaElement;
 
   private eventManager_ = new EventManager();
-
-  private activeMedia_: HTMLMediaElement;
-
-  private activeMediaEventManager_ = new EventManager();
 
   private hls_: Hls | null = null;
 
@@ -35,22 +23,8 @@ export class HlsPlayer {
 
   private emitter_ = new EventEmitter<HlsPlayerEventMap>();
 
-  constructor(
-    public container: HTMLDivElement,
-    userOptions?: HlsPlayerOptions,
-  ) {
-    const options = {
-      ...userOptions,
-      multiMediaEl: true,
-    };
-
-    this.primaryMedia_ = this.activeMedia_ = this.createMedia_();
-
-    if (options.multiMediaEl) {
-      // Create separate media elements for interstitial assets. This is to ensure a smoother
-      // transition across different playlists.
-      this.assetMedias_ = [this.createMedia_(), this.createMedia_()];
-    }
+  constructor(public container: HTMLDivElement) {
+    this.media_ = this.createMedia_();
 
     // Make sure we're in unload state.
     this.unload();
@@ -69,25 +43,21 @@ export class HlsPlayer {
   }
 
   load(url: string) {
+    this.bindMediaListeners_();
     const hls = this.createHls_();
 
     this.state_ = new State({
       emitter: this.emitter_,
-      getTiming: () => hls.interstitialsManager?.primary ?? hls.media ?? null,
-      getAssetTiming: () => {
-        if (!hls.interstitialsManager) {
-          return null;
-        }
-        return (
-          hls.interstitialsManager.playerQueue.find(
-            (player) =>
-              player.assetItem === hls.interstitialsManager?.playingAsset,
-          ) ?? null
-        );
-      },
+      getTiming: () => ({
+        primary: hls.interstitialsManager?.primary ?? hls.media,
+        asset: hls.interstitialsManager?.playerQueue.find(
+          (player) =>
+            player.assetItem === hls.interstitialsManager?.playingAsset,
+        ),
+      }),
     });
 
-    hls.attachMedia(this.primaryMedia_);
+    hls.attachMedia(this.media_);
     hls.loadSource(url);
 
     this.hls_ = hls;
@@ -96,8 +66,6 @@ export class HlsPlayer {
   unload() {
     this.eventManager_.removeAll();
     this.state_ = null;
-
-    this.setActiveMedia_(this.primaryMedia_);
 
     if (this.hls_) {
       this.hls_.destroy();
@@ -108,10 +76,6 @@ export class HlsPlayer {
   destroy() {
     this.emitter_.removeAllListeners();
     this.unload();
-
-    this.allMedias_.forEach((media) => {
-      media.remove();
-    });
   }
 
   on = this.emitter_.on.bind(this.emitter_);
@@ -125,9 +89,9 @@ export class HlsPlayer {
     const shouldPause =
       this.state_.playhead === "play" || this.state_.playhead === "playing";
     if (shouldPause) {
-      this.activeMedia_.pause();
+      this.media_.pause();
     } else {
-      this.activeMedia_.play();
+      this.media_.play();
     }
   }
 
@@ -137,7 +101,7 @@ export class HlsPlayer {
     if (this.hls_.interstitialsManager) {
       this.hls_.interstitialsManager.primary.seekTo(time);
     } else {
-      this.primaryMedia_.currentTime = time;
+      this.media_.currentTime = time;
     }
   }
 
@@ -203,10 +167,8 @@ export class HlsPlayer {
   }
 
   setVolume(volume: number) {
-    this.allMedias_.forEach((media) => {
-      media.volume = volume;
-      media.muted = volume === 0;
-    });
+    this.media_.volume = volume;
+    this.media_.muted = volume === 0;
     this.state_?.setVolume(volume);
   }
 
@@ -234,8 +196,8 @@ export class HlsPlayer {
     return getState(this.state_, "seeking");
   }
 
-  get asset() {
-    return getState(this.state_, "asset");
+  get interstitial() {
+    return getState(this.state_, "interstitial");
   }
 
   get qualities() {
@@ -270,18 +232,12 @@ export class HlsPlayer {
     });
 
     listen(Hls.Events.INTERSTITIAL_STARTED, () => {
-      if (this.assetMedias_.length) {
-        this.primaryMedia_.pause();
-      }
+      this.state_?.setInterstitial({
+        asset: null,
+      });
     });
 
     listen(Hls.Events.INTERSTITIAL_ASSET_STARTED, (_, data) => {
-      const media = this.claimAssetMedia_();
-      if (media) {
-        data.player.attachMedia(media);
-        this.setActiveMedia_(media);
-      }
-
       const listResponseAsset = data.event.assetListResponse?.ASSETS[
         data.assetListIndex
       ] as {
@@ -289,7 +245,6 @@ export class HlsPlayer {
       };
 
       this.state_?.setAsset({
-        player: data.player,
         type: listResponseAsset["SPRS-KIND"],
       });
     });
@@ -298,9 +253,8 @@ export class HlsPlayer {
       this.state_?.setAsset(null);
     });
 
-    listen(Hls.Events.INTERSTITIALS_PRIMARY_RESUMED, () => {
-      this.assetMediaIndex_ = 0;
-      this.setActiveMedia_(this.primaryMedia_);
+    listen(Hls.Events.INTERSTITIAL_ENDED, () => {
+      this.state_?.setInterstitial(null);
     });
 
     listen(Hls.Events.LEVELS_UPDATED, () => {
@@ -328,63 +282,6 @@ export class HlsPlayer {
     });
 
     return hls;
-  }
-
-  private claimAssetMedia_() {
-    if (!this.assetMedias_.length) {
-      return null;
-    }
-
-    const media = this.assetMedias_[this.assetMediaIndex_];
-    this.assetMediaIndex_ =
-      (this.assetMediaIndex_ + 1) % this.assetMedias_.length;
-
-    return media;
-  }
-
-  private setActiveMedia_(media: HTMLMediaElement) {
-    this.allMedias_.forEach((element) => {
-      element.style.opacity = element === media ? "1" : "0";
-    });
-
-    this.activeMedia_ = media;
-
-    this.activeMediaEventManager_.removeAll();
-    const listen = this.activeMediaEventManager_.listen(media);
-
-    listen("canplay", () => {
-      this.state_?.setReady();
-    });
-
-    listen("play", () => {
-      this.state_?.setPlayhead("play");
-    });
-
-    listen("playing", () => {
-      this.state_?.setStarted();
-
-      this.state_?.setPlayhead("playing");
-    });
-
-    listen("pause", () => {
-      this.state_?.setPlayhead("pause");
-    });
-
-    listen("volumechange", () => {
-      this.state_?.setVolume(media.volume);
-    });
-
-    listen("seeking", () => {
-      this.state_?.setSeeking(true);
-    });
-
-    listen("seeked", () => {
-      this.state_?.setSeeking(false);
-    });
-  }
-
-  private get allMedias_() {
-    return [this.primaryMedia_, ...this.assetMedias_];
   }
 
   private updateQualities_() {
@@ -460,5 +357,39 @@ export class HlsPlayer {
     );
 
     this.state_?.setSubtitleTracks(tracks);
+  }
+
+  private bindMediaListeners_() {
+    const listen = this.eventManager_.listen(this.media_);
+
+    listen("canplay", () => {
+      this.state_?.setReady();
+    });
+
+    listen("play", () => {
+      this.state_?.setPlayhead("play");
+    });
+
+    listen("playing", () => {
+      this.state_?.setStarted();
+
+      this.state_?.setPlayhead("playing");
+    });
+
+    listen("pause", () => {
+      this.state_?.setPlayhead("pause");
+    });
+
+    listen("volumechange", () => {
+      this.state_?.setVolume(this.media_.volume);
+    });
+
+    listen("seeking", () => {
+      this.state_?.setSeeking(true);
+    });
+
+    listen("seeked", () => {
+      this.state_?.setSeeking(false);
+    });
   }
 }

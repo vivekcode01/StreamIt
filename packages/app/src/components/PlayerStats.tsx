@@ -30,7 +30,6 @@ export function PlayerStats() {
         "subtitleTracks.*.track",
         "audioTracks.*.track",
         "qualities.*.levels",
-        "asset.player",
       ]}
       data={state}
     />

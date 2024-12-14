@@ -4,21 +4,24 @@ import type {
   Asset,
   AudioTrack,
   HlsPlayerEventMap,
+  Interstitial,
   Playhead,
   Quality,
   SubtitleTrack,
 } from "./types";
 import type { EventEmitter } from "tseep";
 
-interface StateMediaShim {
+interface MediaShim {
   currentTime: number;
   duration: number;
 }
 
 interface StateParams {
   emitter: EventEmitter<HlsPlayerEventMap>;
-  getTiming(): StateMediaShim | null;
-  getAssetTiming(): StateMediaShim | null;
+  getTiming(): {
+    primary?: MediaShim | null;
+    asset?: MediaShim | null;
+  };
 }
 
 interface StateProperties {
@@ -27,7 +30,7 @@ interface StateProperties {
   started: boolean;
   time: number;
   duration: number;
-  asset: Asset | null;
+  interstitial: Interstitial | null;
   qualities: Quality[];
   autoQuality: boolean;
   audioTracks: AudioTrack[];
@@ -42,7 +45,7 @@ const noState: StateProperties = {
   started: false,
   time: 0,
   duration: NaN,
-  asset: null,
+  interstitial: null,
   qualities: [],
   autoQuality: false,
   audioTracks: [],
@@ -89,18 +92,25 @@ export class State implements StateProperties {
     this.emit_(Events.STARTED);
   }
 
+  setInterstitial(interstitial: Interstitial | null) {
+    this.interstitial = interstitial;
+    this.emit_(Events.INTERSTITIAL_CHANGE);
+  }
+
   setAsset(asset: Omit<Asset, "time" | "duration"> | null) {
+    if (!this.interstitial) {
+      return;
+    }
     if (asset) {
-      this.asset = {
+      this.interstitial.asset = {
         time: 0,
         duration: NaN,
         ...asset,
       };
       this.requestTimingSync();
     } else {
-      this.asset = null;
+      this.interstitial.asset = null;
     }
-    this.emit_(Events.ASSET_CHANGE);
   }
 
   setQualities(qualities: Quality[], autoQuality: boolean) {
@@ -162,14 +172,23 @@ export class State implements StateProperties {
       this.requestTimingSync();
     }, 250);
 
-    if (this.updateTimeDuration_(this, this.params_.getTiming())) {
-      this.emit_(Events.TIME_CHANGE);
+    const timing = this.params_.getTiming();
+
+    let shouldEmit = false;
+
+    if (this.updateTimeDuration_(this, timing.primary)) {
+      shouldEmit = true;
     }
 
-    if (this.asset) {
-      if (this.updateTimeDuration_(this.asset, this.params_.getAssetTiming())) {
-        this.emit_(Events.ASSET_TIME_CHANGE);
-      }
+    if (
+      this.interstitial?.asset &&
+      this.updateTimeDuration_(this.interstitial.asset, timing.asset)
+    ) {
+      shouldEmit = true;
+    }
+
+    if (shouldEmit) {
+      this.emit_(Events.TIME_CHANGE);
     }
   }
 
@@ -178,20 +197,20 @@ export class State implements StateProperties {
       time: number;
       duration: number;
     },
-    timing: StateMediaShim | null,
+    shim?: MediaShim | null,
   ) {
-    if (!timing) {
+    if (!shim) {
       return false;
     }
-    if (!Number.isFinite(timing.duration)) {
+    if (!Number.isFinite(shim.duration)) {
       return false;
     }
 
     const oldTime = target.time;
-    target.time = preciseFloat(timing.currentTime);
+    target.time = preciseFloat(shim.currentTime);
 
     const oldDuration = target.duration;
-    target.duration = preciseFloat(timing.duration);
+    target.duration = preciseFloat(shim.duration);
 
     if (target.time > target.duration) {
       target.time = target.duration;
@@ -210,7 +229,7 @@ export class State implements StateProperties {
   started = noState.started;
   time = noState.time;
   duration = noState.duration;
-  asset = noState.asset;
+  interstitial = noState.interstitial;
   qualities = noState.qualities;
   autoQuality = noState.autoQuality;
   audioTracks = noState.audioTracks;
