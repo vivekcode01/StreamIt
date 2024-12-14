@@ -76,20 +76,23 @@ export async function formatMediaPlaylist(
 export async function formatAssetList(session: Session, dateTime: DateTime) {
   const assets = await getAssets(session, dateTime);
 
-  const assetsPromises = assets.map(async (asset) => {
-    if (asset.duration === undefined) {
-      asset.duration = await fetchDuration(asset.url);
-    }
-    return {
-      URI: asset.url,
-      DURATION: asset.duration,
-      "SPRS-KIND": asset.kind,
-      "X-AD-CREATIVE-SIGNALING": getAdCreativeSignaling(assets, asset),
-    };
-  });
+  await Promise.all(
+    assets.map(async (asset) => {
+      if (asset.duration === undefined) {
+        asset.duration = await fetchDuration(asset.url);
+      }
+    }),
+  );
 
   return {
-    ASSETS: await Promise.all(assetsPromises),
+    ASSETS: assets.map((asset) => {
+      return {
+        URI: asset.url,
+        DURATION: asset.duration,
+        "SPRS-KIND": asset.kind,
+        "X-AD-CREATIVE-SIGNALING": getAdCreativeSignaling(assets, asset),
+      };
+    }),
   };
 }
 
@@ -243,42 +246,44 @@ export function mapAdBreaksToSessionInterstitials(
   return interstitials;
 }
 
+interface SignalingEvent {
+  type: "clickthrough" | "quartile";
+  start?: number;
+  urls: string[];
+}
+
 export function getAdCreativeSignaling(
   assets: InterstitialAsset[],
   asset: InterstitialAsset,
 ) {
-  if (!asset.tracking) {
-    return;
-  }
+  const { duration, tracking } = asset;
 
-  assert(asset.duration);
-  const { duration } = asset;
+  assert(duration);
+
+  if (!tracking) {
+    return null;
+  }
 
   let startTime = 0;
-  for (const item of assets) {
-    // TODO: item.duration MIGHT be not resolved yet, we got to do
-    // this afterwards
-    if (item === asset) {
+  for (const tempAsset of assets) {
+    if (tempAsset === asset) {
       break;
     }
-    startTime += item.duration ?? 0;
+    assert(tempAsset.duration);
+    startTime += tempAsset.duration;
   }
 
-  const tracking: {
-    type: "impression" | "clickthrough" | "quartile";
-    start?: number;
-    urls: string[];
-  }[] = [];
+  const signalingEvents: SignalingEvent[] = [];
 
-  Object.entries(asset.tracking).forEach(([name, urls]) => {
-    if (name === "firstQuartile") {
-      tracking.push({
+  Object.entries(tracking).forEach(([name, urls]) => {
+    const offset = QUARTILE_EVENTS[name];
+    if (offset !== undefined) {
+      signalingEvents.push({
         type: "quartile",
-        start: duration * 0.25,
+        start: startTime + duration * offset,
         urls,
       });
     }
-    // TODO: The rest
   });
 
   return {
@@ -289,8 +294,16 @@ export function getAdCreativeSignaling(
         type: "linear",
         start: startTime,
         duration: asset.duration,
-        tracking,
+        tracking: signalingEvents,
       },
     ],
   };
 }
+
+const QUARTILE_EVENTS: Record<string, number> = {
+  start: 0,
+  firstQuartile: 0.25,
+  midpoint: 0.5,
+  thirdQuartile: 0.75,
+  complete: 1,
+};
