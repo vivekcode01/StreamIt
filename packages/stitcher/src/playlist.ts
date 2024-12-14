@@ -18,7 +18,7 @@ import { fetchVmap, toAdBreakTimeOffset } from "./vmap";
 import type { Filter } from "./filters";
 import type { MasterPlaylist, MediaPlaylist } from "./parser";
 import type { Session } from "./session";
-import type { Interstitial } from "./types";
+import type { Interstitial, InterstitialAsset } from "./types";
 import type { VmapAdBreak } from "./vmap";
 import type { DateTime } from "luxon";
 
@@ -77,10 +77,14 @@ export async function formatAssetList(session: Session, dateTime: DateTime) {
   const assets = await getAssets(session, dateTime);
 
   const assetsPromises = assets.map(async (asset) => {
+    if (asset.duration === undefined) {
+      asset.duration = await fetchDuration(asset.url);
+    }
     return {
       URI: asset.url,
-      DURATION: asset.duration ?? (await fetchDuration(asset.url)),
+      DURATION: asset.duration,
       "SPRS-KIND": asset.kind,
+      "X-AD-CREATIVE-SIGNALING": getAdCreativeSignaling(assets, asset),
     };
   });
 
@@ -237,4 +241,56 @@ export function mapAdBreaksToSessionInterstitials(
   }
 
   return interstitials;
+}
+
+export function getAdCreativeSignaling(
+  assets: InterstitialAsset[],
+  asset: InterstitialAsset,
+) {
+  if (!asset.tracking) {
+    return;
+  }
+
+  assert(asset.duration);
+  const { duration } = asset;
+
+  let startTime = 0;
+  for (const item of assets) {
+    // TODO: item.duration MIGHT be not resolved yet, we got to do
+    // this afterwards
+    if (item === asset) {
+      break;
+    }
+    startTime += item.duration ?? 0;
+  }
+
+  const tracking: {
+    type: "impression" | "clickthrough" | "quartile";
+    start?: number;
+    urls: string[];
+  }[] = [];
+
+  Object.entries(asset.tracking).forEach(([name, urls]) => {
+    if (name === "firstQuartile") {
+      tracking.push({
+        type: "quartile",
+        start: duration * 0.25,
+        urls,
+      });
+    }
+    // TODO: The rest
+  });
+
+  return {
+    version: 2,
+    type: "slot",
+    payload: [
+      {
+        type: "linear",
+        start: startTime,
+        duration: asset.duration,
+        tracking,
+      },
+    ],
+  };
 }
