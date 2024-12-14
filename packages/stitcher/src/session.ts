@@ -20,6 +20,7 @@ export interface Session {
 
 interface SessionInterstitial {
   time: number | string;
+  duration?: number;
   assets?: {
     uri: string;
     kind?: "ad" | "bumper";
@@ -83,7 +84,7 @@ function mapSessionInterstitials(
   interstitials: SessionInterstitial[],
 ) {
   return interstitials.map<Interstitial>((item) => {
-    const { time, assets, ...rest } = item;
+    const { time, duration, assets, ...rest } = item;
     const dateTime =
       typeof time === "string"
         ? DateTime.fromISO(time)
@@ -91,6 +92,7 @@ function mapSessionInterstitials(
 
     return {
       dateTime,
+      duration,
       assets: assets?.map((asset) => {
         const { uri, ...rest } = asset;
         return { url: resolveUri(uri), ...rest };
