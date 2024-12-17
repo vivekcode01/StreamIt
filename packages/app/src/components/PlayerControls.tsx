@@ -14,17 +14,17 @@ export function PlayerControls() {
 function Controls() {
   const ready = usePlayerSelector((player) => player.ready);
   if (!ready) {
-    return "N/A";
+    return null;
   }
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-4 items-center">
-        <PlayButton />
-      </div>
       <Timing />
       <Seekbar />
       <CuePoints />
       <Info />
+      <div className="flex gap-4 items-center justify-center">
+        <PlayButton />
+      </div>
     </div>
   );
 }
