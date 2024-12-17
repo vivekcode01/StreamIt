@@ -220,6 +220,21 @@ export class HlsPlayer {
     return getState(this.state_, "volume");
   }
 
+  get seekableStart() {
+    if (this.hls_) {
+      return this.hls_.interstitialsManager?.primary?.seekableStart ?? 0;
+    }
+    return NaN;
+  }
+
+  get live() {
+    return this.hls_?.levels[this.hls_.currentLevel]?.details?.live ?? false;
+  }
+
+  get cuePoints() {
+    return getState(this.state_, "cuePoints");
+  }
+
   private createHls_() {
     const hls = new Hls();
 
@@ -279,6 +294,16 @@ export class HlsPlayer {
 
     listen(Hls.Events.SUBTITLE_TRACK_SWITCH, () => {
       this.updateSubtitleTracks_();
+    });
+
+    listen(Hls.Events.INTERSTITIALS_UPDATED, (_, data) => {
+      const cuePoints = data.schedule.reduce<number[]>((acc, item) => {
+        if (item.event) {
+          acc.push(item.start);
+        }
+        return acc;
+      }, []);
+      this.state_?.setCuePoints(cuePoints);
     });
 
     return hls;

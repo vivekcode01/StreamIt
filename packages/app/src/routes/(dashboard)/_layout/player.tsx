@@ -11,6 +11,7 @@ import { useRef, useState } from "react";
 import { CodeEditor } from "../../../components/CodeEditor";
 import { Form } from "../../../components/Form";
 import { Player } from "../../../components/Player";
+import { PlayerControls } from "../../../components/PlayerControls";
 import { PlayerStats } from "../../../components/PlayerStats";
 import { PlayerProvider } from "../../../context/PlayerContext";
 import { useSwaggerSchema } from "../../../hooks/useSwaggerSchema";
@@ -61,6 +62,9 @@ function RouteComponent() {
                   }}
                 />
               </Card>
+            </Tab>
+            <Tab title="Controls">
+              <PlayerControls />
             </Tab>
             <Tab title="Stats">
               <Card className="relative h-full">

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { HlsPlayer } from "@superstreamer/player";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
@@ -31,4 +31,38 @@ export function usePlayer() {
     throw new Error("Missing provider");
   }
   return context;
+}
+
+export function usePlayerSelector<R>(selector: (player: HlsPlayer) => R) {
+  const { player } = usePlayer();
+  if (!player) {
+    throw new Error("Missing player");
+  }
+
+  const getSelector = () => {
+    const value = selector(player);
+    if (typeof value === "function") {
+      return value.bind(player);
+    }
+    return value;
+  };
+
+  const [value, setValue] = useState<R>(getSelector);
+
+  useEffect(() => {
+    if (!player) {
+      return;
+    }
+
+    const onUpdate = () => {
+      setValue(getSelector);
+    };
+
+    player.on("*", onUpdate);
+    return () => {
+      player.off("*", onUpdate);
+    };
+  }, [player]);
+
+  return value;
 }

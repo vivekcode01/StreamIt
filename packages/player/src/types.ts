@@ -14,6 +14,7 @@ export enum Events {
   AUTO_QUALITY_CHANGE = "autoQualityChange",
   INTERSTITIAL_CHANGE = "interstitialChange",
   SEEKING_CHANGE = "seekingChange",
+  CUEPOINTS_CHANGE = "cuePointsChange",
 }
 
 export type HlsPlayerEventMap = {
@@ -28,6 +29,7 @@ export type HlsPlayerEventMap = {
   [Events.AUTO_QUALITY_CHANGE]: () => void;
   [Events.INTERSTITIAL_CHANGE]: () => void;
   [Events.SEEKING_CHANGE]: () => void;
+  [Events.CUEPOINTS_CHANGE]: () => void;
 } & {
   "*": (event: Events) => void;
 };

@@ -37,6 +37,7 @@ interface StateProperties {
   subtitleTracks: SubtitleTrack[];
   volume: number;
   seeking: boolean;
+  cuePoints: number[];
 }
 
 const noState: StateProperties = {
@@ -52,6 +53,7 @@ const noState: StateProperties = {
   subtitleTracks: [],
   volume: 1,
   seeking: false,
+  cuePoints: [],
 };
 
 export class State implements StateProperties {
@@ -166,6 +168,11 @@ export class State implements StateProperties {
     this.emit_(Events.SEEKING_CHANGE);
   }
 
+  setCuePoints(cuePoints: number[]) {
+    this.cuePoints = cuePoints;
+    this.emit_(Events.CUEPOINTS_CHANGE);
+  }
+
   requestTimingSync() {
     clearTimeout(this.timerId_);
     this.timerId_ = window.setTimeout(() => {
@@ -196,6 +203,7 @@ export class State implements StateProperties {
     target: {
       time: number;
       duration: number;
+      seekableStart?: number;
     },
     shim?: MediaShim | null,
   ) {
@@ -236,6 +244,7 @@ export class State implements StateProperties {
   subtitleTracks = noState.subtitleTracks;
   volume = noState.volume;
   seeking = noState.seeking;
+  cuePoints = noState.cuePoints;
 }
 
 export function getState<N extends keyof StateProperties>(
