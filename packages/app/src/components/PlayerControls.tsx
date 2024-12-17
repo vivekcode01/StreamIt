@@ -1,30 +1,24 @@
-import { Button } from "@nextui-org/react";
-import { usePlayer, usePlayerSelector } from "../context/PlayerContext";
+import { Button, Select, SelectItem } from "@nextui-org/react";
+import cn from "clsx";
+import { useRef } from "react";
+import { usePlayerSelector } from "../context/PlayerContext";
 import { useSeekbar } from "../hooks/useSeekbar";
+import type { ReactNode, RefObject } from "react";
 
 export function PlayerControls() {
-  const { player } = usePlayer();
-  if (!player) {
-    return null;
-  }
-
-  return <Controls />;
-}
-
-function Controls() {
   const ready = usePlayerSelector((player) => player.ready);
   if (!ready) {
     return null;
   }
   return (
     <div className="flex flex-col gap-2 overflow-hidden">
-      <Timing />
-      <Seekbar />
-      <CuePoints />
-      <Info />
-      <div className="flex gap-4 items-center justify-center">
+      <div className="flex">
         <PlayButton />
       </div>
+      <Seekbar />
+      <CuePoints />
+      <Time />
+      <Tracks />
     </div>
   );
 }
@@ -42,23 +36,9 @@ function PlayButton() {
   );
 }
 
-function Info() {
-  const live = usePlayerSelector((player) => player.live);
-  const time = usePlayerSelector((player) => player.time);
-  const duration = usePlayerSelector((player) => player.duration);
-  return (
-    <div className="flex gap-2 items-center">
-      {live ? (
-        <div className="text-sm font-mono">
-          from live edge: {hms(duration - time)}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 function Seekbar() {
   const seekableStart = usePlayerSelector((player) => player.seekableStart);
+  const time = usePlayerSelector((player) => player.time);
   const duration = usePlayerSelector((player) => player.duration);
   const seekTo = usePlayerSelector((player) => player.seekTo);
 
@@ -68,32 +48,73 @@ function Seekbar() {
     onSeeked: seekTo,
   });
 
+  const percentage = (time - seekableStart) / (duration - seekableStart);
+
   return (
-    <div
-      {...seekbar.rootProps}
-      className="w-full relative h-4 bg-gray-200 cursor-pointer"
-    />
+    <div {...seekbar.rootProps} className="w-full relative cursor-pointer">
+      <Tooltip
+        x={seekbar.x}
+        seekbarRef={seekbar.rootProps.ref}
+        visible={seekbar.active}
+      >
+        {hms(seekbar.value)}
+      </Tooltip>
+      <div className="flex items-center rounded-lg overflow-hidden">
+        <div className="h-6 bg-gray-100 w-full" />
+        <div
+          className={cn(
+            "h-2 absolute left-0 right-0 bg-gray-200 origin-left opacity-0 transition-opacity",
+            seekbar.hover && "opacity-100",
+          )}
+          style={{
+            transform: `scaleX(${seekbar.x})`,
+          }}
+        />
+        <div
+          className={cn("h-2 absolute left-0 right-0 bg-black origin-left")}
+          style={{
+            transform: `scaleX(${percentage})`,
+          }}
+        />
+      </div>
+    </div>
   );
 }
 
-function Timing() {
-  const seekableStart = usePlayerSelector((player) => player.seekableStart);
-  const time = usePlayerSelector((player) => player.time);
-  const duration = usePlayerSelector((player) => player.duration);
+function Tooltip({
+  x,
+  seekbarRef,
+  visible,
+  children,
+}: {
+  x: number;
+  seekbarRef: RefObject<HTMLDivElement>;
+  visible: boolean;
+  children: ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  if (ref.current && seekbarRef.current) {
+    const seekbarRect = seekbarRef.current.getBoundingClientRect();
+    const rect = ref.current.getBoundingClientRect();
+    const offset = rect.width / 2 / seekbarRect.width;
+    if (x < offset) {
+      x = offset;
+    } else if (x > 1 - offset) {
+      x = 1 - offset;
+    }
+  }
+
   return (
-    <div className="w-full flex font-mono relative pt-6 text-xs">
-      <div>{hms(seekableStart)}</div>
-      <div className="grow" />
-      <div>{hms(duration)}</div>
-      <div
-        className="absolute -translate-x-1/2 top-0 bg-black text-white z-10"
-        style={{
-          left: `${((time - seekableStart) / (duration - seekableStart)) * 100}%`,
-        }}
-      >
-        {hms(time)}
-        <div className="absolute -translate-x-1/2 w-[2px] left-1/2 h-16 top-0 bg-black" />
-      </div>
+    <div
+      ref={ref}
+      className={cn(
+        "pointer-events-none absolute h-6 -top-6 -translate-x-1/2 opacity-0 transition-opacity text-xs text-white bg-black px-1 flex items-center rounded-md",
+        visible && "opacity-100",
+      )}
+      style={{ left: `${x * 100}%` }}
+    >
+      {children}
     </div>
   );
 }
@@ -101,20 +122,86 @@ function Timing() {
 function CuePoints() {
   const cuePoints = usePlayerSelector((player) => player.cuePoints);
   const duration = usePlayerSelector((player) => player.duration);
+  const seekableStart = usePlayerSelector((player) => player.seekableStart);
 
   return (
-    <div className="relative">
+    <div className="relative h-2 bg-gray-100 rounded-lg">
       {cuePoints.map((cuePoint) => {
         return (
           <div
             key={cuePoint}
-            style={{ left: `${(cuePoint / duration) * 100}%` }}
-            className="absolute  -translate-x-1/2 top-0 w-2 h-2 rounded-full bg-yellow-500"
+            style={{
+              left: `${((cuePoint - seekableStart) / (duration - seekableStart)) * 100}%`,
+            }}
+            className="absolute -translate-x-1/2 top-0 w-2 h-2 rounded-full bg-yellow-500"
           >
-            <div className="absolute -translate-x-1/2 w-[2px] left-1/2 h-8 bottom-0 bg-yellow-500" />
+            <div className="absolute -translate-x-1/2 w-[2px] left-1/2 h-4 bottom-0 bg-yellow-500" />
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function Time() {
+  const seekableStart = usePlayerSelector((player) => player.seekableStart);
+  const duration = usePlayerSelector((player) => player.duration);
+
+  return (
+    <div className="flex">
+      {hms(seekableStart)}
+      <div className="grow" />
+      {hms(duration)}
+    </div>
+  );
+}
+
+function Tracks() {
+  const audioTracks = usePlayerSelector((player) => player.audioTracks);
+  const setAudioTrack = usePlayerSelector((player) => player.setAudioTrack);
+  const audioKey = audioTracks.find((track) => track.active)?.id.toString();
+
+  const subtitleTracks = usePlayerSelector((player) => player.subtitleTracks);
+  const setSubtitleTrack = usePlayerSelector(
+    (player) => player.setSubtitleTrack,
+  );
+  const subtitleKey = subtitleTracks
+    .find((track) => track.active)
+    ?.id.toString();
+
+  return (
+    <div className="flex gap-4">
+      <Select
+        label="Audio"
+        items={audioTracks}
+        selectionMode="single"
+        selectedKeys={audioKey ? [audioKey] : []}
+        onChange={(event) => {
+          const id = Number.parseInt(event.target.value);
+          if (Number.isNaN(id)) {
+            return;
+          }
+          setAudioTrack(id);
+        }}
+      >
+        {(track) => <SelectItem key={track.id}>{track.label}</SelectItem>}
+      </Select>
+
+      <Select
+        label="Subtitles"
+        items={subtitleTracks}
+        selectionMode="single"
+        selectedKeys={subtitleKey ? [subtitleKey] : []}
+        onChange={(event) => {
+          const id = Number.parseInt(event.target.value);
+          if (Number.isNaN(id)) {
+            return;
+          }
+          setSubtitleTrack(id);
+        }}
+      >
+        {(track) => <SelectItem key={track.id}>{track.label}</SelectItem>}
+      </Select>
     </div>
   );
 }
