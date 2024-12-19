@@ -22,6 +22,10 @@ export function getStaticDateRanges(session: Session, isLive: boolean) {
       clientAttributes["RESUME-OFFSET"] = 0;
     }
 
+    if (interstitial.duration) {
+      clientAttributes["PLAYOUT-LIMIT"] = interstitial.duration;
+    }
+
     const cue: string[] = ["ONCE"];
     if (startDate.equals(session.startTime)) {
       cue.push("PRE");

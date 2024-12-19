@@ -20,6 +20,7 @@ export interface Session {
 
 interface SessionInterstitial {
   time: number | string;
+  duration?: number;
   assets?: {
     uri: string;
     kind?: "ad" | "bumper";
@@ -59,10 +60,8 @@ export async function createSession(params: {
     appendInterstitials(session.interstitials, interstitials);
   }
 
-  // We'll initially store the session for 10 minutes, if it's not been consumed
-  // within the timeframe, it's gone.
   const value = JSON.stringify(session);
-  await kv.set(`session:${id}`, value, 60 * 10);
+  await kv.set(`session:${id}`, value, session.expiry);
 
   return session;
 }
@@ -85,7 +84,7 @@ function mapSessionInterstitials(
   interstitials: SessionInterstitial[],
 ) {
   return interstitials.map<Interstitial>((item) => {
-    const { time, assets, ...rest } = item;
+    const { time, duration, assets, ...rest } = item;
     const dateTime =
       typeof time === "string"
         ? DateTime.fromISO(time)
@@ -93,6 +92,7 @@ function mapSessionInterstitials(
 
     return {
       dateTime,
+      duration,
       assets: assets?.map((asset) => {
         const { uri, ...rest } = asset;
         return { url: resolveUri(uri), ...rest };
