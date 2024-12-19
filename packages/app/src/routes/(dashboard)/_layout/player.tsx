@@ -14,14 +14,9 @@ import { Player } from "../../../components/Player";
 import { PlayerControls } from "../../../components/PlayerControls";
 import { PlayerStats } from "../../../components/PlayerStats";
 import { ScrollCard } from "../../../components/ScrollCard";
-import {
-  PlayerProvider,
-  usePlayer,
-  usePlayerSelector,
-} from "../../../context/PlayerContext";
+import { PlayerProvider, WithPlayer } from "../../../context/PlayerContext";
 import { useSwaggerSchema } from "../../../hooks/useSwaggerSchema";
 import type { FormRef } from "../../../components/Form";
-import type { RefObject } from "react";
 
 export const Route = createFileRoute("/(dashboard)/_layout/player")({
   component: RouteComponent,
@@ -69,7 +64,42 @@ function RouteComponent() {
               <Player url={url} />
             </div>
           </div>
-          <HasPlayer url={url} setUrl={setUrl} formRef={formRef} />
+          <WithPlayer>
+            <Tabs
+              classNames={{
+                panel: "grow p-0",
+              }}
+            >
+              <Tab title="Config">
+                <ScrollCard>
+                  <Form
+                    ref={formRef}
+                    submit="Play"
+                    fields={{
+                      url: {
+                        label: "URL",
+                        type: "string",
+                        value: url,
+                      },
+                    }}
+                    onSubmit={async (values) => {
+                      setUrl(values.url);
+                    }}
+                  />
+                </ScrollCard>
+              </Tab>
+              <Tab title="Stats">
+                <ScrollCard>
+                  <PlayerStats />
+                </ScrollCard>
+              </Tab>
+              <Tab title="Controls">
+                <ScrollCard>
+                  <PlayerControls />
+                </ScrollCard>
+              </Tab>
+            </Tabs>
+          </WithPlayer>
         </div>
       </PlayerProvider>
       <Card className="w-[420px] py-4">
@@ -94,72 +124,5 @@ function RouteComponent() {
         </ModalContent>
       </Modal>
     </div>
-  );
-}
-
-function HasPlayer({
-  url,
-  setUrl,
-  formRef,
-}: {
-  url: string;
-  setUrl: (url: string) => void;
-  formRef: RefObject<FormRef>;
-}) {
-  const { player } = usePlayer();
-
-  if (!player) {
-    return null;
-  }
-
-  return <PlayerTabs url={url} setUrl={setUrl} formRef={formRef} />;
-}
-
-function PlayerTabs({
-  url,
-  setUrl,
-  formRef,
-}: {
-  url: string;
-  setUrl: (url: string) => void;
-  formRef: RefObject<FormRef>;
-}) {
-  const ready = usePlayerSelector((player) => player.ready);
-
-  return (
-    <Tabs
-      classNames={{
-        panel: "grow p-0",
-      }}
-    >
-      <Tab title="Config">
-        <ScrollCard>
-          <Form
-            ref={formRef}
-            submit="Play"
-            fields={{
-              url: {
-                label: "URL",
-                type: "string",
-                value: url,
-              },
-            }}
-            onSubmit={async (values) => {
-              setUrl(values.url);
-            }}
-          />
-        </ScrollCard>
-      </Tab>
-      <Tab title="Stats">
-        <ScrollCard>
-          <PlayerStats />
-        </ScrollCard>
-      </Tab>
-      <Tab title="Controls" isDisabled={!ready}>
-        <ScrollCard>
-          <PlayerControls />
-        </ScrollCard>
-      </Tab>
-    </Tabs>
   );
 }

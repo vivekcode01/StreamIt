@@ -1,6 +1,7 @@
-import { Button, Select, SelectItem } from "@nextui-org/react";
+import { Button } from "@nextui-org/react";
 import cn from "clsx";
 import { useRef } from "react";
+import { Selection } from "./Selection";
 import { usePlayerSelector } from "../context/PlayerContext";
 import { useSeekbar } from "../hooks/useSeekbar";
 import type { ReactNode, RefObject } from "react";
@@ -11,12 +12,11 @@ export function PlayerControls() {
     return null;
   }
   return (
-    <div className="flex flex-col gap-2 overflow-hidden">
+    <div className="flex flex-col gap-4 overflow-hidden">
       <div className="flex">
         <PlayButton />
       </div>
       <Seekbar />
-      <CuePoints />
       <Time />
       <Tracks />
     </div>
@@ -59,8 +59,8 @@ function Seekbar() {
       >
         {hms(seekbar.value)}
       </Tooltip>
-      <div className="flex items-center rounded-lg overflow-hidden">
-        <div className="h-6 bg-gray-100 w-full" />
+      <div className="flex items-center rounded-lg overflow-hidden mb-2">
+        <div className="h-2 bg-gray-100 w-full" />
         <div
           className={cn(
             "h-2 absolute left-0 right-0 bg-gray-200 origin-left opacity-0 transition-opacity",
@@ -77,6 +77,7 @@ function Seekbar() {
           }}
         />
       </div>
+      <CuePoints />
     </div>
   );
 }
@@ -109,7 +110,7 @@ function Tooltip({
     <div
       ref={ref}
       className={cn(
-        "pointer-events-none absolute h-6 -top-6 -translate-x-1/2 opacity-0 transition-opacity text-xs text-white bg-black px-1 flex items-center rounded-md",
+        "pointer-events-none absolute h-6 -top-8 -translate-x-1/2 opacity-0 transition-opacity text-xs text-white bg-black px-1 flex items-center rounded-md",
         visible && "opacity-100",
       )}
       style={{ left: `${x * 100}%` }}
@@ -144,14 +145,16 @@ function CuePoints() {
 }
 
 function Time() {
+  const time = usePlayerSelector((player) => player.time);
   const seekableStart = usePlayerSelector((player) => player.seekableStart);
   const duration = usePlayerSelector((player) => player.duration);
+  const live = usePlayerSelector((player) => player.live);
 
   return (
-    <div className="flex">
-      {hms(seekableStart)}
+    <div className="flex text-sm">
+      {hms(time)}
       <div className="grow" />
-      {hms(duration)}
+      {live ? `${hms(seekableStart)} - ${hms(duration)}` : `${hms(duration)}`}
     </div>
   );
 }
@@ -159,49 +162,37 @@ function Time() {
 function Tracks() {
   const audioTracks = usePlayerSelector((player) => player.audioTracks);
   const setAudioTrack = usePlayerSelector((player) => player.setAudioTrack);
-  const audioKey = audioTracks.find((track) => track.active)?.id.toString();
 
   const subtitleTracks = usePlayerSelector((player) => player.subtitleTracks);
   const setSubtitleTrack = usePlayerSelector(
     (player) => player.setSubtitleTrack,
   );
-  const subtitleKey = subtitleTracks
-    .find((track) => track.active)
-    ?.id.toString();
 
   return (
     <div className="flex gap-4">
-      <Select
-        label="Audio"
+      <Selection
         items={audioTracks}
-        selectionMode="single"
-        selectedKeys={audioKey ? [audioKey] : []}
-        onChange={(event) => {
-          const id = Number.parseInt(event.target.value);
-          if (Number.isNaN(id)) {
-            return;
-          }
-          setAudioTrack(id);
-        }}
-      >
-        {(track) => <SelectItem key={track.id}>{track.label}</SelectItem>}
-      </Select>
-
-      <Select
+        label="Audio"
+        getActive={(item) => item.active}
+        getKey={(item) => item.id}
+        getLabel={(item) => item.label}
+        onChange={(item) => setAudioTrack(item.id)}
+      />
+      <Selection
+        items={[
+          ...subtitleTracks,
+          {
+            id: null,
+            label: "None",
+            active: !subtitleTracks.some((item) => item.active),
+          },
+        ]}
+        getActive={(item) => item.active}
         label="Subtitles"
-        items={subtitleTracks}
-        selectionMode="single"
-        selectedKeys={subtitleKey ? [subtitleKey] : []}
-        onChange={(event) => {
-          const id = Number.parseInt(event.target.value);
-          if (Number.isNaN(id)) {
-            return;
-          }
-          setSubtitleTrack(id);
-        }}
-      >
-        {(track) => <SelectItem key={track.id}>{track.label}</SelectItem>}
-      </Select>
+        getKey={(item) => item.id}
+        getLabel={(item) => item.label}
+        onChange={(item) => setSubtitleTrack(item.id)}
+      />
     </div>
   );
 }
