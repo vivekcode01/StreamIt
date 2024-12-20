@@ -7,23 +7,25 @@ import {
   Tabs,
 } from "@nextui-org/react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { CodeEditor } from "../../../components/CodeEditor";
 import { Form } from "../../../components/Form";
 import { Player } from "../../../components/Player";
 import { PlayerControls } from "../../../components/PlayerControls";
 import { PlayerStats } from "../../../components/PlayerStats";
 import { ScrollCard } from "../../../components/ScrollCard";
-import { PlayerProvider, WithPlayer } from "../../../context/PlayerContext";
+import {
+  PlayerProvider,
+  usePlayerSelector,
+  WithPlayer,
+} from "../../../context/PlayerContext";
 import { useSwaggerSchema } from "../../../hooks/useSwaggerSchema";
-import type { FormRef } from "../../../components/Form";
 
 export const Route = createFileRoute("/(dashboard)/_layout/player")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const formRef = useRef<FormRef>(null);
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -48,7 +50,6 @@ function RouteComponent() {
 
     const data = await response.json();
     if (response.ok) {
-      formRef.current?.setValue("url", data.url);
       setUrl(data.url);
     } else {
       setError(data);
@@ -65,40 +66,7 @@ function RouteComponent() {
             </div>
           </div>
           <WithPlayer>
-            <Tabs
-              classNames={{
-                panel: "grow p-0",
-              }}
-            >
-              <Tab title="Config">
-                <ScrollCard>
-                  <Form
-                    ref={formRef}
-                    submit="Play"
-                    fields={{
-                      url: {
-                        label: "URL",
-                        type: "string",
-                        value: url,
-                      },
-                    }}
-                    onSubmit={async (values) => {
-                      setUrl(values.url);
-                    }}
-                  />
-                </ScrollCard>
-              </Tab>
-              <Tab title="Stats">
-                <ScrollCard>
-                  <PlayerStats />
-                </ScrollCard>
-              </Tab>
-              <Tab title="Controls">
-                <ScrollCard>
-                  <PlayerControls />
-                </ScrollCard>
-              </Tab>
-            </Tabs>
+            <PlayerTabs url={url} setUrl={setUrl} />
           </WithPlayer>
         </div>
       </PlayerProvider>
@@ -124,5 +92,60 @@ function RouteComponent() {
         </ModalContent>
       </Modal>
     </div>
+  );
+}
+
+function PlayerTabs({
+  url,
+  setUrl,
+}: {
+  url: string;
+  setUrl: (value: string) => void;
+}) {
+  const [selected, setSelected] = useState<string | number>("config");
+  const ready = usePlayerSelector((player) => player.ready);
+
+  useEffect(() => {
+    if (ready) {
+      setSelected("controls");
+    }
+  }, [ready]);
+
+  return (
+    <Tabs
+      classNames={{
+        panel: "grow p-0",
+      }}
+      selectedKey={selected}
+      onSelectionChange={setSelected}
+    >
+      <Tab key="config" title="Config">
+        <ScrollCard>
+          <Form
+            submit="Play"
+            fields={{
+              url: {
+                label: "URL",
+                type: "string",
+                value: url,
+              },
+            }}
+            onSubmit={async (values) => {
+              setUrl(values.url);
+            }}
+          />
+        </ScrollCard>
+      </Tab>
+      <Tab key="stats" title="Stats">
+        <ScrollCard>
+          <PlayerStats />
+        </ScrollCard>
+      </Tab>
+      <Tab key="controls" title="Controls" isDisabled={!ready}>
+        <ScrollCard>
+          <PlayerControls />
+        </ScrollCard>
+      </Tab>
+    </Tabs>
   );
 }

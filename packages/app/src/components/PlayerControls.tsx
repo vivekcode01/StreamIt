@@ -7,17 +7,15 @@ import { useSeekbar } from "../hooks/useSeekbar";
 import type { ReactNode, RefObject } from "react";
 
 export function PlayerControls() {
-  const ready = usePlayerSelector((player) => player.ready);
-  if (!ready) {
-    return null;
-  }
   return (
     <div className="flex flex-col gap-4 overflow-hidden">
       <div className="flex">
         <PlayButton />
       </div>
-      <Seekbar />
-      <Time />
+      <div className="p-3 rounded-md bg-default-100">
+        <Time />
+        <Seekbar />
+      </div>
       <Tracks />
     </div>
   );
@@ -59,11 +57,11 @@ function Seekbar() {
       >
         {hms(seekbar.value)}
       </Tooltip>
-      <div className="flex items-center rounded-lg overflow-hidden mb-2">
-        <div className="h-2 bg-gray-100 w-full" />
+      <div className="relative flex items-center">
+        <div className="h-2 bg-default-200 w-full" />
         <div
           className={cn(
-            "h-2 absolute left-0 right-0 bg-gray-200 origin-left opacity-0 transition-opacity",
+            "h-2 absolute left-0 right-0 bg-default-300 origin-left opacity-0 transition-opacity",
             seekbar.hover && "opacity-100",
           )}
           style={{
@@ -126,7 +124,7 @@ function CuePoints() {
   const seekableStart = usePlayerSelector((player) => player.seekableStart);
 
   return (
-    <div className="relative h-2 bg-gray-100 rounded-lg">
+    <div className="relative h-4 bg-gray-100 rounded-lg">
       {cuePoints.map((cuePoint) => {
         return (
           <div
@@ -134,9 +132,10 @@ function CuePoints() {
             style={{
               left: `${((cuePoint - seekableStart) / (duration - seekableStart)) * 100}%`,
             }}
-            className="absolute -translate-x-1/2 top-0 w-2 h-2 rounded-full bg-yellow-500"
+            className="absolute -translate-x-1/2 flex items-center flex-col"
           >
-            <div className="absolute -translate-x-1/2 w-[2px] left-1/2 h-4 bottom-0 bg-yellow-500" />
+            <div className="w-[2px] h-2 bg-yellow-500" />
+            <div className="w-2 h-2 rounded-full bg-yellow-500" />
           </div>
         );
       })}
@@ -151,7 +150,7 @@ function Time() {
   const live = usePlayerSelector((player) => player.live);
 
   return (
-    <div className="flex text-sm">
+    <div className="flex text-sm mb-2">
       {hms(time)}
       <div className="grow" />
       {live ? `${hms(seekableStart)} - ${hms(duration)}` : `${hms(duration)}`}
