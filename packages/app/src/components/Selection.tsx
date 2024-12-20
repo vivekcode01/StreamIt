@@ -5,7 +5,7 @@ interface SelectionProps<T> {
   label: string;
   getKey(item: T): number | string | null;
   getLabel(item: T): string;
-  getActive(item: T): boolean;
+  getActive?(item: T): boolean;
   onChange(item: T): void;
 }
 
@@ -19,7 +19,7 @@ export function Selection<T extends object>({
 }: SelectionProps<T>) {
   const selectedKeys: string[] = [];
   for (const item of items) {
-    if (getActive(item)) {
+    if (getActive?.(item)) {
       const key = getKey(item);
       selectedKeys.push(String(key));
     }
