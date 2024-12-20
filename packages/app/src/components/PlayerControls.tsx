@@ -9,7 +9,7 @@ import type { ReactNode, RefObject } from "react";
 export function PlayerControls() {
   return (
     <div className="flex flex-col gap-4 overflow-hidden">
-      <div className="flex">
+      <div className="flex justify-center">
         <PlayButton />
       </div>
       <div className="p-3 rounded-md bg-default-100">
@@ -111,7 +111,9 @@ function Tooltip({
         "pointer-events-none absolute h-6 -top-8 -translate-x-1/2 opacity-0 transition-opacity text-xs text-white bg-black px-1 flex items-center rounded-md",
         visible && "opacity-100",
       )}
-      style={{ left: `${x * 100}%` }}
+      style={{
+        left: `${x * 100}%`,
+      }}
     >
       {children}
     </div>
