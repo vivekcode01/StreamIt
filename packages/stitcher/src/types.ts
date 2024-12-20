@@ -15,10 +15,13 @@ export interface InterstitialAssetList {
   url: string;
 }
 
+export type InterstitialChunk =
+  | { type: "asset"; data: InterstitialAsset }
+  | { type: "vast"; data: InterstitialVast }
+  | { type: "assetList"; data: InterstitialAssetList };
+
 export interface Interstitial {
   dateTime: DateTime;
   duration?: number;
-  assets?: InterstitialAsset[];
-  vast?: InterstitialVast;
-  assetList?: InterstitialAssetList;
+  chunks: InterstitialChunk[];
 }

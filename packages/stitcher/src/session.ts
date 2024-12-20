@@ -1,10 +1,10 @@
 import { randomUUID } from "crypto";
 import { DateTime } from "luxon";
 import { kv } from "./adapters/kv";
-import { appendInterstitials } from "./interstitials";
+import { mergeInterstitials } from "./interstitials";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
-import type { Interstitial } from "./types";
+import type { Interstitial, InterstitialChunk } from "./types";
 import type { VmapParams } from "./vmap";
 
 export interface Session {
@@ -57,7 +57,7 @@ export async function createSession(params: {
       startTime,
       params.interstitials,
     );
-    appendInterstitials(session.interstitials, interstitials);
+    mergeInterstitials(session.interstitials, interstitials);
   }
 
   const value = JSON.stringify(session);
@@ -83,21 +83,43 @@ function mapSessionInterstitials(
   startTime: DateTime,
   interstitials: SessionInterstitial[],
 ) {
-  return interstitials.map<Interstitial>((item) => {
-    const { time, duration, assets, ...rest } = item;
-    const dateTime =
-      typeof time === "string"
-        ? DateTime.fromISO(time)
-        : startTime.plus({ seconds: time });
+  const result: Interstitial[] = [];
 
-    return {
-      dateTime,
-      duration,
-      assets: assets?.map((asset) => {
+  for (const interstitial of interstitials) {
+    const dateTime =
+      typeof interstitial.time === "string"
+        ? DateTime.fromISO(interstitial.time)
+        : startTime.plus({ seconds: interstitial.time });
+
+    const chunks: InterstitialChunk[] = [];
+
+    if (interstitial.assets) {
+      for (const asset of interstitial.assets) {
         const { uri, ...rest } = asset;
-        return { url: resolveUri(uri), ...rest };
-      }),
-      ...rest,
-    };
-  });
+        chunks.push({
+          type: "asset",
+          data: {
+            url: resolveUri(uri),
+            ...rest,
+          },
+        });
+      }
+    }
+
+    if (interstitial.vast) {
+      chunks.push({ type: "vast", data: interstitial.vast });
+    }
+
+    if (interstitial.assetList) {
+      chunks.push({ type: "assetList", data: interstitial.assetList });
+    }
+
+    result.push({
+      dateTime,
+      duration: interstitial.duration,
+      chunks,
+    });
+  }
+
+  return result;
 }
