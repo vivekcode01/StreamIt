@@ -4,6 +4,7 @@ import { EventEmitter } from "tseep";
 import { EventManager } from "./event-manager";
 import { getLangCode } from "./helpers";
 import { getState, State } from "./state";
+import { Events } from "./types";
 import type {
   AudioTrack,
   HlsPlayerEventMap,
@@ -25,9 +26,6 @@ export class HlsPlayer {
 
   constructor(public container: HTMLDivElement) {
     this.media_ = this.createMedia_();
-
-    // Make sure we're in unload state.
-    this.unload();
   }
 
   private createMedia_() {
@@ -43,11 +41,13 @@ export class HlsPlayer {
   }
 
   load(url: string) {
+    this.unload();
+
     this.bindMediaListeners_();
     const hls = this.createHls_();
 
     this.state_ = new State({
-      emitter: this.emitter_,
+      onEvent: (event: Events) => this.emit_(event),
       getTiming: () => ({
         primary: hls.interstitialsManager?.primary ?? hls.media,
         asset: hls.interstitialsManager?.playerQueue.find(
@@ -71,6 +71,8 @@ export class HlsPlayer {
       this.hls_.destroy();
       this.hls_ = null;
     }
+
+    this.emit_(Events.RESET);
   }
 
   destroy() {
@@ -416,5 +418,10 @@ export class HlsPlayer {
     listen("seeked", () => {
       this.state_?.setSeeking(false);
     });
+  }
+
+  private emit_(event: Events) {
+    this.emitter_.emit(event);
+    this.emitter_.emit("*", event);
   }
 }

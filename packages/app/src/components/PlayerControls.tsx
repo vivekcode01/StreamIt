@@ -46,7 +46,12 @@ function Seekbar() {
     onSeeked: seekTo,
   });
 
-  const percentage = (time - seekableStart) / (duration - seekableStart);
+  let percentage = Number.isNaN(duration)
+    ? 0
+    : (time - seekableStart) / (duration - seekableStart);
+  if (percentage < 0) {
+    percentage = 0;
+  }
 
   return (
     <div {...seekbar.rootProps} className="w-full relative cursor-pointer">

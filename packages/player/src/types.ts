@@ -3,6 +3,7 @@ import type { Level, MediaPlaylist } from "hls.js";
 export type Playhead = "idle" | "play" | "playing" | "pause" | "ended";
 
 export enum Events {
+  RESET = "reset",
   READY = "ready",
   STARTED = "started",
   PLAYHEAD_CHANGE = "playheadChange",
@@ -18,6 +19,7 @@ export enum Events {
 }
 
 export type HlsPlayerEventMap = {
+  [Events.RESET]: () => void;
   [Events.READY]: () => void;
   [Events.STARTED]: () => void;
   [Events.PLAYHEAD_CHANGE]: () => void;
