@@ -34,7 +34,6 @@ export async function syncToS3(
   remotePath: string,
   options?: {
     del?: boolean;
-    public?: boolean;
   },
 ) {
   const commandInput: CommandInput<PutObjectCommandInput> = (input) => {
@@ -44,7 +43,6 @@ export async function syncToS3(
     }
     return {
       ContentType: contentType,
-      ACL: options?.public ? "public-read" : undefined,
     };
   };
 
