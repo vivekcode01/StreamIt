@@ -7,18 +7,14 @@ import {
   Tabs,
 } from "@nextui-org/react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CodeEditor } from "../../../components/CodeEditor";
 import { Form } from "../../../components/Form";
 import { Player } from "../../../components/Player";
 import { PlayerControls } from "../../../components/PlayerControls";
 import { PlayerStats } from "../../../components/PlayerStats";
 import { ScrollCard } from "../../../components/ScrollCard";
-import {
-  PlayerProvider,
-  usePlayerSelector,
-  WithPlayer,
-} from "../../../context/PlayerContext";
+import { PlayerProvider } from "../../../context/PlayerContext";
 import { useSwaggerSchema } from "../../../hooks/useSwaggerSchema";
 
 export const Route = createFileRoute("/(dashboard)/_layout/player")({
@@ -65,9 +61,39 @@ function RouteComponent() {
               <Player url={url} />
             </div>
           </div>
-          <WithPlayer>
-            <PlayerTabs url={url} setUrl={setUrl} />
-          </WithPlayer>
+          <Tabs
+            classNames={{
+              panel: "grow p-0",
+            }}
+          >
+            <Tab key="config" title="Config">
+              <ScrollCard>
+                <Form
+                  submit="Play"
+                  fields={{
+                    url: {
+                      label: "URL",
+                      type: "string",
+                      value: url,
+                    },
+                  }}
+                  onSubmit={async (values) => {
+                    setUrl(values.url);
+                  }}
+                />
+              </ScrollCard>
+            </Tab>
+            <Tab key="stats" title="Stats">
+              <ScrollCard>
+                <PlayerStats />
+              </ScrollCard>
+            </Tab>
+            <Tab key="controls" title="Controls">
+              <ScrollCard>
+                <PlayerControls />
+              </ScrollCard>
+            </Tab>
+          </Tabs>
         </div>
       </PlayerProvider>
       <Card className="w-[420px] py-4">
@@ -92,60 +118,5 @@ function RouteComponent() {
         </ModalContent>
       </Modal>
     </div>
-  );
-}
-
-function PlayerTabs({
-  url,
-  setUrl,
-}: {
-  url: string;
-  setUrl: (value: string) => void;
-}) {
-  const [selected, setSelected] = useState<string | number>("config");
-  const ready = usePlayerSelector((player) => player.ready);
-
-  useEffect(() => {
-    if (ready) {
-      setSelected("controls");
-    }
-  }, [ready]);
-
-  return (
-    <Tabs
-      classNames={{
-        panel: "grow p-0",
-      }}
-      selectedKey={selected}
-      onSelectionChange={setSelected}
-    >
-      <Tab key="config" title="Config">
-        <ScrollCard>
-          <Form
-            submit="Play"
-            fields={{
-              url: {
-                label: "URL",
-                type: "string",
-                value: url,
-              },
-            }}
-            onSubmit={async (values) => {
-              setUrl(values.url);
-            }}
-          />
-        </ScrollCard>
-      </Tab>
-      <Tab key="stats" title="Stats">
-        <ScrollCard>
-          <PlayerStats />
-        </ScrollCard>
-      </Tab>
-      <Tab key="controls" title="Controls" isDisabled={!ready}>
-        <ScrollCard>
-          <PlayerControls />
-        </ScrollCard>
-      </Tab>
-    </Tabs>
   );
 }
