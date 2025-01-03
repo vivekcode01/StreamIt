@@ -25,14 +25,6 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
   );
 }
 
-export function WithPlayer({ children }: { children: ReactNode }) {
-  const { player } = usePlayer();
-  if (!player) {
-    return null;
-  }
-  return children;
-}
-
 export function usePlayer() {
   const context = useContext(PlayerContext);
   if (!context) {

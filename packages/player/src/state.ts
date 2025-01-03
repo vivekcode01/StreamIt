@@ -3,13 +3,11 @@ import { Events } from "./types";
 import type {
   Asset,
   AudioTrack,
-  HlsPlayerEventMap,
   Interstitial,
   Playhead,
   Quality,
   SubtitleTrack,
 } from "./types";
-import type { EventEmitter } from "tseep";
 
 interface MediaShim {
   currentTime: number;
@@ -17,7 +15,7 @@ interface MediaShim {
 }
 
 interface StateParams {
-  emitter: EventEmitter<HlsPlayerEventMap>;
+  onEvent(event: Events): void;
   getTiming(): {
     primary?: MediaShim | null;
     asset?: MediaShim | null;
@@ -69,7 +67,7 @@ export class State implements StateProperties {
     }
     this.ready = true;
     this.requestTimingSync();
-    this.emit_(Events.READY);
+    this.params_.onEvent(Events.READY);
   }
 
   setPlayhead(playhead: Playhead) {
@@ -83,7 +81,7 @@ export class State implements StateProperties {
       this.requestTimingSync();
     }
 
-    this.emit_(Events.PLAYHEAD_CHANGE);
+    this.params_.onEvent(Events.PLAYHEAD_CHANGE);
   }
 
   setStarted() {
@@ -91,12 +89,12 @@ export class State implements StateProperties {
       return;
     }
     this.started = true;
-    this.emit_(Events.STARTED);
+    this.params_.onEvent(Events.STARTED);
   }
 
   setInterstitial(interstitial: Interstitial | null) {
     this.interstitial = interstitial;
-    this.emit_(Events.INTERSTITIAL_CHANGE);
+    this.params_.onEvent(Events.INTERSTITIAL_CHANGE);
   }
 
   setAsset(asset: Omit<Asset, "time" | "duration"> | null) {
@@ -121,12 +119,12 @@ export class State implements StateProperties {
 
     if (diff(this.qualities) !== diff(qualities)) {
       this.qualities = qualities;
-      this.emit_(Events.QUALITIES_CHANGE);
+      this.params_.onEvent(Events.QUALITIES_CHANGE);
     }
 
     if (autoQuality !== this.autoQuality) {
       this.autoQuality = autoQuality;
-      this.emit_(Events.AUTO_QUALITY_CHANGE);
+      this.params_.onEvent(Events.AUTO_QUALITY_CHANGE);
     }
   }
 
@@ -135,7 +133,7 @@ export class State implements StateProperties {
 
     if (diff(this.audioTracks) !== diff(audioTracks)) {
       this.audioTracks = audioTracks;
-      this.emit_(Events.AUDIO_TRACKS_CHANGE);
+      this.params_.onEvent(Events.AUDIO_TRACKS_CHANGE);
     }
   }
 
@@ -148,7 +146,7 @@ export class State implements StateProperties {
       diff(this.subtitleTracks) !== diff(subtitleTracks)
     ) {
       this.subtitleTracks = subtitleTracks;
-      this.emit_(Events.SUBTITLE_TRACKS_CHANGE);
+      this.params_.onEvent(Events.SUBTITLE_TRACKS_CHANGE);
     }
   }
 
@@ -157,7 +155,7 @@ export class State implements StateProperties {
       return;
     }
     this.volume = volume;
-    this.emit_(Events.VOLUME_CHANGE);
+    this.params_.onEvent(Events.VOLUME_CHANGE);
   }
 
   setSeeking(seeking: boolean) {
@@ -165,12 +163,12 @@ export class State implements StateProperties {
       return;
     }
     this.seeking = seeking;
-    this.emit_(Events.SEEKING_CHANGE);
+    this.params_.onEvent(Events.SEEKING_CHANGE);
   }
 
   setCuePoints(cuePoints: number[]) {
     this.cuePoints = cuePoints;
-    this.emit_(Events.CUEPOINTS_CHANGE);
+    this.params_.onEvent(Events.CUEPOINTS_CHANGE);
   }
 
   requestTimingSync() {
@@ -195,7 +193,7 @@ export class State implements StateProperties {
     }
 
     if (shouldEmit) {
-      this.emit_(Events.TIME_CHANGE);
+      this.params_.onEvent(Events.TIME_CHANGE);
     }
   }
 
@@ -225,11 +223,6 @@ export class State implements StateProperties {
     }
 
     return oldTime !== target.time || oldDuration !== target.duration;
-  }
-
-  private emit_(event: Events) {
-    this.params_.emitter.emit(event);
-    this.params_.emitter.emit("*", event);
   }
 
   ready = noState.ready;
