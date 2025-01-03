@@ -14,11 +14,12 @@ import {
   stringifyMediaPlaylist,
 } from "./parser";
 import { updateSession } from "./session";
+import { getSignalingForAsset } from "./signaling";
 import { fetchVmap, toAdBreakTimeOffset } from "./vmap";
 import type { Filter } from "./filters";
 import type { MasterPlaylist, MediaPlaylist } from "./parser";
 import type { Session } from "./session";
-import type { Interstitial, InterstitialAsset } from "./types";
+import type { Interstitial } from "./types";
 import type { VmapAdBreak } from "./vmap";
 import type { DateTime } from "luxon";
 
@@ -76,21 +77,13 @@ export async function formatMediaPlaylist(
 export async function formatAssetList(session: Session, dateTime: DateTime) {
   const assets = await getAssets(session, dateTime);
 
-  await Promise.all(
-    assets.map(async (asset) => {
-      if (asset.duration === undefined) {
-        asset.duration = await fetchDuration(asset.url);
-      }
-    }),
-  );
-
   return {
     ASSETS: assets.map((asset) => {
       return {
         URI: asset.url,
         DURATION: asset.duration,
         "SPRS-KIND": asset.kind,
-        "X-AD-CREATIVE-SIGNALING": getAdCreativeSignaling(assets, asset),
+        "X-AD-CREATIVE-SIGNALING": getSignalingForAsset(assets, asset),
       };
     }),
   };
@@ -108,8 +101,7 @@ async function fetchMediaPlaylist(url: string) {
   return parseMediaPlaylist(result);
 }
 
-export async function fetchDuration(uri: string) {
-  const url = resolveUri(uri);
+export async function fetchDuration(url: string) {
   const variant = (await fetchMasterPlaylist(url))?.variants[0];
 
   if (!variant) {
@@ -249,65 +241,3 @@ export function mapAdBreaksToSessionInterstitials(
 
   return interstitials;
 }
-
-interface SignalingEvent {
-  type: "clickthrough" | "quartile";
-  start?: number;
-  urls: string[];
-}
-
-export function getAdCreativeSignaling(
-  assets: InterstitialAsset[],
-  asset: InterstitialAsset,
-) {
-  const { duration, tracking } = asset;
-
-  assert(duration);
-
-  if (!tracking) {
-    return null;
-  }
-
-  let startTime = 0;
-  for (const tempAsset of assets) {
-    if (tempAsset === asset) {
-      break;
-    }
-    assert(tempAsset.duration);
-    startTime += tempAsset.duration;
-  }
-
-  const signalingEvents: SignalingEvent[] = [];
-
-  Object.entries(tracking).forEach(([name, urls]) => {
-    const offset = QUARTILE_EVENTS[name];
-    if (offset !== undefined) {
-      signalingEvents.push({
-        type: "quartile",
-        start: startTime + duration * offset,
-        urls,
-      });
-    }
-  });
-
-  return {
-    version: 2,
-    type: "slot",
-    payload: [
-      {
-        type: "linear",
-        start: startTime,
-        duration: asset.duration,
-        tracking: signalingEvents,
-      },
-    ],
-  };
-}
-
-const QUARTILE_EVENTS: Record<string, number> = {
-  start: 0,
-  firstQuartile: 0.25,
-  midpoint: 0.5,
-  thirdQuartile: 0.75,
-  complete: 1,
-};
