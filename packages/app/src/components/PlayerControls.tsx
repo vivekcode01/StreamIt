@@ -1,8 +1,9 @@
 import { Button } from "@nextui-org/react";
+import { Events } from "@superstreamer/player";
 import cn from "clsx";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Selection } from "./Selection";
-import { usePlayerSelector } from "../context/PlayerContext";
+import { usePlayer, usePlayerSelector } from "../context/PlayerContext";
 import { useSeekbar } from "../hooks/useSeekbar";
 import type { ReactNode, RefObject } from "react";
 
@@ -35,22 +36,45 @@ function PlayButton() {
 }
 
 function Seekbar() {
+  const { player } = usePlayer();
   const seekableStart = usePlayerSelector((player) => player.seekableStart);
   const time = usePlayerSelector((player) => player.time);
   const duration = usePlayerSelector((player) => player.duration);
   const seekTo = usePlayerSelector((player) => player.seekTo);
 
+  const [lastSeekTime, setLastSeekTime] = useState<number | null>(null);
+
   const seekbar = useSeekbar({
     min: seekableStart,
     max: duration,
-    onSeeked: seekTo,
+    onSeeked: (time) => {
+      if (seekTo(time)) {
+        setLastSeekTime(time);
+      }
+    },
   });
 
-  let percentage = Number.isNaN(duration)
-    ? 0
-    : (time - seekableStart) / (duration - seekableStart);
-  if (percentage < 0) {
-    percentage = 0;
+  useEffect(() => {
+    if (!player) {
+      return;
+    }
+
+    const onSeekingChange = () => {
+      if (!player.seeking) {
+        setLastSeekTime(null);
+      }
+    };
+
+    player.on(Events.SEEKING_CHANGE, onSeekingChange);
+    return () => {
+      player.off(Events.SEEKING_CHANGE, onSeekingChange);
+    };
+  }, [player]);
+
+  const fakeTime = lastSeekTime ?? time;
+  let percentage = getPercentage(fakeTime, duration, seekableStart);
+  if (seekbar.seeking) {
+    percentage = seekbar.x;
   }
 
   return (
@@ -208,4 +232,23 @@ function hms(seconds: number) {
     new Date(seconds * 1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)?.[0] ??
     "00:00:00"
   );
+}
+
+function getPercentage(time: number, duration: number, seekableStart: number) {
+  if (Number.isNaN(duration)) {
+    return 0;
+  }
+
+  let timeRel = time - seekableStart;
+  const durationRel = duration - seekableStart;
+
+  if (timeRel < 0) {
+    timeRel = 0;
+  } else if (timeRel > durationRel) {
+    timeRel = durationRel;
+  }
+
+  const percentage = timeRel / durationRel;
+
+  return percentage;
 }

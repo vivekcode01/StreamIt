@@ -94,6 +94,7 @@ export class State implements StateProperties {
 
   setInterstitial(interstitial: Interstitial | null) {
     this.interstitial = interstitial;
+    this.setSeeking(false);
     this.params_.onEvent(Events.INTERSTITIAL_CHANGE);
   }
 
@@ -163,11 +164,13 @@ export class State implements StateProperties {
       return;
     }
     this.seeking = seeking;
+    this.requestTimingSync();
     this.params_.onEvent(Events.SEEKING_CHANGE);
   }
 
   setCuePoints(cuePoints: number[]) {
     this.cuePoints = cuePoints;
+    this.requestTimingSync();
     this.params_.onEvent(Events.CUEPOINTS_CHANGE);
   }
 
