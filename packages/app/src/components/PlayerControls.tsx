@@ -1,20 +1,24 @@
 import { Button } from "@nextui-org/react";
+import { Events } from "@superstreamer/player";
 import cn from "clsx";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Selection } from "./Selection";
-import { usePlayerSelector } from "../context/PlayerContext";
+import { usePlayer, usePlayerSelector } from "../context/PlayerContext";
 import { useSeekbar } from "../hooks/useSeekbar";
 import type { ReactNode, RefObject } from "react";
 
 export function PlayerControls() {
   return (
     <div className="flex flex-col gap-4 overflow-hidden">
-      <div className="flex justify-center">
+      <div className="flex justify-center items-center">
         <PlayButton />
+        <div className="ml-auto max-w-64 w-full">
+          <Qualities />
+        </div>
       </div>
       <div className="p-3 rounded-md bg-default-100">
-        <Time />
         <Seekbar />
+        <Time />
       </div>
       <Tracks />
     </div>
@@ -35,26 +39,49 @@ function PlayButton() {
 }
 
 function Seekbar() {
+  const { player } = usePlayer();
   const seekableStart = usePlayerSelector((player) => player.seekableStart);
   const time = usePlayerSelector((player) => player.time);
   const duration = usePlayerSelector((player) => player.duration);
   const seekTo = usePlayerSelector((player) => player.seekTo);
 
+  const [lastSeekTime, setLastSeekTime] = useState<number | null>(null);
+
   const seekbar = useSeekbar({
     min: seekableStart,
     max: duration,
-    onSeeked: seekTo,
+    onSeeked: (time) => {
+      if (seekTo(time)) {
+        setLastSeekTime(time);
+      }
+    },
   });
 
-  let percentage = Number.isNaN(duration)
-    ? 0
-    : (time - seekableStart) / (duration - seekableStart);
-  if (percentage < 0) {
-    percentage = 0;
+  useEffect(() => {
+    if (!player) {
+      return;
+    }
+
+    const onSeekingChange = () => {
+      if (!player.seeking) {
+        setLastSeekTime(null);
+      }
+    };
+
+    player.on(Events.SEEKING_CHANGE, onSeekingChange);
+    return () => {
+      player.off(Events.SEEKING_CHANGE, onSeekingChange);
+    };
+  }, [player]);
+
+  const fakeTime = lastSeekTime ?? time;
+  let percentage = getPercentage(fakeTime, duration, seekableStart);
+  if (seekbar.seeking) {
+    percentage = seekbar.x;
   }
 
   return (
-    <div {...seekbar.rootProps} className="w-full relative cursor-pointer">
+    <div {...seekbar.rootProps} className="w-full relative cursor-pointer py-2">
       <Tooltip
         x={seekbar.x}
         seekbarRef={seekbar.rootProps.ref}
@@ -62,11 +89,11 @@ function Seekbar() {
       >
         {hms(seekbar.value)}
       </Tooltip>
-      <div className="relative flex items-center">
-        <div className="h-2 bg-default-200 w-full" />
+      <div className="relative flex items-center h-1">
+        <div className="h-1 bg-default-200 w-full" />
         <div
           className={cn(
-            "h-2 absolute left-0 right-0 bg-default-300 origin-left opacity-0 transition-opacity",
+            "h-1 absolute left-0 right-0 bg-default-300 origin-left opacity-0 transition-opacity",
             seekbar.hover && "opacity-100",
           )}
           style={{
@@ -74,9 +101,15 @@ function Seekbar() {
           }}
         />
         <div
-          className={cn("h-2 absolute left-0 right-0 bg-black origin-left")}
+          className={cn("h-1 absolute left-0 right-0 bg-black origin-left")}
           style={{
             transform: `scaleX(${percentage})`,
+          }}
+        />
+        <div
+          className="h-4 absolute w-[3px] bg-black rounded-full -translate-x-1/2 outline-default-100 outline outline-2 z-10"
+          style={{
+            left: `${percentage * 100}%`,
           }}
         />
       </div>
@@ -113,7 +146,7 @@ function Tooltip({
     <div
       ref={ref}
       className={cn(
-        "pointer-events-none absolute h-6 -top-8 -translate-x-1/2 opacity-0 transition-opacity text-xs text-white bg-black px-1 flex items-center rounded-md",
+        "pointer-events-none absolute h-6 -top-6 -translate-x-1/2 opacity-0 transition-opacity text-xs text-white bg-black px-1 flex items-center rounded-md",
         visible && "opacity-100",
       )}
       style={{
@@ -203,9 +236,51 @@ function Tracks() {
   );
 }
 
+function Qualities() {
+  const qualities = usePlayerSelector((player) => player.qualities);
+  const autoQuality = usePlayerSelector((player) => player.autoQuality);
+  const setQuality = usePlayerSelector((player) => player.setQuality);
+
+  return (
+    <Selection
+      items={[
+        ...qualities,
+        {
+          height: null,
+          active: autoQuality,
+        },
+      ]}
+      label="Quality"
+      getActive={(item) => item.active}
+      getKey={(item) => item.height}
+      getLabel={(item) => item.height?.toString() ?? "Auto"}
+      onChange={(item) => setQuality(item.height)}
+    />
+  );
+}
+
 function hms(seconds: number) {
   return (
     new Date(seconds * 1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)?.[0] ??
     "00:00:00"
   );
+}
+
+function getPercentage(time: number, duration: number, seekableStart: number) {
+  if (Number.isNaN(duration)) {
+    return 0;
+  }
+
+  let timeRel = time - seekableStart;
+  const durationRel = duration - seekableStart;
+
+  if (timeRel < 0) {
+    timeRel = 0;
+  } else if (timeRel > durationRel) {
+    timeRel = durationRel;
+  }
+
+  const percentage = timeRel / durationRel;
+
+  return percentage;
 }

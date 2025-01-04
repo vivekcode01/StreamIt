@@ -100,11 +100,17 @@ export class HlsPlayer {
   seekTo(time: number) {
     assert(this.hls_);
 
+    if (this.state_?.interstitial) {
+      return false;
+    }
+
     if (this.hls_.interstitialsManager) {
       this.hls_.interstitialsManager.primary.seekTo(time);
     } else {
       this.media_.currentTime = time;
     }
+
+    return true;
   }
 
   setQuality(height: number | null) {
