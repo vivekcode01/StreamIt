@@ -131,7 +131,7 @@ function CuePoints() {
   const seekableStart = usePlayerSelector((player) => player.seekableStart);
 
   return (
-    <div className="relative h-4 bg-gray-100 rounded-lg">
+    <div className="relative h-4">
       {cuePoints.map((cuePoint) => {
         return (
           <div
