@@ -6,6 +6,7 @@ import {
   mergeInterstitials,
 } from "./interstitials";
 import { encrypt } from "./lib/crypto";
+import { preciseFloat } from "./lib/math";
 import { createUrl, joinUrl } from "./lib/url";
 import {
   parseMasterPlaylist,
@@ -14,12 +15,12 @@ import {
   stringifyMediaPlaylist,
 } from "./parser";
 import { updateSession } from "./session";
-import { getSignalingForAsset } from "./signaling";
+import { getPodSignaling, getSlotSignaling } from "./signaling";
 import { fetchVmap, toAdBreakTimeOffset } from "./vmap";
 import type { Filter } from "./filters";
 import type { MasterPlaylist, MediaPlaylist } from "./parser";
 import type { Session } from "./session";
-import type { Interstitial } from "./types";
+import type { HlsAsset, HlsAssetList, Interstitial } from "./types";
 import type { VmapAdBreak } from "./vmap";
 import type { DateTime } from "luxon";
 
@@ -77,16 +78,37 @@ export async function formatMediaPlaylist(
 export async function formatAssetList(session: Session, dateTime: DateTime) {
   const assets = await getAssets(session, dateTime);
 
-  return {
-    ASSETS: assets.map((asset) => {
-      return {
-        URI: asset.url,
-        DURATION: asset.duration,
-        "SPRS-KIND": asset.kind,
-        "X-AD-CREATIVE-SIGNALING": getSignalingForAsset(assets, asset),
-      };
-    }),
+  let hasSignaling = false;
+
+  const ASSETS = assets.map<HlsAsset>((asset) => {
+    const result: HlsAsset = {
+      URI: asset.url,
+      DURATION: asset.duration,
+      "SPRS-KIND": asset.kind,
+    };
+
+    const signaling = getSlotSignaling(assets, asset);
+    if (signaling) {
+      result["X-AD-CREATIVE-SIGNALING"] = signaling;
+      hasSignaling = true;
+    }
+
+    return result;
+  });
+
+  const result: HlsAssetList = {
+    ASSETS,
   };
+
+  if (hasSignaling) {
+    const relativeStart = session.startTime.diff(dateTime, "seconds");
+    result["X-AD-CREATIVE-SIGNALING"] = getPodSignaling(
+      assets,
+      relativeStart.seconds,
+    );
+  }
+
+  return result;
 }
 
 async function fetchMasterPlaylist(url: string) {
@@ -109,10 +131,12 @@ export async function fetchDuration(url: string) {
   }
 
   const media = await fetchMediaPlaylist(joinUrl(url, variant.uri));
-  return media.segments.reduce((acc, segment) => {
+  const duration = media.segments.reduce((acc, segment) => {
     acc += segment.duration;
     return acc;
   }, 0);
+
+  return preciseFloat(duration);
 }
 
 export function createMasterUrl(params: {
@@ -233,7 +257,10 @@ export function mapAdBreaksToSessionInterstitials(
       chunks: [
         {
           type: "vast",
-          data: { url: adBreak.vastUrl, data: adBreak.vastData },
+          data: {
+            url: adBreak.vastUrl,
+            data: adBreak.vastData,
+          },
         },
       ],
     });
