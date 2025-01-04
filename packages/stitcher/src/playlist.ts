@@ -6,7 +6,7 @@ import {
   mergeInterstitials,
 } from "./interstitials";
 import { encrypt } from "./lib/crypto";
-import { createUrl, joinUrl, resolveUri } from "./lib/url";
+import { createUrl, joinUrl } from "./lib/url";
 import {
   parseMasterPlaylist,
   parseMediaPlaylist,
