@@ -5,6 +5,10 @@ export const DEFAULT_SEGMENT_SIZE = 2.24;
 
 export const DEFAULT_PACKAGE_NAME = "hls";
 
+export const DEFAULT_CONCURRENCY = 5;
+
+export const DEFAULT_PUBLIC = true;
+
 export async function addToQueue<Q extends Queue>(
   queue: Q,
   data: Q extends Queue<infer D> ? D : never,

@@ -82,6 +82,8 @@ async function handleStepContinue(job: Job<PipelineData>, token?: string) {
     {
       assetId: job.data.assetId,
       name: job.data.name,
+      concurrency: job.data.concurrency,
+      public: job.data.public,
       language: job.data.language,
     },
     {

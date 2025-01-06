@@ -148,6 +148,7 @@ async function handleStepInitial(job: Job<PackageData>, dir: WorkerDir) {
 
   await syncToS3(outDir, s3Dir, {
     del: true,
+    concurrency: job.data.concurrency,
   });
 }
 

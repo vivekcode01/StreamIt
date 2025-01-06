@@ -1,7 +1,9 @@
 import { randomUUID } from "crypto";
 import {
   addToQueue,
+  DEFAULT_CONCURRENCY,
   DEFAULT_PACKAGE_NAME,
+  DEFAULT_PUBLIC,
   DEFAULT_SEGMENT_SIZE,
   packageQueue,
   pipelineQueue,
@@ -69,6 +71,8 @@ export const jobs = new Elysia()
         assetId: randomUUID(),
         segmentSize: DEFAULT_SEGMENT_SIZE,
         name: DEFAULT_PACKAGE_NAME,
+        concurrency: DEFAULT_CONCURRENCY,
+        public: DEFAULT_PUBLIC,
         ...body,
       };
       const jobId = await addToQueue(pipelineQueue, data, {
@@ -82,15 +86,17 @@ export const jobs = new Elysia()
         tags: ["Jobs"],
       },
       body: t.Object({
-        inputs: t.Array(InputSchema),
-        streams: t.Array(StreamSchema),
         assetId: t.Optional(
           t.String({
             format: "uuid",
           }),
         ),
+        inputs: t.Array(InputSchema),
+        streams: t.Array(StreamSchema),
         group: t.Optional(t.String()),
         language: t.Optional(t.String()),
+        concurrency: t.Optional(t.Number()),
+        public: t.Optional(t.Boolean()),
       }),
       response: {
         200: t.Object({
@@ -118,14 +124,14 @@ export const jobs = new Elysia()
         tags: ["Jobs"],
       },
       body: t.Object({
-        inputs: t.Array(InputSchema),
-        streams: t.Array(StreamSchema),
         assetId: t.Optional(
           t.String({
             format: "uuid",
           }),
         ),
         segmentSize: t.Optional(t.Number()),
+        inputs: t.Array(InputSchema),
+        streams: t.Array(StreamSchema),
         group: t.Optional(t.String()),
       }),
       response: {
@@ -140,6 +146,8 @@ export const jobs = new Elysia()
     async ({ body }) => {
       const data = {
         name: DEFAULT_PACKAGE_NAME,
+        concurrency: DEFAULT_CONCURRENCY,
+        public: DEFAULT_PUBLIC,
         ...body,
       };
       const jobId = await addToQueue(packageQueue, data, {
@@ -156,9 +164,11 @@ export const jobs = new Elysia()
         assetId: t.String({
           format: "uuid",
         }),
-        name: t.Optional(t.String()),
         segmentSize: t.Optional(t.Number()),
+        name: t.Optional(t.String()),
         language: t.Optional(t.String()),
+        concurrency: t.Optional(t.Number()),
+        public: t.Optional(t.Boolean()),
       }),
       response: {
         200: t.Object({

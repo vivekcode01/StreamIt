@@ -34,6 +34,8 @@ export async function syncToS3(
   remotePath: string,
   options?: {
     del?: boolean;
+    public?: boolean;
+    concurrency?: number;
   },
 ) {
   const commandInput: CommandInput<PutObjectCommandInput> = (input) => {
@@ -43,12 +45,14 @@ export async function syncToS3(
     }
     return {
       ContentType: contentType,
+      ACL: options?.public ? "public-read" : "private",
     };
   };
 
   await sync(localPath, `s3://${env.S3_BUCKET}/${remotePath}`, {
     del: options?.del,
     commandInput,
+    maxConcurrentTransfers: options?.concurrency,
   });
 }
 

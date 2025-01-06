@@ -3,13 +3,18 @@ import { connection } from "./env";
 import type { Input, PartialInput, PartialStream, Stream } from "./types";
 
 export interface PipelineData {
+  // Shared
   assetId: string;
+  segmentSize: number;
+  // Transcode
   inputs: PartialInput[];
   streams: PartialStream[];
-  segmentSize: number;
   group?: string;
-  language?: string;
+  // Package
   name: string;
+  concurrency: number;
+  public: boolean;
+  language?: string;
 }
 
 export const pipelineQueue = new Queue<PipelineData>("pipeline", {
@@ -18,9 +23,9 @@ export const pipelineQueue = new Queue<PipelineData>("pipeline", {
 
 export interface TranscodeData {
   assetId: string;
+  segmentSize: number;
   inputs: PartialInput[];
   streams: PartialStream[];
-  segmentSize: number;
   group?: string;
 }
 
@@ -30,9 +35,11 @@ export const transcodeQueue = new Queue<TranscodeData>("transcode", {
 
 export interface PackageData {
   assetId: string;
-  language?: string;
   segmentSize?: number;
   name: string;
+  concurrency: number;
+  public: boolean;
+  language?: string;
 }
 
 export const packageQueue = new Queue<PackageData>("package", {
