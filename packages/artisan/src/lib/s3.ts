@@ -9,6 +9,8 @@ import { env } from "../env";
 import type { PutObjectCommandInput } from "@aws-sdk/client-s3";
 import type { CommandInput } from "s3-sync-client";
 
+const retryStrategy = new ConfiguredRetryStrategy(5, 60_000);
+
 const client = new S3({
   endpoint: env.S3_ENDPOINT,
   region: env.S3_REGION,
@@ -17,13 +19,10 @@ const client = new S3({
     secretAccessKey: env.S3_SECRET_KEY,
   },
   logger: console,
-  retryStrategy: new ConfiguredRetryStrategy(
-    10,
-    (attempt) => 1000 + attempt * 1000,
-  ),
+  retryStrategy,
 });
 
-const { sync } = new S3SyncClient({ client });
+const { sync } = new S3SyncClient({ client, retryStrategy });
 
 export async function syncFromS3(remotePath: string, localPath: string) {
   await sync(`s3://${env.S3_BUCKET}/${remotePath}`, localPath);
