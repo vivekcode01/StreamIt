@@ -175,17 +175,20 @@ function getAdId(creative: VastCreativeLinear) {
   throw new Error("Failed to generate adId");
 }
 
-export function resolveVastByPrio(chunks: (Vast | undefined)[]): Vast {
+/**
+ * Multiple vast chunks can be defined on different levels, eg; on the level of an interstitial
+ * or way up at session level. We're going to merge them left to right.
+ * @param chunks
+ * @returns
+ */
+export function mergeVast(...args: (Vast | undefined)[]): Vast {
   let vast: Vast = {};
 
-  for (const chunk of chunks) {
+  for (const arg of args) {
     vast = {
       ...vast,
-      ...chunk,
-      params: {
-        ...vast.params,
-        ...chunk?.params,
-      },
+      ...arg,
+      params: { ...vast.params, ...arg?.params },
     };
   }
 

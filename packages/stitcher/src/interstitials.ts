@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import { createUrl } from "./lib/url";
-import { getAssetsFromVast, resolveVastByPrio } from "./vast";
+import { getAssetsFromVast, mergeVast } from "./vast";
 import type { DateRange } from "./parser";
 import type { Session } from "./session";
 import type { Asset } from "./types";
@@ -112,7 +112,7 @@ export async function getAssets(
     if (event.vast) {
       // We're going to resolve vast based on prio, since we can define vast params at
       // multiple levels.
-      const vast = resolveVastByPrio([session.vast, event.vast]);
+      const vast = mergeVast(session.vast, event.vast);
       const tempAssets = await getAssetsFromVast(vast);
       assets.push(...tempAssets);
     }
