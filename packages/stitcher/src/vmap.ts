@@ -1,5 +1,6 @@
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import { toS } from "hh-mm-ss";
+import { replaceUrlParams } from "./lib/url";
 
 export interface VmapAdBreak {
   timeOffset: string;
@@ -16,9 +17,11 @@ export interface VmapParams {
 }
 
 export async function fetchVmap(params: VmapParams): Promise<VmapResponse> {
+  const url = replaceUrlParams(params.url, {});
+
   const USER_AGENT =
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
-  const response = await fetch(params.url, {
+  const response = await fetch(url, {
     headers: {
       "User-Agent": USER_AGENT,
     },

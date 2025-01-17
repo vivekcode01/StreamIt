@@ -1,29 +1,81 @@
+import { DateTime } from "luxon";
 import { createUrl } from "./lib/url";
-import { getAssetsFromVast } from "./vast";
+import { getAssetsFromVast, resolveVastByPrio } from "./vast";
 import type { DateRange } from "./parser";
 import type { Session } from "./session";
-import type { Interstitial, InterstitialAsset } from "./types";
-import type { DateTime } from "luxon";
+import type { Asset } from "./types";
+
+// An item describes what we'd like to collect for a particular date.
+interface DateGroupItem {
+  timelineStyle: "HIGHLIGHT" | "PRIMARY";
+  listUrl?: string;
+  maxDuration?: number;
+}
 
 export function getStaticDateRanges(session: Session, isLive: boolean) {
-  return session.interstitials.map<DateRange>((interstitial) => {
-    const startDate = interstitial.dateTime;
-    const assetListUrl = getAssetListUrl(interstitial, session);
+  const dateGroup = new Map<number, DateGroupItem>();
+
+  for (const event of session.events) {
+    const key = event.dateTime.toMillis();
+
+    let item = dateGroup.get(key);
+    if (!item) {
+      item = {
+        // Default values for each item, which will eventually resolve to an
+        // interstitial later on.
+        timelineStyle: "PRIMARY",
+      };
+      dateGroup.set(key, item);
+    }
+
+    if (event.vast) {
+      // If we resolved the event by a vast, we know it's an ad and can mark it
+      // as HIGHLIGHT on the timeline.
+      item.timelineStyle = "HIGHLIGHT";
+    }
+
+    if (event.list) {
+      item.listUrl = event.list.url;
+    }
+
+    if (
+      event.maxDuration &&
+      (item.maxDuration === undefined || event.maxDuration > item.maxDuration)
+    ) {
+      // If we have a max duration for this event, we'll save it for this interstitial. Always takes the
+      // largest maxDuration across events.
+      item.maxDuration = event.maxDuration;
+    }
+  }
+
+  const dateList = [...dateGroup.entries()];
+
+  return dateList.map<DateRange>(([key, item]) => {
+    const startDate = DateTime.fromMillis(key);
+
+    const assetListUrl =
+      // If we have a listUrl from elsewhere, use it.
+      item.listUrl ??
+      // Construct our own listUrl.
+      createUrl("out/asset-list.json", {
+        dt: startDate.toISO(),
+        sid: session?.id,
+      });
 
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",
       "ASSET-LIST": assetListUrl,
       "CONTENT-MAY-VARY": "YES",
       "TIMELINE-OCCUPIES": "POINT",
-      "TIMELINE-STYLE": getTimelineStyle(interstitial),
+      "TIMELINE-STYLE": item.timelineStyle,
     };
 
     if (!isLive) {
       clientAttributes["RESUME-OFFSET"] = 0;
     }
 
-    if (interstitial.duration) {
-      clientAttributes["PLAYOUT-LIMIT"] = interstitial.duration;
+    if (item.maxDuration) {
+      clientAttributes["PLAYOUT-LIMIT"] = item.maxDuration;
     }
 
     const cue: string[] = ["ONCE"];
@@ -44,71 +96,41 @@ export function getStaticDateRanges(session: Session, isLive: boolean) {
   });
 }
 
-export async function getAssets(session: Session, dateTime: DateTime) {
-  const interstitial = session.interstitials.find((interstitial) =>
-    interstitial.dateTime.equals(dateTime),
+export async function getAssets(
+  session: Session,
+  dateTime: DateTime,
+): Promise<Asset[]> {
+  // Filter all events for a particular dateTime, we'll need to transform these to
+  // a list of assets.
+  const events = session.events.filter((event) =>
+    event.dateTime.equals(dateTime),
   );
 
-  if (!interstitial) {
-    return [];
+  const assets: Asset[] = [];
+
+  for (const event of events) {
+    if (event.vast) {
+      // We're going to resolve vast based on prio, since we can define vast params at
+      // multiple levels.
+      const vast = resolveVastByPrio([session.vast, event.vast]);
+      const tempAssets = await getAssetsFromVast(vast);
+      assets.push(...tempAssets);
+    }
+    if (event.assets) {
+      assets.push(...event.assets);
+    }
+    // TODO: We might resolve event.list here if there's multiple events, and one of them is list.
+    // We currently don't support this and overwrite the asset-list url when list is set higher up.
   }
 
-  const assets: InterstitialAsset[] = [];
-
-  for (const chunk of interstitial.chunks) {
-    if (chunk.type === "vast") {
-      const nextAssets = await getAssetsFromVast(chunk.data);
-      assets.push(...nextAssets);
-    }
-    if (chunk.type === "asset") {
-      assets.push(chunk.data);
+  if (!events.length) {
+    // We have no events for this particular session, assume it's a generic request.
+    if (session.vast) {
+      // We might be able to serve vast assets from session wide configuration.
+      const tempAssets = await getAssetsFromVast(session.vast);
+      assets.push(...tempAssets);
     }
   }
 
   return assets;
-}
-
-export function mergeInterstitials(
-  source: Interstitial[],
-  interstitials: Interstitial[],
-) {
-  for (const interstitial of interstitials) {
-    const target = source.find((item) =>
-      item.dateTime.equals(interstitial.dateTime),
-    );
-
-    if (!target) {
-      source.push(interstitial);
-    } else {
-      // If we found a source for the particular dateTime, we push the
-      // other chunks at the end.
-      target.chunks.push(...interstitial.chunks);
-    }
-  }
-}
-
-function getAssetListUrl(interstitial: Interstitial, session?: Session) {
-  const assetListChunks = interstitial.chunks.filter(
-    (chunk) => chunk.type === "assetList",
-  );
-  if (assetListChunks.length === 1 && assetListChunks[0]) {
-    return assetListChunks[0].data.url;
-  }
-
-  return createUrl("out/asset-list.json", {
-    dt: interstitial.dateTime.toISO(),
-    sid: session?.id,
-  });
-}
-
-function getTimelineStyle(interstitial: Interstitial) {
-  for (const chunk of interstitial.chunks) {
-    if (chunk.type === "asset" && chunk.data.kind === "ad") {
-      return "HIGHLIGHT";
-    }
-    if (chunk.type === "vast") {
-      return "HIGHLIGHT";
-    }
-  }
-  return "PRIMARY";
 }

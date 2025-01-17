@@ -1,27 +1,22 @@
 import type { DateTime } from "luxon";
 
-export interface InterstitialVast {
-  url?: string;
+export interface Asset {
+  url: string;
+  duration: number;
+}
+
+export interface Vast {
   data?: string;
+  url?: string;
+  params?: Record<string, string>;
 }
 
-export interface InterstitialAsset {
-  url: string;
-  duration?: number;
-  kind?: "ad" | "bumper";
-}
-
-export interface InterstitialAssetList {
-  url: string;
-}
-
-export type InterstitialChunk =
-  | { type: "asset"; data: InterstitialAsset }
-  | { type: "vast"; data: InterstitialVast }
-  | { type: "assetList"; data: InterstitialAssetList };
-
-export interface Interstitial {
+export interface TimedEvent {
   dateTime: DateTime;
-  duration?: number;
-  chunks: InterstitialChunk[];
+  maxDuration?: number;
+  assets?: Asset[];
+  vast?: Vast;
+  list?: {
+    url: string;
+  };
 }

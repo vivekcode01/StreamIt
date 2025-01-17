@@ -2,18 +2,19 @@ import { DOMParser } from "@xmldom/xmldom";
 import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
 import { api } from "./lib/api-client";
-import { resolveUri } from "./lib/url";
-import type { InterstitialAsset, InterstitialVast } from "./types";
+import { replaceUrlParams, resolveUri } from "./lib/url";
+import type { Asset, Vast } from "./types";
 import type { VastAd, VastCreativeLinear, VastResponse } from "vast-client";
 
 const NAMESPACE_UUID_AD = "5b212a7e-d6a2-43bf-bd30-13b1ca1f9b13";
 
-export async function getAssetsFromVast(vast: InterstitialVast) {
+export async function getAssetsFromVast(vast: Vast) {
   const vastClient = new VASTClient();
   let vastResponse: VastResponse | undefined;
 
   if (vast.url) {
-    vastResponse = await vastClient.get(vast.url);
+    const url = replaceUrlParams(vast.url, vast.params);
+    vastResponse = await vastClient.get(url);
   }
 
   if (vast.data) {
@@ -84,7 +85,7 @@ async function fetchAsset(id: string) {
   throw new Error(`Failed to fetch asset, got status ${status}`);
 }
 
-async function mapAdToAsset(ad: VastAd): Promise<InterstitialAsset | null> {
+async function mapAdToAsset(ad: VastAd): Promise<Asset | null> {
   const creative = getCreative(ad);
   if (!creative) {
     return null;
@@ -114,12 +115,11 @@ async function mapAdToAsset(ad: VastAd): Promise<InterstitialAsset | null> {
   return {
     url: url,
     duration: creative.duration,
-    kind: "ad",
   };
 }
 
 async function mapVastResponseToAssets(response: VastResponse) {
-  const assets: InterstitialAsset[] = [];
+  const assets: Asset[] = [];
 
   for (const ad of response.ads) {
     const asset = await mapAdToAsset(ad);
@@ -173,4 +173,21 @@ function getAdId(creative: VastCreativeLinear) {
   }
 
   throw new Error("Failed to generate adId");
+}
+
+export function resolveVastByPrio(chunks: (Vast | undefined)[]): Vast {
+  let vast: Vast = {};
+
+  for (const chunk of chunks) {
+    vast = {
+      ...vast,
+      ...chunk,
+      params: {
+        ...vast.params,
+        ...chunk?.params,
+      },
+    };
+  }
+
+  return vast;
 }

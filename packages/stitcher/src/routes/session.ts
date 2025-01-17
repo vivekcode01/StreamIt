@@ -39,23 +39,21 @@ export const sessionRoutes = new Elysia()
           t.Array(
             t.Object({
               time: t.Union([t.Number(), t.String()]),
-              duration: t.Optional(t.Number()),
+              maxDuration: t.Optional(t.Number()),
               assets: t.Optional(
                 t.Array(
                   t.Object({
                     uri: t.String(),
-                    kind: t.Optional(
-                      t.Union([t.Literal("ad"), t.Literal("bumper")]),
-                    ),
                   }),
                 ),
               ),
               vast: t.Optional(
                 t.Object({
-                  url: t.String(),
+                  url: t.Optional(t.String()),
+                  params: t.Optional(t.Record(t.String(), t.String())),
                 }),
               ),
-              assetList: t.Optional(
+              list: t.Optional(
                 t.Object({
                   url: t.String(),
                 }),
@@ -86,6 +84,17 @@ export const sessionRoutes = new Elysia()
             {
               description:
                 "Describes a VMAP, will transcode ads and insert interstitials on the fly.",
+            },
+          ),
+        ),
+        vast: t.Optional(
+          t.Object(
+            {
+              url: t.String(),
+              params: t.Optional(t.Record(t.String(), t.String())),
+            },
+            {
+              description: "Describes a VAST",
             },
           ),
         ),

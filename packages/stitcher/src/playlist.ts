@@ -1,12 +1,8 @@
 import { assert } from "shared/assert";
 import { filterMasterPlaylist, formatFilterToQueryParam } from "./filters";
-import {
-  getAssets,
-  getStaticDateRanges,
-  mergeInterstitials,
-} from "./interstitials";
+import { getAssets, getStaticDateRanges } from "./interstitials";
 import { encrypt } from "./lib/crypto";
-import { createUrl, joinUrl, resolveUri } from "./lib/url";
+import { createUrl, joinUrl } from "./lib/url";
 import {
   parseMasterPlaylist,
   parseMediaPlaylist,
@@ -18,7 +14,7 @@ import { fetchVmap, toAdBreakTimeOffset } from "./vmap";
 import type { Filter } from "./filters";
 import type { MasterPlaylist, MediaPlaylist } from "./parser";
 import type { Session } from "./session";
-import type { Interstitial } from "./types";
+import type { TimedEvent } from "./types";
 import type { VmapAdBreak } from "./vmap";
 import type { DateTime } from "luxon";
 
@@ -76,16 +72,13 @@ export async function formatMediaPlaylist(
 export async function formatAssetList(session: Session, dateTime: DateTime) {
   const assets = await getAssets(session, dateTime);
 
-  const assetsPromises = assets.map(async (asset) => {
-    return {
-      URI: asset.url,
-      DURATION: asset.duration ?? (await fetchDuration(asset.url)),
-      "SPRS-KIND": asset.kind,
-    };
-  });
-
   return {
-    ASSETS: await Promise.all(assetsPromises),
+    ASSETS: assets.map((asset) => {
+      return {
+        URI: asset.url,
+        DURATION: asset.duration,
+      };
+    }),
   };
 }
 
@@ -101,8 +94,7 @@ async function fetchMediaPlaylist(url: string) {
   return parseMediaPlaylist(result);
 }
 
-export async function fetchDuration(uri: string) {
-  const url = resolveUri(uri);
+export async function fetchDuration(url: string) {
   const variant = (await fetchMasterPlaylist(url))?.variants[0];
 
   if (!variant) {
@@ -198,11 +190,12 @@ async function initSessionOnMasterReq(session: Session) {
 
     delete session.vmap;
 
-    const interstitials = mapAdBreaksToSessionInterstitials(
-      session,
-      vmap.adBreaks,
-    );
-    mergeInterstitials(session.interstitials, interstitials);
+    vmap.adBreaks.forEach((adBreak) => {
+      const event = mapAdBreakToTimedEvent(session.startTime, adBreak);
+      if (event) {
+        session.events.push(event);
+      }
+    });
 
     storeSession = true;
   }
@@ -212,33 +205,23 @@ async function initSessionOnMasterReq(session: Session) {
   }
 }
 
-export function mapAdBreaksToSessionInterstitials(
-  session: Session,
-  adBreaks: VmapAdBreak[],
-) {
-  const interstitials: Interstitial[] = [];
+export function mapAdBreakToTimedEvent(
+  startTime: DateTime,
+  adBreak: VmapAdBreak,
+): TimedEvent | null {
+  const timeOffset = toAdBreakTimeOffset(adBreak);
 
-  for (const adBreak of adBreaks) {
-    const timeOffset = toAdBreakTimeOffset(adBreak);
-
-    if (timeOffset === null) {
-      continue;
-    }
-
-    const dateTime = session.startTime.plus({ seconds: timeOffset });
-
-    interstitials.push({
-      dateTime,
-      // We're going to push a single chunk here and have them merged before
-      // we return the full list of interstitials.
-      chunks: [
-        {
-          type: "vast",
-          data: { url: adBreak.vastUrl, data: adBreak.vastData },
-        },
-      ],
-    });
+  if (timeOffset === null) {
+    return null;
   }
 
-  return interstitials;
+  const dateTime = startTime.plus({ seconds: timeOffset });
+
+  return {
+    dateTime,
+    vast: {
+      url: adBreak.vastUrl,
+      data: adBreak.vastData,
+    },
+  };
 }
