@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
-import { createUrl } from "./lib/url";
-import { getAssetsFromVast, mergeVast } from "./vast";
+import { createUrl, swapUrlParams } from "./lib/url";
+import { getAssetsFromVastData, getAssetsFromVastUrl } from "./vast";
 import type { DateRange } from "./parser";
 import type { Session } from "./session";
 import type { Asset } from "./types";
@@ -109,11 +109,13 @@ export async function getAssets(
   const assets: Asset[] = [];
 
   for (const event of events) {
-    if (event.vast) {
-      // We're going to resolve vast based on prio, since we can define vast params at
-      // multiple levels.
-      const vast = mergeVast(session.vast, event.vast);
-      const tempAssets = await getAssetsFromVast(vast);
+    if (event.vast?.url) {
+      const vastUrl = swapUrlParams(event.vast.url);
+      const tempAssets = await getAssetsFromVastUrl(vastUrl);
+      assets.push(...tempAssets);
+    }
+    if (event.vast?.data) {
+      const tempAssets = await getAssetsFromVastData(event.vast.data);
       assets.push(...tempAssets);
     }
     if (event.assets) {
@@ -123,13 +125,11 @@ export async function getAssets(
     // We currently don't support this and overwrite the asset-list url when list is set higher up.
   }
 
-  if (!events.length) {
-    // We have no events for this particular session, assume it's a generic request.
-    if (session.vast) {
-      // We might be able to serve vast assets from session wide configuration.
-      const tempAssets = await getAssetsFromVast(session.vast);
-      assets.push(...tempAssets);
-    }
+  // If we have a generic vast config on our session, use that one to resolve (eg; for live streams)
+  if (session.vast?.url) {
+    const vastUrl = swapUrlParams(session.vast.url);
+    const tempAssets = await getAssetsFromVastUrl(vastUrl);
+    assets.push(...tempAssets);
   }
 
   return assets;

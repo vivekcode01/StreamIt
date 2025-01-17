@@ -2,7 +2,7 @@ import { assert } from "shared/assert";
 import { filterMasterPlaylist, formatFilterToQueryParam } from "./filters";
 import { getAssets, getStaticDateRanges } from "./interstitials";
 import { encrypt } from "./lib/crypto";
-import { createUrl, joinUrl } from "./lib/url";
+import { createUrl, joinUrl, swapUrlParams } from "./lib/url";
 import {
   parseMasterPlaylist,
   parseMediaPlaylist,
@@ -185,10 +185,14 @@ export function rewriteMediaPlaylistUrls(
 async function initSessionOnMasterReq(session: Session) {
   let storeSession = false;
 
-  if (session.vmap) {
-    const vmap = await fetchVmap(session.vmap);
+  // If we have a vmap config but no result yet, we'll resolve it.
+  if (session.vmap && !session.vmap.result) {
+    const vmapUrl = swapUrlParams(session.vmap.url);
+    const vmap = await fetchVmap(vmapUrl);
 
-    delete session.vmap;
+    // Store an empty object, if we want vmap specific info to be stored
+    // across sessions later, we can do it here, such as tracking pixels.
+    session.vmap.result = {};
 
     vmap.adBreaks.forEach((adBreak) => {
       const event = mapAdBreakToTimedEvent(session.startTime, adBreak);

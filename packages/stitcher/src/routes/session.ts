@@ -49,8 +49,7 @@ export const sessionRoutes = new Elysia()
               ),
               vast: t.Optional(
                 t.Object({
-                  url: t.Optional(t.String()),
-                  params: t.Optional(t.Record(t.String(), t.String())),
+                  url: t.String(),
                 }),
               ),
               list: t.Optional(
@@ -91,7 +90,6 @@ export const sessionRoutes = new Elysia()
           t.Object(
             {
               url: t.String(),
-              params: t.Optional(t.Record(t.String(), t.String())),
             },
             {
               description: "Describes a VAST",

@@ -2,31 +2,23 @@ import { DOMParser } from "@xmldom/xmldom";
 import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
 import { api } from "./lib/api-client";
-import { replaceUrlParams, resolveUri } from "./lib/url";
-import type { Asset, Vast } from "./types";
+import { resolveUri } from "./lib/url";
+import type { Asset } from "./types";
 import type { VastAd, VastCreativeLinear, VastResponse } from "vast-client";
 
 const NAMESPACE_UUID_AD = "5b212a7e-d6a2-43bf-bd30-13b1ca1f9b13";
 
-export async function getAssetsFromVast(vast: Vast) {
+export async function getAssetsFromVastUrl(url: string) {
   const vastClient = new VASTClient();
-  let vastResponse: VastResponse | undefined;
+  const vastResponse = await vastClient.get(url);
+  return await mapVastResponseToAssets(vastResponse);
+}
 
-  if (vast.url) {
-    const url = replaceUrlParams(vast.url, vast.params);
-    vastResponse = await vastClient.get(url);
-  }
-
-  if (vast.data) {
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(vast.data, "text/xml");
-    vastResponse = await vastClient.parseVAST(xml);
-  }
-
-  if (!vastResponse) {
-    return [];
-  }
-
+export async function getAssetsFromVastData(data: string) {
+  const vastClient = new VASTClient();
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(data, "text/xml");
+  const vastResponse = await vastClient.parseVAST(xml);
   return await mapVastResponseToAssets(vastResponse);
 }
 
@@ -173,24 +165,4 @@ function getAdId(creative: VastCreativeLinear) {
   }
 
   throw new Error("Failed to generate adId");
-}
-
-/**
- * Multiple vast chunks can be defined on different levels, eg; on the level of an interstitial
- * or way up at session level. We're going to merge them left to right.
- * @param chunks
- * @returns
- */
-export function mergeVast(...args: (Vast | undefined)[]): Vast {
-  let vast: Vast = {};
-
-  for (const arg of args) {
-    vast = {
-      ...vast,
-      ...arg,
-      params: { ...vast.params, ...arg?.params },
-    };
-  }
-
-  return vast;
 }

@@ -5,17 +5,20 @@ export interface Asset {
   duration: number;
 }
 
-export interface Vast {
+export interface VastParams {
   data?: string;
   url?: string;
-  params?: Record<string, string>;
+}
+
+export interface VmapParams {
+  url: string;
 }
 
 export interface TimedEvent {
   dateTime: DateTime;
   maxDuration?: number;
   assets?: Asset[];
-  vast?: Vast;
+  vast?: VastParams;
   list?: {
     url: string;
   };

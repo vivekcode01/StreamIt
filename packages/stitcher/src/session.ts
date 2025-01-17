@@ -4,11 +4,7 @@ import { kv } from "./adapters/kv";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
 import { fetchDuration } from "./playlist";
-import type { TimedEvent, Vast } from "./types";
-
-export interface SessionVmap {
-  url: string;
-}
+import type { TimedEvent } from "./types";
 
 export interface Session {
   id: string;
@@ -17,8 +13,15 @@ export interface Session {
 
   startTime: DateTime;
 
-  vmap?: SessionVmap;
-  vast?: Vast;
+  vmap?: {
+    url: string;
+    // TODO: This is currently an object, but we might want to keep VMAP specific info
+    // later, which we can do here.
+    result?: object;
+  };
+  vast?: {
+    url?: string;
+  };
   events: TimedEvent[];
 }
 
@@ -30,7 +33,6 @@ interface InterstitialParam {
   }[];
   vast?: {
     url?: string;
-    params?: Record<string, string>;
   };
   list?: {
     url: string;
@@ -43,8 +45,7 @@ export async function createSession(params: {
     url: string;
   };
   vast?: {
-    url: string;
-    params?: Record<string, string>;
+    url?: string;
   };
   interstitials?: InterstitialParam[];
   expiry?: number;
@@ -108,6 +109,7 @@ export async function mapInterstitialToTimedEvent(
     maxDuration: interstitial.maxDuration,
   };
 
+  // The interstitial contains one or more assets.
   if (interstitial.assets) {
     event.assets = await Promise.all(
       interstitial.assets.map(async (asset) => {
@@ -120,13 +122,11 @@ export async function mapInterstitialToTimedEvent(
     );
   }
 
-  if (interstitial.vast) {
-    event.vast = interstitial.vast;
-  }
+  // The interstitial contains a vast config, pass it on.
+  event.vast = interstitial.vast;
 
-  if (interstitial.list) {
-    event.list = interstitial.list;
-  }
+  // The interstitial contains a list config, pass it on.
+  event.list = interstitial.list;
 
   return event;
 }
