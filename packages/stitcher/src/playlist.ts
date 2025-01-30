@@ -20,12 +20,10 @@ import type { DateTime } from "luxon";
 
 export async function formatMasterPlaylist(params: {
   origUrl: string;
-  session?: Session;
+  session: Session;
   filter?: Filter;
 }) {
-  if (params.session) {
-    await initSessionOnMasterReq(params.session);
-  }
+  await initSessionOnMasterReq(params.session);
 
   const master = await fetchMasterPlaylist(params.origUrl);
 
@@ -40,29 +38,24 @@ export async function formatMasterPlaylist(params: {
 
 export async function formatMediaPlaylist(
   mediaUrl: string,
-  session?: Session,
-  renditionType?: string,
+  session: Session,
+  type: "video" | "audio" | "subtitles",
 ) {
   const media = await fetchMediaPlaylist(mediaUrl);
 
-  // We're in a video playlist when we have no renditionType passed along,
-  // this means it does not belong to EXT-X-MEDIA.
-  const videoPlaylist = renditionType === undefined;
   const firstSegment = media.segments[0];
+  assert(firstSegment);
 
-  if (session) {
-    assert(firstSegment);
+  if (media.endlist) {
+    firstSegment.programDateTime = session.startTime;
+  }
 
-    if (media.endlist) {
-      firstSegment.programDateTime = session.startTime;
-    }
+  // Apply dateRanges to each video playlist.
+  if (type === "video") {
+    // If we have an endlist and a PDT, we can add static date ranges based on this.
+    const isLive = !media.endlist;
 
-    if (videoPlaylist) {
-      // If we have an endlist and a PDT, we can add static date ranges based on this.
-      const isLive = !media.endlist;
-
-      media.dateRanges = getStaticDateRanges(session, media.segments, isLive);
-    }
+    media.dateRanges = getStaticDateRanges(session, media.segments, isLive);
   }
 
   rewriteSpliceInfoSegments(media);
@@ -117,30 +110,24 @@ export async function fetchDuration(url: string) {
 
 export function createMasterUrl(params: {
   url: string;
+  session: Session;
   filter?: Filter;
-  session?: Session;
 }) {
   const fil = formatFilterToQueryParam(params.filter);
 
-  const outUrl = createUrl("out/master.m3u8", {
+  const url = createUrl("out/master.m3u8", {
     eurl: encrypt(params.url),
-    sid: params.session?.id,
+    sid: params.session.id,
     fil,
   });
 
-  const url = params.session
-    ? createUrl(`session/${params.session.id}/master.m3u8`, {
-        fil,
-      })
-    : undefined;
-
-  return { url, outUrl };
+  return url;
 }
 
 function createMediaUrl(params: {
   url: string;
-  sessionId?: string;
-  type?: "AUDIO" | "SUBTITLES";
+  sessionId: string;
+  type: "video" | "audio" | "subtitles";
 }) {
   return createUrl("out/playlist.m3u8", {
     eurl: encrypt(params.url),
@@ -153,14 +140,15 @@ export function rewriteMasterPlaylistUrls(
   master: MasterPlaylist,
   params: {
     origUrl: string;
-    session?: Session;
+    session: Session;
   },
 ) {
   for (const variant of master.variants) {
     const url = joinUrl(params.origUrl, variant.uri);
     variant.uri = createMediaUrl({
       url,
-      sessionId: params.session?.id,
+      sessionId: params.session.id,
+      type: "video",
     });
   }
 
@@ -168,11 +156,24 @@ export function rewriteMasterPlaylistUrls(
     if (!rendition.uri) {
       continue;
     }
+
     const url = joinUrl(params.origUrl, rendition.uri);
+
+    let type: "audio" | "subtitles" | undefined;
+    if (rendition.type === "AUDIO") {
+      type = "audio";
+    } else if (rendition.type === "SUBTITLES") {
+      type = "subtitles";
+    }
+
+    if (!type) {
+      continue;
+    }
+
     rendition.uri = createMediaUrl({
       url,
-      sessionId: params.session?.id,
-      type: rendition.type,
+      sessionId: params.session.id,
+      type,
     });
   }
 }

@@ -19,7 +19,4 @@ export interface TimedEvent {
   maxDuration?: number;
   assets?: Asset[];
   vast?: VastParams;
-  list?: {
-    url: string;
-  };
 }

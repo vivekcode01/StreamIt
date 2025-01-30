@@ -34,9 +34,6 @@ interface InterstitialParam {
   vast?: {
     url?: string;
   };
-  list?: {
-    url: string;
-  };
 }
 
 export async function createSession(params: {
@@ -124,9 +121,6 @@ export async function mapInterstitialToTimedEvent(
 
   // The interstitial contains a vast config, pass it on.
   event.vast = interstitial.vast;
-
-  // The interstitial contains a list config, pass it on.
-  event.list = interstitial.list;
 
   return event;
 }

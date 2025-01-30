@@ -10,7 +10,6 @@ import type { Asset } from "./types";
 interface DateGroupItem {
   timelineStyle: "HIGHLIGHT" | "PRIMARY";
   replaceContent: boolean;
-  listUrl?: string;
   maxDuration?: number;
 }
 
@@ -50,10 +49,6 @@ export function getStaticDateRanges(
       item.timelineStyle = "HIGHLIGHT";
     }
 
-    if (event.list) {
-      item.listUrl = event.list.url;
-    }
-
     if (
       !event.maxDuration ||
       (item.maxDuration && event.maxDuration > item.maxDuration)
@@ -67,15 +62,11 @@ export function getStaticDateRanges(
   return dateGroup.toEntries().map<DateRange>(([key, item]) => {
     const startDate = DateTime.fromMillis(key);
 
-    const assetListUrl =
-      // If we have a listUrl from elsewhere, use it.
-      item.listUrl ??
-      // Construct our own listUrl.
-      createUrl("out/asset-list.json", {
-        dt: startDate.toISO(),
-        sid: session?.id,
-        mdur: item.maxDuration,
-      });
+    const assetListUrl = createUrl("out/asset-list.json", {
+      dt: startDate.toISO(),
+      sid: session.id,
+      mdur: item.maxDuration,
+    });
 
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",
@@ -125,28 +116,29 @@ export async function getAssets(
   const assets: Asset[] = [];
 
   for (const event of events) {
-    // The event contains a VAST url.
-    if (event.vast?.url) {
-      const vastUrl = replaceUrlParams(event.vast.url, {
-        maxDuration,
-      });
-      const tempAssets = await getAssetsFromVastUrl(vastUrl);
-      assets.push(...tempAssets);
-    }
+    if (event.vast) {
+      const { url, data } = event.vast;
 
-    // The event contains inline VAST data.
-    if (event.vast?.data) {
-      const tempAssets = await getAssetsFromVastData(event.vast.data);
-      assets.push(...tempAssets);
+      // The event contains a VAST url.
+      if (url) {
+        const vastUrl = replaceUrlParams(url, {
+          maxDuration,
+        });
+        const vastAssets = await getAssetsFromVastUrl(vastUrl);
+        assets.push(...vastAssets);
+      }
+
+      // The event contains inline VAST data.
+      if (data) {
+        const vastAssets = await getAssetsFromVastData(data);
+        assets.push(...vastAssets);
+      }
     }
 
     // The event contains a list of assets, explicitly defined.
     if (event.assets) {
       assets.push(...event.assets);
     }
-
-    // TODO: We might resolve event.list here if there's multiple events, and one of them is list.
-    // We currently don't support this and overwrite the asset-list url when list is set higher up.
   }
 
   // If we have a generic vast config on our session, use that one to resolve (eg; for live streams)
