@@ -192,7 +192,7 @@ export const sessionRoutes = new Elysia()
 
       const session = await getSession(sessionId);
 
-      return await formatAssetList(session, dateTime);
+      return await formatAssetList(session, dateTime, query.mdur);
     },
     {
       detail: {
@@ -201,6 +201,7 @@ export const sessionRoutes = new Elysia()
       query: t.Object({
         dt: t.String(),
         sid: t.String(),
+        mdur: t.Optional(t.Number()),
         _HLS_primary_id: t.Optional(t.String()),
       }),
     },

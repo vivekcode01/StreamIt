@@ -1,32 +1,48 @@
 import { DateTime } from "luxon";
-import { createUrl, swapUrlParams } from "./lib/url";
+import { HashGroup } from "./lib/hash-group";
+import { createUrl, replaceUrlParams } from "./lib/url";
 import { getAssetsFromVastData, getAssetsFromVastUrl } from "./vast";
-import type { DateRange } from "./parser";
+import type { DateRange, Segment } from "./parser";
 import type { Session } from "./session";
 import type { Asset } from "./types";
 
 // An item describes what we'd like to collect for a particular date.
 interface DateGroupItem {
   timelineStyle: "HIGHLIGHT" | "PRIMARY";
+  replaceContent: boolean;
   listUrl?: string;
   maxDuration?: number;
 }
 
-export function getStaticDateRanges(session: Session, isLive: boolean) {
-  const dateGroup = new Map<number, DateGroupItem>();
+export function getStaticDateRanges(
+  session: Session,
+  segments: Segment[],
+  isLive: boolean,
+) {
+  const dateGroup = new HashGroup<number, DateGroupItem>({
+    getDefaultValue: () => ({
+      timelineStyle: "PRIMARY",
+      replaceContent: isLive ? true : false,
+    }),
+  });
 
+  // Collect dateRanges from splice points.
+  for (const segment of segments) {
+    if (segment.spliceInfo?.type !== "OUT" || !segment.programDateTime) {
+      continue;
+    }
+
+    const key = segment.programDateTime.toMillis();
+    const item = dateGroup.get(key);
+
+    item.timelineStyle = "HIGHLIGHT";
+    item.maxDuration = segment.spliceInfo.duration;
+  }
+
+  // Collect dateRanges from each event defined in the session.
   for (const event of session.events) {
     const key = event.dateTime.toMillis();
-
-    let item = dateGroup.get(key);
-    if (!item) {
-      item = {
-        // Default values for each item, which will eventually resolve to an
-        // interstitial later on.
-        timelineStyle: "PRIMARY",
-      };
-      dateGroup.set(key, item);
-    }
+    const item = dateGroup.get(key);
 
     if (event.vast) {
       // If we resolved the event by a vast, we know it's an ad and can mark it
@@ -39,8 +55,8 @@ export function getStaticDateRanges(session: Session, isLive: boolean) {
     }
 
     if (
-      event.maxDuration &&
-      (item.maxDuration === undefined || event.maxDuration > item.maxDuration)
+      !event.maxDuration ||
+      (item.maxDuration && event.maxDuration > item.maxDuration)
     ) {
       // If we have a max duration for this event, we'll save it for this interstitial. Always takes the
       // largest maxDuration across events.
@@ -48,9 +64,7 @@ export function getStaticDateRanges(session: Session, isLive: boolean) {
     }
   }
 
-  const dateList = [...dateGroup.entries()];
-
-  return dateList.map<DateRange>(([key, item]) => {
+  return dateGroup.toEntries().map<DateRange>(([key, item]) => {
     const startDate = DateTime.fromMillis(key);
 
     const assetListUrl =
@@ -60,6 +74,7 @@ export function getStaticDateRanges(session: Session, isLive: boolean) {
       createUrl("out/asset-list.json", {
         dt: startDate.toISO(),
         sid: session?.id,
+        mdur: item.maxDuration,
       });
 
     const clientAttributes: Record<string, number | string> = {
@@ -70,15 +85,15 @@ export function getStaticDateRanges(session: Session, isLive: boolean) {
       "TIMELINE-STYLE": item.timelineStyle,
     };
 
-    if (!isLive) {
+    if (!item.replaceContent) {
       clientAttributes["RESUME-OFFSET"] = 0;
     }
 
-    if (item.maxDuration) {
+    if (item.maxDuration !== undefined) {
       clientAttributes["PLAYOUT-LIMIT"] = item.maxDuration;
     }
 
-    const cue: string[] = ["ONCE"];
+    const cue: string[] = [];
     if (startDate.equals(session.startTime)) {
       cue.push("PRE");
     }
@@ -99,6 +114,7 @@ export function getStaticDateRanges(session: Session, isLive: boolean) {
 export async function getAssets(
   session: Session,
   dateTime: DateTime,
+  maxDuration?: number,
 ): Promise<Asset[]> {
   // Filter all events for a particular dateTime, we'll need to transform these to
   // a list of assets.
@@ -109,25 +125,35 @@ export async function getAssets(
   const assets: Asset[] = [];
 
   for (const event of events) {
+    // The event contains a VAST url.
     if (event.vast?.url) {
-      const vastUrl = swapUrlParams(event.vast.url);
+      const vastUrl = replaceUrlParams(event.vast.url, {
+        maxDuration,
+      });
       const tempAssets = await getAssetsFromVastUrl(vastUrl);
       assets.push(...tempAssets);
     }
+
+    // The event contains inline VAST data.
     if (event.vast?.data) {
       const tempAssets = await getAssetsFromVastData(event.vast.data);
       assets.push(...tempAssets);
     }
+
+    // The event contains a list of assets, explicitly defined.
     if (event.assets) {
       assets.push(...event.assets);
     }
+
     // TODO: We might resolve event.list here if there's multiple events, and one of them is list.
     // We currently don't support this and overwrite the asset-list url when list is set higher up.
   }
 
   // If we have a generic vast config on our session, use that one to resolve (eg; for live streams)
   if (session.vast?.url) {
-    const vastUrl = swapUrlParams(session.vast.url);
+    const vastUrl = replaceUrlParams(session.vast.url, {
+      maxDuration,
+    });
     const tempAssets = await getAssetsFromVastUrl(vastUrl);
     assets.push(...tempAssets);
   }

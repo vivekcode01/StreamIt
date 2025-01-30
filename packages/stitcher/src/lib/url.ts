@@ -66,9 +66,9 @@ export function createUrl(
   return buildUrl(`${env.PUBLIC_STITCHER_ENDPOINT}/${path}`, params);
 }
 
-export function swapUrlParams(
+export function replaceUrlParams(
   url: string,
-  params?: Record<string, string | number>,
+  params?: Record<string, string | number | undefined>,
 ) {
   const allParams = {
     ...params,
@@ -77,6 +77,9 @@ export function swapUrlParams(
   };
 
   Object.entries(allParams).forEach(([key, value]) => {
+    if (value === undefined) {
+      return;
+    }
     url = url.replaceAll(`{${key}}`, value.toString());
   });
 

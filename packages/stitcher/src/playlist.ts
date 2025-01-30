@@ -2,7 +2,7 @@ import { assert } from "shared/assert";
 import { filterMasterPlaylist, formatFilterToQueryParam } from "./filters";
 import { getAssets, getStaticDateRanges } from "./interstitials";
 import { encrypt } from "./lib/crypto";
-import { createUrl, joinUrl, swapUrlParams } from "./lib/url";
+import { createUrl, joinUrl, replaceUrlParams } from "./lib/url";
 import {
   parseMasterPlaylist,
   parseMediaPlaylist,
@@ -60,17 +60,24 @@ export async function formatMediaPlaylist(
     if (videoPlaylist) {
       // If we have an endlist and a PDT, we can add static date ranges based on this.
       const isLive = !media.endlist;
-      media.dateRanges = getStaticDateRanges(session, isLive);
+
+      media.dateRanges = getStaticDateRanges(session, media.segments, isLive);
     }
   }
+
+  rewriteSpliceInfoSegments(media);
 
   rewriteMediaPlaylistUrls(media, mediaUrl);
 
   return stringifyMediaPlaylist(media);
 }
 
-export async function formatAssetList(session: Session, dateTime: DateTime) {
-  const assets = await getAssets(session, dateTime);
+export async function formatAssetList(
+  session: Session,
+  dateTime: DateTime,
+  maxDuration?: number,
+) {
+  const assets = await getAssets(session, dateTime, maxDuration);
 
   return {
     ASSETS: assets.map((asset) => {
@@ -182,12 +189,25 @@ export function rewriteMediaPlaylistUrls(
   });
 }
 
+/**
+ * Go over each segment in a media playlist and swap the splice info for a discontinuity.
+ * @param media
+ */
+export function rewriteSpliceInfoSegments(media: MediaPlaylist) {
+  media.segments.forEach((segment) => {
+    if (segment.spliceInfo) {
+      delete segment.spliceInfo;
+      segment.discontinuity = true;
+    }
+  });
+}
+
 async function initSessionOnMasterReq(session: Session) {
   let storeSession = false;
 
   // If we have a vmap config but no result yet, we'll resolve it.
   if (session.vmap && !session.vmap.result) {
-    const vmapUrl = swapUrlParams(session.vmap.url);
+    const vmapUrl = replaceUrlParams(session.vmap.url);
     const vmap = await fetchVmap(vmapUrl);
 
     // Store an empty object, if we want vmap specific info to be stored
