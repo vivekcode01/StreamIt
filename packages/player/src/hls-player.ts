@@ -1,6 +1,6 @@
 import Hls from "hls.js";
 import { assert } from "shared/assert";
-import { EventEmitter } from "tseep";
+import { EventEmitter } from "tseep/lib/ee-safe";
 import { EventManager } from "./event-manager";
 import { getLangCode } from "./helpers";
 import { getState, State } from "./state";
@@ -236,7 +236,7 @@ export class HlsPlayer {
   }
 
   get live() {
-    return this.hls_?.levels[this.hls_.currentLevel]?.details?.live ?? false;
+    return getState(this.state_, "live");
   }
 
   get cuePoints() {
@@ -396,7 +396,9 @@ export class HlsPlayer {
     const listen = this.eventManager_.listen(this.media_);
 
     listen("canplay", () => {
-      this.state_?.setReady();
+      const live =
+        this.hls_?.levels[this.hls_.currentLevel]?.details?.live ?? false;
+      this.state_?.setReady(live);
     });
 
     listen("play", () => {
