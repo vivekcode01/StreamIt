@@ -180,6 +180,10 @@ export class HlsPlayer {
     this.state_?.setVolume(volume);
   }
 
+  get unstable_hlsjsVersion() {
+    return Hls.version;
+  }
+
   get ready() {
     return getState(this.state_, "ready");
   }

@@ -84,7 +84,7 @@ export function getStaticDateRanges(
       clientAttributes["PLAYOUT-LIMIT"] = item.maxDuration;
     }
 
-    const cue: string[] = [];
+    const cue: string[] = ["ONCE"];
     if (startDate.equals(session.startTime)) {
       cue.push("PRE");
     }
