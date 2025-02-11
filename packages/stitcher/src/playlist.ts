@@ -52,10 +52,7 @@ export async function formatMediaPlaylist(
 
   // Apply dateRanges to each video playlist.
   if (type === "video") {
-    // If we have an endlist and a PDT, we can add static date ranges based on this.
-    const isLive = !media.endlist;
-
-    media.dateRanges = getStaticDateRanges(session, media.segments, isLive);
+    media.dateRanges = getStaticDateRanges(session, media.segments);
   }
 
   rewriteSpliceInfoSegments(media);

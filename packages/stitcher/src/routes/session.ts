@@ -37,21 +37,28 @@ export const sessionRoutes = new Elysia()
         }),
         interstitials: t.Optional(
           t.Array(
-            t.Object({
-              time: t.Union([t.Number(), t.String()]),
-              maxDuration: t.Optional(t.Number()),
-              assets: t.Optional(
-                t.Array(
-                  t.Object({
-                    uri: t.String(),
-                  }),
-                ),
-              ),
-              vast: t.Optional(
+            t.Intersect([
+              t.Object({
+                time: t.Union([t.Number(), t.String()]),
+              }),
+              t.Union([
                 t.Object({
+                  type: t.Literal("asset"),
+                  uri: t.String(),
+                }),
+                t.Object({
+                  type: t.Literal("vast"),
                   url: t.String(),
                 }),
-              ),
+              ]),
+            ]),
+          ),
+        ),
+        regions: t.Optional(
+          t.Array(
+            t.Object({
+              time: t.Union([t.Number(), t.String()]),
+              inlineDuration: t.Optional(t.Number()),
             }),
           ),
         ),

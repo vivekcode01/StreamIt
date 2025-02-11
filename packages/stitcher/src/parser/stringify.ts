@@ -148,6 +148,10 @@ export function stringifyMediaPlaylist(playlist: MediaPlaylist) {
       `START-DATE="${dateRange.startDate.toISO()}"`,
     ];
 
+    if (dateRange.duration) {
+      attrs.push(`DURATION=${dateRange.duration}`);
+    }
+
     if (dateRange.clientAttributes) {
       const entries = Object.entries(dateRange.clientAttributes);
       for (const [key, value] of entries) {

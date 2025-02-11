@@ -22,30 +22,39 @@ export interface Session {
   vast?: {
     url?: string;
   };
+
   events: TimedEvent[];
 }
 
-interface InterstitialParam {
+type InterstitialInput = {
   time: string | number;
-  maxDuration?: number;
-  assets?: {
-    uri: string;
-  }[];
-  vast?: {
-    url?: string;
-  };
+} & (
+  | {
+      type: "asset";
+      uri: string;
+    }
+  | {
+      type: "vast";
+      url: string;
+    }
+);
+
+interface RegionInput {
+  time: string | number;
+  inlineDuration?: number;
 }
 
 export async function createSession(params: {
   uri: string;
+  expiry?: number;
   vmap?: {
     url: string;
   };
   vast?: {
     url?: string;
   };
-  interstitials?: InterstitialParam[];
-  expiry?: number;
+  interstitials?: InterstitialInput[];
+  regions?: RegionInput[];
 }) {
   const id = randomUUID();
   const startTime = DateTime.now();
@@ -61,6 +70,7 @@ export async function createSession(params: {
 
     vmap: params.vmap,
     vast: params.vast,
+
     events: [],
   };
 
@@ -69,6 +79,13 @@ export async function createSession(params: {
       params.interstitials.map((interstitial) =>
         mapInterstitialToTimedEvent(startTime, interstitial),
       ),
+    );
+    session.events.push(...events);
+  }
+
+  if (params.regions) {
+    const events = params.regions.map((region) =>
+      mapRegionToTimedEvent(startTime, region),
     );
     session.events.push(...events);
   }
@@ -94,33 +111,45 @@ export async function updateSession(session: Session) {
 
 export async function mapInterstitialToTimedEvent(
   startTime: DateTime,
-  interstitial: InterstitialParam,
-) {
-  const dateTime =
-    typeof interstitial.time === "string"
-      ? DateTime.fromISO(interstitial.time)
-      : startTime.plus({ seconds: interstitial.time });
+  interstitial: InterstitialInput,
+): Promise<TimedEvent> {
+  const dateTime = toDateTime(startTime, interstitial.time);
 
   const event: TimedEvent = {
     dateTime,
-    maxDuration: interstitial.maxDuration,
   };
 
-  // The interstitial contains one or more assets.
-  if (interstitial.assets) {
-    event.assets = await Promise.all(
-      interstitial.assets.map(async (asset) => {
-        const url = resolveUri(asset.uri);
-        return {
-          url,
-          duration: await fetchDuration(url),
-        };
-      }),
-    );
+  if (interstitial.type === "asset") {
+    const url = resolveUri(interstitial.uri);
+    event.asset = {
+      url,
+      duration: await fetchDuration(url),
+    };
   }
 
-  // The interstitial contains a vast config, pass it on.
-  event.vast = interstitial.vast;
+  if (interstitial.type === "vast") {
+    event.vast = {
+      url: interstitial.url,
+    };
+  }
 
   return event;
+}
+
+export function mapRegionToTimedEvent(
+  startTime: DateTime,
+  region: RegionInput,
+): TimedEvent {
+  const dateTime = toDateTime(startTime, region.time);
+
+  return {
+    dateTime,
+    inlineDuration: region.inlineDuration,
+  };
+}
+
+function toDateTime(startTime: DateTime, time: string | number) {
+  return typeof time === "string"
+    ? DateTime.fromISO(time)
+    : startTime.plus({ seconds: time });
 }
