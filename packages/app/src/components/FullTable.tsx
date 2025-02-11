@@ -51,7 +51,7 @@ export function FullTable<T, F extends Filter>({
   totalPages,
 }: FullTableProps<T, F>) {
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: filter?.sortKey,
+    column: filter?.sortKey ?? "",
     direction: filter?.sortDir === "asc" ? "ascending" : "descending",
   });
 
