@@ -41,7 +41,7 @@ function PlayButton() {
 function Seekbar() {
   const { player } = usePlayer();
   const seekableStart = usePlayerSelector((player) => player.seekableStart);
-  const time = usePlayerSelector((player) => player.time);
+  const currentTime = usePlayerSelector((player) => player.currentTime);
   const duration = usePlayerSelector((player) => player.duration);
   const seekTo = usePlayerSelector((player) => player.seekTo);
 
@@ -51,9 +51,8 @@ function Seekbar() {
     min: seekableStart,
     max: duration,
     onSeeked: (time) => {
-      if (seekTo(time)) {
-        setLastSeekTime(time);
-      }
+      seekTo(time);
+      setLastSeekTime(time);
     },
   });
 
@@ -62,19 +61,22 @@ function Seekbar() {
       return;
     }
 
-    const onSeekingChange = () => {
-      if (!player.seeking) {
+    const onTimeChange = () => {
+      if (player.seeking || lastSeekTime == null) {
+        return;
+      }
+      if (player.currentTime > lastSeekTime) {
         setLastSeekTime(null);
       }
     };
 
-    player.on(Events.SEEKING_CHANGE, onSeekingChange);
+    player.on(Events.TIME_CHANGE, onTimeChange);
     return () => {
-      player.off(Events.SEEKING_CHANGE, onSeekingChange);
+      player.off(Events.TIME_CHANGE, onTimeChange);
     };
-  }, [player]);
+  }, [player, lastSeekTime]);
 
-  const fakeTime = lastSeekTime ?? time;
+  const fakeTime = lastSeekTime ?? currentTime;
   let percentage = getPercentage(fakeTime, duration, seekableStart);
   if (seekbar.seeking) {
     percentage = seekbar.x;
@@ -166,16 +168,31 @@ function CuePoints() {
   return (
     <div className="relative h-4">
       {cuePoints.map((cuePoint) => {
+        const left =
+          (cuePoint.time - seekableStart) / (duration - seekableStart);
+
+        let width = 0;
+        if (cuePoint.duration) {
+          const right =
+            (cuePoint.time + cuePoint.duration - seekableStart) /
+            (duration - seekableStart);
+          width = right - left;
+        }
+
         return (
           <div
-            key={cuePoint}
+            key={cuePoint.time}
             style={{
-              left: `${((cuePoint - seekableStart) / (duration - seekableStart)) * 100}%`,
+              left: `${((cuePoint.time - seekableStart) / (duration - seekableStart)) * 100}%`,
+              width: width ? `${width * 100}%` : undefined,
             }}
-            className="absolute -translate-x-1/2 flex items-center flex-col"
+            className="absolute"
           >
-            <div className="w-[2px] h-2 bg-yellow-500" />
-            <div className="w-2 h-2 rounded-full bg-yellow-500" />
+            <div className="absolute left-0 -translate-x-1/2 flex items-center flex-col">
+              <div className="w-[2px] h-2 bg-yellow-500" />
+              <div className="w-2 h-2 rounded-full bg-yellow-500" />
+            </div>
+            <div className="absolute w-full h-[2px] top-3 bg-yellow-500" />
           </div>
         );
       })}
@@ -184,14 +201,14 @@ function CuePoints() {
 }
 
 function Time() {
-  const time = usePlayerSelector((player) => player.time);
+  const currentTime = usePlayerSelector((player) => player.currentTime);
   const seekableStart = usePlayerSelector((player) => player.seekableStart);
   const duration = usePlayerSelector((player) => player.duration);
   const live = usePlayerSelector((player) => player.live);
 
   return (
     <div className="flex text-sm mb-2">
-      {hms(time)}
+      {hms(currentTime)}
       <div className="grow" />
       {live ? `${hms(seekableStart)} - ${hms(duration)}` : `${hms(duration)}`}
     </div>

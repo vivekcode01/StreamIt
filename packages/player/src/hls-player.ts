@@ -7,6 +7,7 @@ import { getState, State } from "./state";
 import { Events } from "./types";
 import type {
   AudioTrack,
+  CuePoint,
   HlsPlayerEventMap,
   Quality,
   SubtitleTrack,
@@ -48,13 +49,7 @@ export class HlsPlayer {
 
     this.state_ = new State({
       onEvent: (event: Events) => this.emit_(event),
-      getTiming: () => ({
-        primary: hls.interstitialsManager?.primary ?? hls.media,
-        asset: hls.interstitialsManager?.playerQueue.find(
-          (player) =>
-            player.assetItem === hls.interstitialsManager?.playingAsset,
-        ),
-      }),
+      getTiming: () => hls.interstitialsManager?.primary,
     });
 
     hls.attachMedia(this.media_);
@@ -100,17 +95,7 @@ export class HlsPlayer {
   seekTo(time: number) {
     assert(this.hls_);
 
-    if (this.state_?.interstitial) {
-      return false;
-    }
-
-    if (this.hls_.interstitialsManager) {
-      this.hls_.interstitialsManager.primary.seekTo(time);
-    } else {
-      this.media_.currentTime = time;
-    }
-
-    return true;
+    this.hls_.interstitialsManager?.integrated.seekTo(time);
   }
 
   setQuality(height: number | null) {
@@ -196,8 +181,8 @@ export class HlsPlayer {
     return getState(this.state_, "started");
   }
 
-  get time() {
-    return getState(this.state_, "time");
+  get currentTime() {
+    return getState(this.state_, "currentTime");
   }
 
   get duration() {
@@ -206,10 +191,6 @@ export class HlsPlayer {
 
   get seeking() {
     return getState(this.state_, "seeking");
-  }
-
-  get interstitial() {
-    return getState(this.state_, "interstitial");
   }
 
   get qualities() {
@@ -233,10 +214,7 @@ export class HlsPlayer {
   }
 
   get seekableStart() {
-    if (this.hls_) {
-      return this.hls_.interstitialsManager?.primary?.seekableStart ?? 0;
-    }
-    return NaN;
+    return getState(this.state_, "seekableStart");
   }
 
   get live() {
@@ -256,32 +234,6 @@ export class HlsPlayer {
       this.updateQualities_();
       this.updateAudioTracks_();
       this.updateSubtitleTracks_();
-    });
-
-    listen(Hls.Events.INTERSTITIAL_STARTED, () => {
-      this.state_?.setInterstitial({
-        asset: null,
-      });
-    });
-
-    listen(Hls.Events.INTERSTITIAL_ASSET_STARTED, (_, data) => {
-      const listResponseAsset = data.event.assetListResponse?.ASSETS[
-        data.assetListIndex
-      ] as {
-        "SPRS-KIND"?: "ad" | "bumper";
-      };
-
-      this.state_?.setAsset({
-        type: listResponseAsset["SPRS-KIND"],
-      });
-    });
-
-    listen(Hls.Events.INTERSTITIAL_ASSET_ENDED, () => {
-      this.state_?.setAsset(null);
-    });
-
-    listen(Hls.Events.INTERSTITIAL_ENDED, () => {
-      this.state_?.setInterstitial(null);
     });
 
     listen(Hls.Events.LEVELS_UPDATED, () => {
@@ -309,9 +261,12 @@ export class HlsPlayer {
     });
 
     listen(Hls.Events.INTERSTITIALS_UPDATED, (_, data) => {
-      const cuePoints = data.schedule.reduce<number[]>((acc, item) => {
+      const cuePoints = data.schedule.reduce<CuePoint[]>((acc, item) => {
         if (item.event) {
-          acc.push(item.start);
+          acc.push({
+            time: item.start,
+            duration: item.integrated.end - item.integrated.start,
+          });
         }
         return acc;
       }, []);
