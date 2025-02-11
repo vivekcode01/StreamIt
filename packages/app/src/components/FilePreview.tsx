@@ -1,4 +1,4 @@
-import { Modal, ModalBody, ModalContent } from "@nextui-org/react";
+import { Modal, ModalBody, ModalContent } from "@heroui/react";
 import useSWR from "swr";
 import { DataView } from "./DataView";
 import { useAuth } from "../auth";

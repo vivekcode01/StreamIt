@@ -1,4 +1,4 @@
-import { NextUIProvider } from "@nextui-org/react";
+import { HeroUIProvider } from "@heroui/react";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import ReactDOM from "react-dom/client";
 import { AuthProvider, useAuth } from "./auth";
@@ -22,11 +22,11 @@ declare module "@tanstack/react-router" {
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <NextUIProvider>
+  <HeroUIProvider>
     <AuthProvider>
       <App />
     </AuthProvider>
-  </NextUIProvider>,
+  </HeroUIProvider>,
 );
 
 function App() {

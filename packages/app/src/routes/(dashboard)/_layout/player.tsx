@@ -5,7 +5,7 @@ import {
   ModalContent,
   Tab,
   Tabs,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { CodeEditor } from "../../../components/CodeEditor";

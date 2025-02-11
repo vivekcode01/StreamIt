@@ -1,4 +1,4 @@
-import { BreadcrumbItem, Breadcrumbs } from "@nextui-org/breadcrumbs";
+import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 import { File, Folder } from "lucide-react";

@@ -1,4 +1,4 @@
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import { Events } from "@superstreamer/player";
 import cn from "clsx";
 import { useEffect, useRef, useState } from "react";
@@ -277,10 +277,7 @@ function Qualities() {
 }
 
 function hms(seconds: number) {
-  return (
-    new Date(seconds * 1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)?.[0] ??
-    "00:00:00"
-  );
+  return (new Date(seconds * 1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)?.[0] ?? "00:00:00");
 }
 
 function getPercentage(time: number, duration: number, seekableStart: number) {

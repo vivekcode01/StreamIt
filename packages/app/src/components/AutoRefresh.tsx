@@ -1,4 +1,4 @@
-import { Switch } from "@nextui-org/react";
+import { Switch } from "@heroui/react";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 

@@ -1,5 +1,5 @@
-import { Pagination, Spinner } from "@nextui-org/react";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Pagination, Spinner } from "@heroui/react";
+import { Select, SelectItem } from "@heroui/select";
 import {
   Table,
   TableBody,
@@ -7,10 +7,10 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-} from "@nextui-org/table";
-import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
+} from "@heroui/table";
+import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 import { useState } from "react";
-import type { SortDescriptor, TableProps } from "@nextui-org/table";
+import type { SortDescriptor, TableProps } from "@heroui/table";
 import type { ReactNode } from "@tanstack/react-router";
 
 export interface Column {
