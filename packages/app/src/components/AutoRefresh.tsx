@@ -34,7 +34,7 @@ export function AutoRefresh({
   }, [enabled, interval, time]);
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center gap-2">
       <Switch
         size="sm"
         isSelected={enabled}
