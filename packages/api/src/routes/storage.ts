@@ -1,79 +1,141 @@
-import { Elysia, t } from "elysia";
-import { auth } from "../auth";
-import { DeliberateError } from "../errors";
-import { StorageFileSchema, StorageFolderSchema } from "../types";
+import { Hono } from "hono";
+import { describeRoute } from "hono-openapi";
+import { resolver } from "hono-openapi/zod";
+import { z } from "zod";
+import { apiError } from "../errors";
+import { auth } from "../middleware";
 import {
   getStorageFilePayload,
   getStorageFileUrl,
   getStorageFolder,
 } from "../utils/s3";
+import { validator } from "../validator";
 
-export const storage = new Elysia()
-  .use(auth({ user: true }))
+const folderItemSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("file"),
+    path: z.string(),
+    size: z.number(),
+  }),
+  z.object({
+    type: z.literal("folder"),
+    path: z.string(),
+  }),
+]);
+
+const folderSchema = z.object({
+  cursor: z.string().optional(),
+  items: z.array(folderItemSchema),
+});
+
+const fileSchema = z.discriminatedUnion("mode", [
+  z.object({
+    mode: z.literal("url"),
+    type: z.enum(["video", "audio"]),
+    url: z.string(),
+  }),
+  z.object({
+    mode: z.literal("payload"),
+    payload: z.string(),
+  }),
+]);
+
+export const storageApp = new Hono()
+  .use(auth())
   .get(
-    "/storage/folder",
-    async ({ query }) => {
-      return await getStorageFolder(query.path, query.take, query.cursor);
-    },
-    {
-      detail: {
-        summary: "Get a storage folder",
-        description:
-          "Get a folder from your S3 storage by path with all files and subfolders.",
-        tags: ["Storage"],
+    "/folder",
+    describeRoute({
+      summary: "Get a storage folder",
+      description:
+        "Get a folder from your S3 storage by path with all files and subfolders.",
+      security: [{ userToken: [] }],
+      tags: ["Storage"],
+      responses: {
+        200: {
+          description: "Successful response",
+          content: {
+            "application/json": {
+              schema: resolver(folderSchema),
+            },
+          },
+        },
       },
-      query: t.Object({
-        path: t.String(),
-        cursor: t.Optional(t.String()),
-        take: t.Optional(t.Number()),
+    }),
+    validator(
+      "query",
+      z.object({
+        path: z.string(),
+        take: z.number().default(10),
+        cursor: z.string().optional(),
       }),
-      response: {
-        200: StorageFolderSchema,
-      },
+    ),
+    async (c) => {
+      const { path, take, cursor } = c.req.valid("query");
+      const folder = await getStorageFolder(path, take, cursor);
+      return c.json(folder, 200);
     },
   )
   .get(
-    "/storage/file",
-    async ({ query }) => {
-      const ext = query.path.split(".").pop();
+    "/file",
+    describeRoute({
+      summary: "Get a file",
+      description: "Get a file from your S3 storage by path.",
+      security: [{ userToken: [] }],
+      tags: ["Storage"],
+      responses: {
+        200: {
+          description: "Successful response",
+          content: {
+            "application/json": {
+              schema: resolver(fileSchema),
+            },
+          },
+        },
+      },
+    }),
+    validator(
+      "query",
+      z.object({
+        path: z.string(),
+      }),
+    ),
+    async (c) => {
+      const { path } = c.req.valid("query");
+      const ext = path.split(".").pop();
       switch (ext) {
         case "m4v":
         case "mp4":
         case "mkv":
-          return {
-            mode: "url",
-            url: await getStorageFileUrl(query.path),
-            type: "video",
-          };
+          return c.json(
+            {
+              mode: "url",
+              url: await getStorageFileUrl(path),
+              type: "video",
+            },
+            200,
+          );
         case "m4a":
         case "mp3":
-          return {
-            mode: "url",
-            url: await getStorageFileUrl(query.path),
-            type: "audio",
-          };
+          return c.json(
+            {
+              mode: "url",
+              url: await getStorageFileUrl(path),
+              type: "audio",
+            },
+            200,
+          );
         case "m3u8":
         case "json":
         case "vtt":
-          return {
-            mode: "payload",
-            payload: await getStorageFilePayload(query.path),
-          };
+          return c.json(
+            {
+              mode: "payload",
+              payload: await getStorageFilePayload(path),
+            },
+            200,
+          );
         default:
-          throw new DeliberateError({ type: "ERR_STORAGE_NO_FILE_PREVIEW" });
+          throw apiError("ERR_STORAGE_NO_FILE_PREVIEW");
       }
-    },
-    {
-      detail: {
-        summary: "Get a file",
-        description: "Get a fle from your S3 storage by path.",
-        tags: ["Storage"],
-      },
-      query: t.Object({
-        path: t.String(),
-      }),
-      response: {
-        200: StorageFileSchema,
-      },
     },
   );

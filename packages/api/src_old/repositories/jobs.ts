@@ -9,23 +9,8 @@ import {
 import { FlowProducer, Job as RawJob } from "bullmq";
 import { env } from "../env";
 import { isRecordWithNumbers } from "../utils/type-guard";
+import type { Job } from "../types";
 import type { JobNode, JobState, Queue } from "bullmq";
-
-export interface Job {
-  id: string;
-  name: string;
-  state: "waiting" | "running" | "failed" | "completed";
-  progress?: Record<string, number>;
-  createdAt: number;
-  processedAt?: number;
-  finishedAt?: number;
-  duration?: number;
-  inputData: string;
-  outputData?: string;
-  failedReason?: string;
-  stacktrace?: string[];
-  children: Job[];
-}
 
 const flowProducer = new FlowProducer({
   connection: {

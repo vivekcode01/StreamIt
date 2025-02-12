@@ -1,29 +1,24 @@
-import { treaty } from "@elysiajs/eden";
-import type { App } from "../src";
+import { hc } from "hono/client";
+import type { AppType } from "../src";
 
-// API types are public by definition, we'll re-export them all.
-export type * from "../src/types";
+export class ApiClient {
+  public client: ReturnType<typeof hc<AppType>>;
 
-export type ApiClient = ReturnType<typeof createApiClient>;
+  private token_: string | null = null;
 
-interface CreateApiClientOptions {
-  token?: string | null;
-  apiKey?: string | null;
-}
+  constructor(url: string) {
+    this.client = hc<AppType>(url, {
+      headers: () => {
+        const headers: Record<string, string> = {};
+        if (this.token_ !== null) {
+          headers["Authorization"] = `Bearer ${this.token_}`;
+        }
+        return headers;
+      },
+    });
+  }
 
-export function createApiClient(
-  domain: string,
-  options?: CreateApiClientOptions,
-) {
-  return treaty<App>(domain, {
-    headers: () => {
-      const headers: Record<string, string> = {};
-      if (options?.token) {
-        headers["Authorization"] = `Bearer ${options.token}`;
-      } else if (options?.apiKey) {
-        headers["x-api-key"] = options.apiKey;
-      }
-      return headers;
-    },
-  });
+  setToken(token: string | null) {
+    this.token_ = token;
+  }
 }

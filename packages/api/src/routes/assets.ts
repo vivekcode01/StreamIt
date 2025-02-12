@@ -1,109 +1,90 @@
-import { Elysia, t } from "elysia";
-import { auth } from "../auth";
-import { DeliberateError } from "../errors";
-import {
-  getAsset,
-  getAssets,
-  getGroups,
-  updateAsset,
-} from "../repositories/assets";
-import { AssetSchema } from "../types";
-import { mergeProps } from "../utils/type-guard";
+import { Hono } from "hono";
+import { describeRoute } from "hono-openapi";
+import { resolver } from "hono-openapi/zod";
+import { z } from "zod";
+import { auth } from "../middleware";
+import { getAssets, updateAsset } from "../repositories/assets";
+import { validator } from "../validator";
 
-export const assets = new Elysia()
-  .use(auth({ user: true, service: true }))
+const assetSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().nullable(),
+  groupId: z.number().nullable(),
+  createdAt: z.date(),
+  playables: z.number(),
+});
+
+const assetsFilterSchema = z.object({
+  page: z.number().default(1),
+  perPage: z.number().default(20),
+  sortKey: z
+    .enum(["name", "playables", "groupId", "createdAt"])
+    .default("createdAt"),
+  sortDir: z.enum(["asc", "desc"]).default("desc"),
+});
+
+export const assetsApp = new Hono()
+  .use(auth())
   .get(
-    "/assets",
-    async ({ query }) => {
-      const filter = mergeProps(query, {
-        page: 1,
-        perPage: 20,
-        sortKey: "createdAt",
-        sortDir: "desc",
-      });
-      return await getAssets(filter);
-    },
-    {
-      detail: {
-        summary: "Get all assets",
-        tags: ["Assets"],
+    "/",
+    describeRoute({
+      summary: "Get all assets",
+      security: [{ userToken: [] }],
+      tags: ["Assets"],
+      responses: {
+        200: {
+          description: "Successful response",
+          content: {
+            "application/json": {
+              schema: resolver(
+                z.intersection(
+                  assetsFilterSchema,
+                  z.object({
+                    items: z.array(assetSchema),
+                    totalPages: z.number(),
+                  }),
+                ),
+              ),
+            },
+          },
+        },
       },
-      query: t.Object({
-        page: t.Optional(t.Number()),
-        perPage: t.Optional(t.Number()),
-        sortKey: t.Optional(
-          t.Union([
-            t.Literal("name"),
-            t.Literal("playables"),
-            t.Literal("groupId"),
-            t.Literal("createdAt"),
-          ]),
-        ),
-        sortDir: t.Optional(t.Union([t.Literal("asc"), t.Literal("desc")])),
-      }),
-      response: {
-        200: t.Object({
-          page: t.Number(),
-          perPage: t.Number(),
-          sortKey: t.Union([
-            t.Literal("name"),
-            t.Literal("playables"),
-            t.Literal("groupId"),
-            t.Literal("createdAt"),
-          ]),
-          sortDir: t.Union([t.Literal("asc"), t.Literal("desc")]),
-          items: t.Array(AssetSchema),
-          totalPages: t.Number(),
-        }),
-      },
-    },
-  )
-  .get(
-    "/assets/:id",
-    async ({ params }) => {
-      const asset = await getAsset(params.id);
-      if (!asset) {
-        throw new DeliberateError({ type: "ERR_NOT_FOUND" });
-      }
-      return asset;
-    },
-    {
-      params: t.Object({
-        id: t.String(),
-      }),
-      detail: {
-        summary: "Get an asset by id",
-        tags: ["Assets"],
-      },
-      response: {
-        200: AssetSchema,
-        400: t.Never(),
-      },
+    }),
+    validator("query", assetsFilterSchema),
+    async (c) => {
+      const query = c.req.valid("query");
+      const assets = await getAssets(query);
+      return c.json(assets);
     },
   )
   .put(
-    "/assets/:id",
-    async ({ params, body }) => {
-      await updateAsset(params.id, body);
-    },
-    {
-      params: t.Object({
-        id: t.String(),
-      }),
-      body: t.Object({
-        name: t.String(),
-      }),
-    },
-  )
-  .get(
-    "/groups",
-    async () => {
-      return await getGroups();
-    },
-    {
-      detail: {
-        summary: "Get all groups",
-        tags: ["Assets"],
+    "/:id",
+    describeRoute({
+      summary: "Update an asset",
+      security: [{ userToken: [] }],
+      tags: ["Assets"],
+      responses: {
+        200: {
+          description: "Successful response",
+        },
       },
+    }),
+    validator(
+      "param",
+      z.object({
+        id: z.string(),
+      }),
+    ),
+    validator(
+      "json",
+      z.object({
+        name: z.string(),
+      }),
+    ),
+    async (c) => {
+      const params = c.req.valid("param");
+      const body = c.req.valid("json");
+      await updateAsset(params.id, body);
+      return c.status(200);
     },
   );

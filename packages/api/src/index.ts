@@ -1,21 +1,12 @@
-import { cors } from "@elysiajs/cors";
-import { swagger } from "@matvp91/elysia-swagger";
-import { Elysia, t } from "elysia";
+import { Hono } from "hono";
+import { openAPISpecs } from "hono-openapi";
 import { env } from "./env";
-import { errors } from "./errors";
-import { assets } from "./routes/assets";
-import { jobs } from "./routes/jobs";
-import { storage } from "./routes/storage";
-import { token } from "./routes/token";
-import { user } from "./routes/user";
-import {
-  AssetSchema,
-  GroupSchema,
-  JobSchema,
-  StorageFileSchema,
-  StorageFolderSchema,
-  UserSchema,
-} from "./types";
+import { ApiError } from "./errors";
+import { assetsApp } from "./routes/assets";
+import { jobsApp } from "./routes/jobs";
+import { storageApp } from "./routes/storage";
+import { tokenApp } from "./routes/token";
+import { userApp } from "./routes/user";
 
 // Import workers and they'll start running immediately.
 import "./workers";
@@ -23,103 +14,59 @@ import "./workers";
 // Run migrations on start.
 import "./db/migrate";
 
-export type App = typeof app;
+const app = new Hono()
+  .route("/token", tokenApp)
+  .route("/user", userApp)
+  .route("/storage", storageApp)
+  .route("/jobs", jobsApp)
+  .route("/assets", assetsApp);
 
-const app = new Elysia()
-  .use(errors())
-  .use(cors())
-  .use(
-    swagger({
-      scalarVersion: "1.25.50",
-      scalarConfig: {
-        defaultOpenAllTags: true,
+app.get(
+  "/openapi",
+  openAPISpecs(app, {
+    documentation: {
+      info: {
+        title: "Superstreamer API",
+        version: "1.0.0",
+        description:
+          "The Superstreamer API is organized around REST, returns JSON-encoded responses " +
+          "and uses standard HTTP response codes and verbs.",
       },
-      documentation: {
-        info: {
-          title: "Superstreamer API",
-          description:
-            "The Superstreamer API is organized around REST, returns JSON-encoded responses " +
-            "and uses standard HTTP response codes and verbs.",
-          version: "1.0.0",
-        },
-        tags: [
-          {
-            name: "Jobs",
-            description:
-              "Handle tasks related to jobs, including video processing and job status monitoring.",
-          },
-          {
-            name: "Assets",
-            description: "Inspect assets.",
-          },
-          {
-            name: "Storage",
-            description: "Anything related to your configured S3 bucket.",
-          },
-          {
-            name: "User",
-            description:
-              "Methods related to user actions, including authentication and personal settings updates.",
-          },
-        ],
-        components: {
-          securitySchemes: {
-            bearerAuth: {
-              type: "http",
-              scheme: "bearer",
-              bearerFormat: "JWT",
-            },
+      components: {
+        securitySchemes: {
+          userToken: {
+            type: "http",
+            scheme: "bearer",
+            bearerFormat: "JWT",
           },
         },
       },
-      querySchema: t.Object({
-        token: t.String(),
-      }),
-      onRequest({ query, scalarConfig }) {
-        scalarConfig.authentication = {
-          preferredSecurityScheme: "bearerAuth",
-          http: {
-            basic: {
-              username: "",
-              password: "",
-            },
-            bearer: {
-              token: query.token,
-            },
-          },
-        };
-      },
-    }),
-  )
-  .model({
-    Job: JobSchema,
-    StorageFolder: StorageFolderSchema,
-    StorageFile: StorageFileSchema,
-    Asset: AssetSchema,
-    Group: GroupSchema,
-    User: UserSchema,
-  })
-  .use(jobs)
-  .use(storage)
-  .use(assets)
-  .use(token)
-  .use(user);
+    },
+  }),
+);
 
-app.on("stop", () => {
-  process.exit(0);
+app.onError((error, c) => {
+  if (error instanceof ApiError) {
+    return c.json(
+      {
+        code: error.code,
+      },
+      error.status,
+    );
+  }
+
+  return c.json(
+    {
+      message:
+        "Unexpected error, this is most likely a bug. Please, report it.",
+    },
+    500,
+  );
 });
 
-process
-  .on("beforeExit", app.stop)
-  .on("SIGINT", app.stop)
-  .on("SIGTERM", app.stop);
+export default {
+  ...app,
+  port: env.PORT,
+};
 
-app.listen(
-  {
-    port: env.PORT,
-    hostname: env.HOST,
-  },
-  () => {
-    console.log(`Started api on port ${env.PORT}`);
-  },
-);
+export type AppType = typeof app;

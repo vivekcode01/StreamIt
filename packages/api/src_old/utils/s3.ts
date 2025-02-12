@@ -1,22 +1,7 @@
 import { GetObjectCommand, ListObjectsCommand, S3 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "../env";
-
-export type StorageFolderItem =
-  | {
-      type: "file";
-      path: string;
-      size: number;
-    }
-  | {
-      type: "folder";
-      path: string;
-    };
-
-export interface StorageFolder {
-  cursor?: string;
-  items: StorageFolderItem[];
-}
+import type { StorageFolder, StorageFolderItem } from "../types";
 
 const client = new S3({
   endpoint: env.S3_ENDPOINT,
@@ -29,7 +14,7 @@ const client = new S3({
 
 export async function getStorageFolder(
   path: string,
-  take: number,
+  take = 10,
   cursor?: string,
 ): Promise<StorageFolder> {
   path = path.substring(1);

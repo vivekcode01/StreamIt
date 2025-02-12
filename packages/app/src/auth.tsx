@@ -1,14 +1,12 @@
-import { createApiClient } from "@superstreamer/api/client";
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { flushSync } from "react-dom";
 import useLocalStorageState from "use-local-storage-state";
-import type { ApiClient } from "@superstreamer/api/client";
+import { api } from "./api";
 import type { ReactNode } from "react";
 
 export interface AuthContext {
   signIn(username: string, password: string): Promise<void>;
   token: string | null;
-  api: ApiClient;
 }
 
 const AuthContext = createContext<AuthContext | null>(null);
@@ -22,16 +20,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     defaultValue: null,
   });
 
-  const api = useMemo(() => {
-    return createApiClient(
-      window.__ENV__.PUBLIC_API_ENDPOINT,
-      token ? { token } : undefined,
-    );
+  useEffect(() => {
+    api.setToken(token);
   }, [token]);
 
   const signIn = async (username: string, password: string) => {
-    const { data } = await api.token.post({ username, password });
-    flushSync(() => setToken(data));
+    const response = await api.client.token.$post({
+      json: { username, password },
+    });
+    const { token } = await response.json();
+    flushSync(() => setToken(token));
   };
 
   return (
@@ -39,7 +37,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       value={{
         signIn,
         token,
-        api,
       }}
     >
       {children}

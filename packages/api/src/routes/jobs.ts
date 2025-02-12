@@ -9,258 +9,305 @@ import {
   pipelineQueue,
   transcodeQueue,
 } from "bolt";
-import { Elysia, t } from "elysia";
-import { auth } from "../auth";
-import { DeliberateError } from "../errors";
+import { Hono } from "hono";
+import { describeRoute } from "hono-openapi";
+import { resolver } from "hono-openapi/zod";
+import { z } from "zod";
+import { apiError } from "../errors";
+import { auth } from "../middleware";
 import { getJob, getJobLogs, getJobs } from "../repositories/jobs";
-import { JobSchema } from "../types";
-import { mergeProps } from "../utils/type-guard";
+import { validator } from "../validator";
 
-const InputSchema = t.Union([
-  t.Object({
-    type: t.Literal("video"),
-    path: t.String({
-      description: "The source path, starting with http(s):// or s3://",
-    }),
-    height: t.Optional(t.Number()),
+const inputSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("video"),
+    path: z.string(),
+    height: z.number().optional(),
   }),
-  t.Object({
-    type: t.Literal("audio"),
-    path: t.String({
-      description: "The source path, starting with http(s):// or s3://",
-    }),
-    language: t.Optional(t.String()),
-    channels: t.Optional(t.Number()),
+  z.object({
+    type: z.literal("audio"),
+    path: z.string(),
+    language: z.string().optional(),
+    channels: z.number().optional(),
   }),
-  t.Object({
-    type: t.Literal("text"),
-    path: t.String({
-      description: "The source path, starting with http(s):// or s3://",
-    }),
-    language: t.String(),
+  z.object({
+    type: z.literal("text"),
+    path: z.string(),
+    language: z.string(),
   }),
 ]);
 
-const StreamSchema = t.Union([
-  t.Object({
-    type: t.Literal("video"),
-    codec: t.Union([t.Literal("h264"), t.Literal("vp9"), t.Literal("hevc")]),
-    height: t.Number(),
-    bitrate: t.Optional(t.Number({ description: "Bitrate in bps" })),
-    framerate: t.Optional(t.Number({ description: "Frames per second" })),
+const streamSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("video"),
+    codec: z.enum(["h264", "vp9", "hevc"]),
+    height: z.number(),
+    bitrate: z.number().optional(),
+    framerate: z.number().optional(),
   }),
-  t.Object({
-    type: t.Literal("audio"),
-    codec: t.Union([t.Literal("aac"), t.Literal("ac3"), t.Literal("eac3")]),
-    bitrate: t.Optional(t.Number({ description: "Bitrate in bps" })),
-    language: t.Optional(t.String()),
-    channels: t.Optional(t.Number()),
+  z.object({
+    type: z.literal("audio"),
+    codec: z.enum(["aac", "ac3", "eac3"]),
+    bitrate: z.number().optional(),
+    language: z.string().optional(),
+    channels: z.number().optional(),
   }),
-  t.Object({
-    type: t.Literal("text"),
-    language: t.String(),
+  z.object({
+    type: z.literal("text"),
+    language: z.string(),
   }),
 ]);
 
-export const jobs = new Elysia()
-  .use(auth({ user: true, service: true }))
+const jobSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  state: z.enum(["waiting", "running", "failed", "completed"]),
+  progress: z.record(z.string(), z.number()).optional(),
+  createdAt: z.number(),
+  processedAt: z.number().optional(),
+  finishedAt: z.number().optional(),
+  duration: z.number().optional(),
+  inputData: z.string(),
+  outputData: z.string().optional(),
+  failedReason: z.string().optional(),
+  stacktrace: z.array(z.string()).optional(),
+  children: z.array(z.any()),
+});
+
+const jobsFilterSchema = z.object({
+  page: z.number().default(1),
+  perPage: z.number().default(20),
+  sortKey: z.enum(["name", "duration", "createdAt"]).default("createdAt"),
+  sortDir: z.enum(["asc", "desc"]).default("desc"),
+});
+
+export const jobsApp = new Hono()
+  .use(auth())
   .post(
     "/pipeline",
-    async ({ body }) => {
-      const data = {
-        assetId: randomUUID(),
+    describeRoute({
+      summary: "Create pipeline job",
+      security: [{ userToken: [] }],
+      tags: ["Jobs"],
+      responses: {
+        200: {
+          description: "Successful response",
+          content: {
+            "application/json": {
+              schema: resolver(
+                z.object({
+                  jobId: z.string(),
+                }),
+              ),
+            },
+          },
+        },
+      },
+    }),
+    validator(
+      "json",
+      z.object({
+        assetId: z.string().uuid().default(randomUUID),
+        inputs: z.array(inputSchema),
+        streams: z.array(streamSchema),
+        group: z.string().optional(),
+        language: z.string().optional(),
+        concurrency: z.number().default(DEFAULT_CONCURRENCY),
+        public: z.boolean().default(DEFAULT_PUBLIC),
+      }),
+    ),
+    async (c) => {
+      const body = c.req.valid("json");
+
+      const jobId = await addToQueue(pipelineQueue, {
+        ...body,
         segmentSize: DEFAULT_SEGMENT_SIZE,
         name: DEFAULT_PACKAGE_NAME,
-        concurrency: DEFAULT_CONCURRENCY,
-        public: DEFAULT_PUBLIC,
-        ...body,
-      };
-      const jobId = await addToQueue(pipelineQueue, data, {
-        id: data.assetId,
       });
-      return { jobId };
-    },
-    {
-      detail: {
-        summary: "Create pipeline job",
-        tags: ["Jobs"],
-      },
-      body: t.Object({
-        assetId: t.Optional(
-          t.String({
-            format: "uuid",
-          }),
-        ),
-        inputs: t.Array(InputSchema),
-        streams: t.Array(StreamSchema),
-        group: t.Optional(t.String()),
-        language: t.Optional(t.String()),
-        concurrency: t.Optional(t.Number()),
-        public: t.Optional(t.Boolean()),
-      }),
-      response: {
-        200: t.Object({
-          jobId: t.String(),
-        }),
-      },
+
+      return c.json({ jobId }, 200);
     },
   )
   .post(
     "/transcode",
-    async ({ body }) => {
-      const data = {
-        assetId: randomUUID(),
-        segmentSize: DEFAULT_SEGMENT_SIZE,
-        ...body,
-      };
-      const jobId = await addToQueue(transcodeQueue, data, {
-        id: data.assetId,
-      });
-      return { jobId };
-    },
-    {
-      detail: {
-        summary: "Create transcode job",
-        tags: ["Jobs"],
+    describeRoute({
+      summary: "Create transcode job",
+      security: [{ userToken: [] }],
+      tags: ["Jobs"],
+      responses: {
+        200: {
+          description: "Successful response",
+          content: {
+            "application/json": {
+              schema: resolver(
+                z.object({
+                  jobId: z.string(),
+                }),
+              ),
+            },
+          },
+        },
       },
-      body: t.Object({
-        assetId: t.Optional(
-          t.String({
-            format: "uuid",
-          }),
-        ),
-        segmentSize: t.Optional(t.Number()),
-        inputs: t.Array(InputSchema),
-        streams: t.Array(StreamSchema),
-        group: t.Optional(t.String()),
+    }),
+    validator(
+      "json",
+      z.object({
+        assetId: z.string().uuid().default(randomUUID),
+        segmentSize: z.number().default(DEFAULT_SEGMENT_SIZE),
+        inputs: z.array(inputSchema),
+        streams: z.array(streamSchema),
+        group: z.string().optional(),
       }),
-      response: {
-        200: t.Object({
-          jobId: t.String(),
-        }),
-      },
+    ),
+    async (c) => {
+      const body = c.req.valid("json");
+
+      const jobId = await addToQueue(transcodeQueue, body, {
+        id: body.assetId,
+      });
+
+      return c.json({ jobId }, 200);
     },
   )
   .post(
     "/package",
-    async ({ body }) => {
-      const data = {
-        name: DEFAULT_PACKAGE_NAME,
-        concurrency: DEFAULT_CONCURRENCY,
-        public: DEFAULT_PUBLIC,
-        ...body,
-      };
-      const jobId = await addToQueue(packageQueue, data, {
-        id: [data.assetId, data.name],
-      });
-      return { jobId };
-    },
-    {
-      detail: {
-        summary: "Create package job",
-        tags: ["Jobs"],
+    describeRoute({
+      summary: "Create package job",
+      security: [{ userToken: [] }],
+      tags: ["Jobs"],
+      responses: {
+        200: {
+          description: "Successful response",
+          content: {
+            "application/json": {
+              schema: resolver(
+                z.object({
+                  jobId: z.string(),
+                }),
+              ),
+            },
+          },
+        },
       },
-      body: t.Object({
-        assetId: t.String({
-          format: "uuid",
-        }),
-        segmentSize: t.Optional(t.Number()),
-        name: t.Optional(t.String()),
-        language: t.Optional(t.String()),
-        concurrency: t.Optional(t.Number()),
-        public: t.Optional(t.Boolean()),
+    }),
+    validator(
+      "json",
+      z.object({
+        assetId: z.string().uuid().default(randomUUID),
+        segmentSize: z.number().default(DEFAULT_SEGMENT_SIZE),
+        name: z.string().default(DEFAULT_PACKAGE_NAME),
+        language: z.string().optional(),
+        concurrency: z.number().default(DEFAULT_CONCURRENCY),
+        public: z.boolean().default(DEFAULT_PUBLIC),
       }),
-      response: {
-        200: t.Object({
-          jobId: t.String(),
-        }),
-      },
+    ),
+    async (c) => {
+      const body = c.req.valid("json");
+
+      const jobId = await addToQueue(packageQueue, body, {
+        id: [body.assetId, body.name],
+      });
+
+      return c.json({ jobId }, 200);
     },
   )
   .get(
-    "/jobs",
-    async ({ query }) => {
-      const filter = mergeProps(query, {
-        page: 1,
-        perPage: 20,
-        sortKey: "createdAt",
-        sortDir: "desc",
-      });
-      return await getJobs(filter);
-    },
-    {
-      detail: {
-        summary: "Get all jobs",
-        tags: ["Jobs"],
+    "/",
+    describeRoute({
+      summary: "Get all jobs",
+      security: [{ userToken: [] }],
+      tags: ["Jobs"],
+      responses: {
+        200: {
+          description: "Successful response",
+          content: {
+            "application/json": {
+              schema: resolver(
+                z.intersection(
+                  jobsFilterSchema,
+                  z.object({
+                    items: z.array(jobSchema),
+                    totalPages: z.number(),
+                  }),
+                ),
+              ),
+            },
+          },
+        },
       },
-      query: t.Object({
-        page: t.Optional(t.Number()),
-        perPage: t.Optional(t.Number()),
-        sortKey: t.Optional(
-          t.Union([
-            t.Literal("name"),
-            t.Literal("duration"),
-            t.Literal("createdAt"),
-          ]),
-        ),
-        sortDir: t.Optional(t.Union([t.Literal("asc"), t.Literal("desc")])),
-      }),
-      response: {
-        200: t.Object({
-          page: t.Number(),
-          perPage: t.Number(),
-          sortKey: t.Union([
-            t.Literal("name"),
-            t.Literal("duration"),
-            t.Literal("createdAt"),
-          ]),
-          sortDir: t.Union([t.Literal("asc"), t.Literal("desc")]),
-          items: t.Array(JobSchema),
-          totalPages: t.Number(),
-        }),
-      },
+    }),
+    validator("query", jobsFilterSchema),
+    async (c) => {
+      const query = c.req.valid("query");
+      const jobs = await getJobs(query);
+      return c.json(jobs, 200);
     },
   )
   .get(
-    "/jobs/:id",
-    async ({ params, query }) => {
+    "/:id",
+    describeRoute({
+      summary: "Get a job",
+      security: [{ userToken: [] }],
+      tags: ["Jobs"],
+      responses: {
+        200: {
+          description: "Successful response",
+          content: {
+            "application/json": {
+              schema: resolver(jobSchema),
+            },
+          },
+        },
+      },
+    }),
+    validator(
+      "param",
+      z.object({
+        id: z.string(),
+      }),
+    ),
+    validator(
+      "query",
+      z.object({
+        fromRoot: z.boolean().default(false),
+      }),
+    ),
+    async (c) => {
+      const params = c.req.valid("param");
+      const query = c.req.valid("query");
       const job = await getJob(params.id, query.fromRoot);
       if (!job) {
-        throw new DeliberateError({ type: "ERR_NOT_FOUND" });
+        throw apiError("ERR_JOB_NOT_FOUND");
       }
-      return job;
-    },
-    {
-      detail: {
-        summary: "Get a job",
-        tags: ["Jobs"],
-      },
-      params: t.Object({
-        id: t.String(),
-      }),
-      query: t.Object({
-        fromRoot: t.Optional(t.Boolean()),
-      }),
-      response: {
-        200: JobSchema,
-      },
+      return c.json(job, 200);
     },
   )
   .get(
-    "/jobs/:id/logs",
-    async ({ params }) => {
-      return await getJobLogs(params.id);
-    },
-    {
-      detail: {
-        summary: "Get job logs",
-        tags: ["Jobs"],
+    "/:id/logs",
+    describeRoute({
+      summary: "Get job logs",
+      security: [{ userToken: [] }],
+      tags: ["Jobs"],
+      responses: {
+        200: {
+          description: "Successful response",
+          content: {
+            "application/json": {
+              schema: resolver(z.array(z.string())),
+            },
+          },
+        },
       },
-      params: t.Object({
-        id: t.String(),
+    }),
+    validator(
+      "param",
+      z.object({
+        id: z.string(),
       }),
-      response: {
-        200: t.Array(t.String()),
-      },
+    ),
+    async (c) => {
+      const params = c.req.valid("param");
+      const logs = await getJobLogs(params.id);
+      return c.json(logs, 200);
     },
   );
