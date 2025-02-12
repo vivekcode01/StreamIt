@@ -4,7 +4,7 @@ import useLocalStorageState from "use-local-storage-state";
 import { api } from "./api";
 import type { ReactNode } from "react";
 
-export interface AuthContext {
+interface AuthContext {
   signIn(username: string, password: string): Promise<void>;
   token: string | null;
 }

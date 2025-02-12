@@ -49,6 +49,7 @@
     "splitting": false,
     "sourcemap": true,
     "clean": false,
-    "dts": true
+    "dts": true,
+    "noExternal": ["../src"]
   }
 }

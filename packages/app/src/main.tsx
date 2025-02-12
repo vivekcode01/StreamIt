@@ -9,10 +9,6 @@ import "./globals.css";
 const router = createRouter({
   routeTree,
   defaultPreload: false,
-  context: {
-    // This will be set after we wrap the app in an AuthProvider
-    auth: undefined!,
-  },
 });
 
 declare module "@tanstack/react-router" {
