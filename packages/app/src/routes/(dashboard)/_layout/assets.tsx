@@ -1,12 +1,25 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import {
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerHeader,
+} from "@heroui/drawer";
+import {
+  createFileRoute,
+  Link,
+  useNavigate,
+  useRouter,
+} from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
-import { CircleSlash } from "lucide-react";
+import { CircleSlash, SquarePen } from "lucide-react";
+import { useState } from "react";
 import { z } from "zod";
+import { useAuth } from "../../../auth";
+import { Form } from "../../../components/Form";
 import { Format } from "../../../components/Format";
 import { FullTable } from "../../../components/FullTable";
 import { Uniqolor } from "../../../components/Uniqolor";
-import type { Group } from "@superstreamer/api/client";
-import type { Asset } from "@superstreamer/api/client";
+import type { Asset, Group } from "@superstreamer/api/client";
 
 export const Route = createFileRoute("/(dashboard)/_layout/assets")({
   component: RouteComponent,
@@ -33,6 +46,7 @@ function RouteComponent() {
   const navigate = useNavigate({ from: Route.fullPath });
   const { assets, groups } = Route.useLoaderData();
   const filter = Route.useLoaderDeps();
+  const [editAsset, setEditAsset] = useState<Asset | null>(null);
 
   if (!assets.data || !groups.data) {
     return null;
@@ -63,6 +77,10 @@ function RouteComponent() {
             label: "Created",
             allowsSorting: true,
           },
+          {
+            id: "actions",
+            label: "Actions",
+          },
         ]}
         {...assets.data}
         filter={filter}
@@ -72,13 +90,31 @@ function RouteComponent() {
         mapRow={(item) => ({
           key: item.id,
           cells: [
-            item.name,
+            <Name asset={item} />,
             <Playables asset={item} />,
             <GroupTag groups={groups.data} asset={item} />,
             <Format format="date" value={item.createdAt} />,
+            <div className="flex items-center">
+              <button onClick={() => setEditAsset(item)}>
+                <SquarePen className="w-4 h-4" />
+              </button>
+            </div>,
           ],
         })}
       />
+      <EditAssetDrawer asset={editAsset} onClose={() => setEditAsset(null)} />
+    </div>
+  );
+}
+
+function Name({ asset }: { asset: Asset }) {
+  if (!asset.name) {
+    return <span>{asset.id}</span>;
+  }
+  return (
+    <div>
+      {asset.name}
+      <div className="text-xs opacity-50">{asset.id}</div>
     </div>
   );
 }
@@ -99,5 +135,43 @@ function Playables({ asset }: { asset: Asset }) {
         <CircleSlash className="w-4 h-4" />
       )}
     </div>
+  );
+}
+
+function EditAssetDrawer({
+  asset,
+  onClose,
+}: {
+  asset: Asset | null;
+  onClose: () => void;
+}) {
+  const router = useRouter();
+  const { api } = useAuth();
+
+  return (
+    <Drawer isOpen={asset !== null} onClose={onClose}>
+      <DrawerContent>
+        <DrawerHeader>Asset</DrawerHeader>
+        {asset ? (
+          <DrawerBody>
+            <div className="mb-4">{asset.id}</div>
+            <Form
+              fields={{
+                name: {
+                  type: "string",
+                  label: "Name",
+                  value: asset.name,
+                },
+              }}
+              onSubmit={async (values) => {
+                await api.assets({ id: asset.id }).put(values);
+                await router.invalidate();
+                onClose();
+              }}
+            />
+          </DrawerBody>
+        ) : null}
+      </DrawerContent>
+    </Drawer>
   );
 }

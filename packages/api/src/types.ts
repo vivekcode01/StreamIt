@@ -82,8 +82,8 @@ export type User = Static<typeof UserSchema>;
 export const AssetSchema = t.Object(
   {
     id: t.String({ format: "uuid" }),
+    name: t.Nullable(t.String()),
     groupId: t.Nullable(t.Number()),
-    name: t.String(),
     createdAt: t.Date(),
     playables: t.Number(),
   },

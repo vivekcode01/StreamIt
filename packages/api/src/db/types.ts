@@ -24,11 +24,14 @@ export type GroupInsert = Insertable<GroupsTable>;
 
 export interface AssetsTable {
   id: string;
+  name: string | null;
   groupId: number | null;
   createdAt: ColumnType<Date, never, never>;
 }
 
 export type AssetInsert = Insertable<AssetsTable>;
+
+export type AssetUpdate = Updateable<AssetsTable>;
 
 export interface PlayablesTable {
   assetId: string;

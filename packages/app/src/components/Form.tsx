@@ -1,6 +1,6 @@
 import { Button, Input } from "@heroui/react";
 import cn from "clsx";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import type { InputProps } from "@heroui/input";
@@ -29,6 +29,8 @@ export function Form<T extends FieldRecord>({
   onSubmit,
   submit,
 }: FormProps<T>) {
+  const [loading, setLoading] = useState(false);
+
   const entries = Object.entries(fields);
 
   const { handleSubmit, setValue, control, getValues } = useForm<FieldMap>({
@@ -50,7 +52,13 @@ export function Form<T extends FieldRecord>({
   return (
     <form
       onSubmit={handleSubmit((values) => {
-        onSubmit(values as FieldMap<T>);
+        const promise = onSubmit(values as FieldMap<T>);
+        if (promise) {
+          setLoading(true);
+          promise.then(() => {
+            setLoading(false);
+          });
+        }
       })}
       className={cn("flex flex-col gap-4", className)}
       autoComplete="off"
@@ -76,7 +84,9 @@ export function Form<T extends FieldRecord>({
         );
       })}
       <div>
-        <Button type="submit">{submit ?? "Submit"}</Button>
+        <Button isLoading={loading} type="submit">
+          {submit ?? "Submit"}
+        </Button>
       </div>
     </form>
   );

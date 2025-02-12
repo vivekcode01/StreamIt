@@ -1,5 +1,5 @@
 import { db } from "../db";
-import type { AssetInsert, PlayableInsert } from "../db/types";
+import type { AssetInsert, AssetUpdate, PlayableInsert } from "../db/types";
 
 interface AssetsFilter {
   page: number;
@@ -10,6 +10,14 @@ interface AssetsFilter {
 
 export async function createAsset(fields: AssetInsert) {
   return await db.insertInto("assets").values(fields).executeTakeFirstOrThrow();
+}
+
+export async function updateAsset(id: string, fields: AssetUpdate) {
+  return await db
+    .updateTable("assets")
+    .set(fields)
+    .where("id", "=", id)
+    .executeTakeFirst();
 }
 
 export async function getAssets(filter: AssetsFilter) {
@@ -25,6 +33,7 @@ export async function getAssets(filter: AssetsFilter) {
     .leftJoin("playables", "playables.assetId", "assets.id")
     .select(({ fn }) => [
       "assets.id",
+      "assets.name",
       "assets.groupId",
       "assets.createdAt",
       fn.count<number>("playables.assetId").as("playables"),
@@ -44,7 +53,7 @@ export async function getAssets(filter: AssetsFilter) {
 
   return {
     ...filter,
-    items: items.map(formatAsset),
+    items,
     totalPages,
   };
 }
@@ -84,6 +93,7 @@ export async function getAsset(id: string) {
     .leftJoin("playables", "playables.assetId", "assets.id")
     .select(({ fn }) => [
       "assets.id",
+      "assets.name",
       "assets.groupId",
       "assets.createdAt",
       fn.count<number>("playables.assetId").as("playables"),
@@ -92,17 +102,5 @@ export async function getAsset(id: string) {
     .where("assets.id", "=", id)
     .executeTakeFirst();
 
-  return asset ? formatAsset(asset) : null;
-}
-
-function formatAsset(asset: {
-  id: string;
-  groupId: number | null;
-  createdAt: Date;
-  playables: number;
-}) {
-  return {
-    ...asset,
-    name: asset.id,
-  };
+  return asset ?? null;
 }

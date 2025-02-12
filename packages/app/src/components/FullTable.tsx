@@ -9,7 +9,6 @@ import {
   TableRow,
 } from "@heroui/table";
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
-import { useState } from "react";
 import type { SortDescriptor, TableProps } from "@heroui/table";
 import type { ReactNode } from "@tanstack/react-router";
 
@@ -23,7 +22,7 @@ export interface Column {
 export interface Filter {
   page: number;
   perPage: number;
-  sortKey: string | number;
+  sortKey: string;
   sortDir: "asc" | "desc";
 }
 
@@ -31,7 +30,7 @@ interface FullTableProps<T, F extends Filter> {
   classNames?: TableProps["classNames"];
   columns: Column[];
   items: T[];
-  mapRow(props: T): { key: string | number; cells: ReactNode[] };
+  mapRow(props: T): { key: string; cells: ReactNode[] };
   filter?: F;
   onFilterChange?(filter: F): void;
   hasMore?: boolean;
@@ -50,10 +49,13 @@ export function FullTable<T, F extends Filter>({
   onLoadMore,
   totalPages,
 }: FullTableProps<T, F>) {
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: filter?.sortKey ?? "",
-    direction: filter?.sortDir === "asc" ? "ascending" : "descending",
-  });
+  let sortDescriptor: SortDescriptor | undefined;
+  if (filter) {
+    sortDescriptor = {
+      column: filter.sortKey,
+      direction: filter.sortDir === "asc" ? "ascending" : "descending",
+    };
+  }
 
   const [loaderRef, scrollerRef] = useInfiniteScroll({
     onLoadMore,
@@ -72,7 +74,6 @@ export function FullTable<T, F extends Filter>({
         baseRef={scrollerRef}
         sortDescriptor={sortDescriptor ?? undefined}
         onSortChange={(sd) => {
-          setSortDescriptor(sd);
           updateFilter({
             sortKey: sd.column,
             sortDir: sd.direction === "ascending" ? "asc" : "desc",

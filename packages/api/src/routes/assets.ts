@@ -1,7 +1,12 @@
 import { Elysia, t } from "elysia";
 import { auth } from "../auth";
 import { DeliberateError } from "../errors";
-import { getAsset, getAssets, getGroups } from "../repositories/assets";
+import {
+  getAsset,
+  getAssets,
+  getGroups,
+  updateAsset,
+} from "../repositories/assets";
 import { AssetSchema } from "../types";
 import { mergeProps } from "../utils/type-guard";
 
@@ -74,6 +79,20 @@ export const assets = new Elysia()
         200: AssetSchema,
         400: t.Never(),
       },
+    },
+  )
+  .put(
+    "/assets/:id",
+    async ({ params, body }) => {
+      await updateAsset(params.id, body);
+    },
+    {
+      params: t.Object({
+        id: t.String(),
+      }),
+      body: t.Object({
+        name: t.String(),
+      }),
     },
   )
   .get(
