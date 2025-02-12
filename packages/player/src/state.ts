@@ -1,41 +1,38 @@
 import { preciseFloat } from "./helpers";
 import { Events } from "./types";
 import type {
-  Asset,
   AudioTrack,
-  Interstitial,
+  CuePoint,
   Playhead,
   Quality,
   SubtitleTrack,
 } from "./types";
 
-interface MediaShim {
+interface Timing {
   currentTime: number;
   duration: number;
+  seekableStart: number;
 }
 
 interface StateParams {
   onEvent(event: Events): void;
-  getTiming(): {
-    primary?: MediaShim | null;
-    asset?: MediaShim | null;
-  };
+  getTiming(): undefined | Timing;
 }
 
 interface StateProperties {
   ready: boolean;
   playhead: Playhead;
   started: boolean;
-  time: number;
+  seekableStart: number;
+  currentTime: number;
   duration: number;
-  interstitial: Interstitial | null;
   qualities: Quality[];
   autoQuality: boolean;
   audioTracks: AudioTrack[];
   subtitleTracks: SubtitleTrack[];
   volume: number;
   seeking: boolean;
-  cuePoints: number[];
+  cuePoints: CuePoint[];
   live: boolean;
 }
 
@@ -43,9 +40,9 @@ const noState: StateProperties = {
   playhead: "idle",
   ready: false,
   started: false,
-  time: 0,
+  seekableStart: 0,
+  currentTime: 0,
   duration: NaN,
-  interstitial: null,
   qualities: [],
   autoQuality: false,
   audioTracks: [],
@@ -93,28 +90,6 @@ export class State implements StateProperties {
     }
     this.started = true;
     this.params_.onEvent(Events.STARTED);
-  }
-
-  setInterstitial(interstitial: Interstitial | null) {
-    this.interstitial = interstitial;
-    this.setSeeking(false);
-    this.params_.onEvent(Events.INTERSTITIAL_CHANGE);
-  }
-
-  setAsset(asset: Omit<Asset, "time" | "duration"> | null) {
-    if (!this.interstitial) {
-      return;
-    }
-    if (asset) {
-      this.interstitial.asset = {
-        time: 0,
-        duration: NaN,
-        ...asset,
-      };
-      this.requestTimingSync();
-    } else {
-      this.interstitial.asset = null;
-    }
   }
 
   setQualities(qualities: Quality[], autoQuality: boolean) {
@@ -171,7 +146,7 @@ export class State implements StateProperties {
     this.params_.onEvent(Events.SEEKING_CHANGE);
   }
 
-  setCuePoints(cuePoints: number[]) {
+  setCuePoints(cuePoints: CuePoint[]) {
     this.cuePoints = cuePoints;
     this.requestTimingSync();
     this.params_.onEvent(Events.CUEPOINTS_CHANGE);
@@ -184,59 +159,35 @@ export class State implements StateProperties {
     }, 250);
 
     const timing = this.params_.getTiming();
-
-    let shouldEmit = false;
-
-    if (this.updateTimeDuration_(this, timing.primary)) {
-      shouldEmit = true;
+    if (!timing) {
+      return;
     }
+
+    const currentTime = preciseFloat(timing.currentTime);
+    const duration = preciseFloat(timing.duration);
+    const seekableStart = preciseFloat(timing.seekableStart);
 
     if (
-      this.interstitial?.asset &&
-      this.updateTimeDuration_(this.interstitial.asset, timing.asset)
+      currentTime === this.currentTime &&
+      duration === this.duration &&
+      seekableStart === this.seekableStart
     ) {
-      shouldEmit = true;
+      return;
     }
 
-    if (shouldEmit) {
-      this.params_.onEvent(Events.TIME_CHANGE);
-    }
-  }
+    this.currentTime = currentTime;
+    this.duration = duration;
+    this.seekableStart = seekableStart;
 
-  private updateTimeDuration_(
-    target: {
-      time: number;
-      duration: number;
-      seekableStart?: number;
-    },
-    shim?: MediaShim | null,
-  ) {
-    if (!shim) {
-      return false;
-    }
-    if (!Number.isFinite(shim.duration)) {
-      return false;
-    }
-
-    const oldTime = target.time;
-    target.time = preciseFloat(shim.currentTime);
-
-    const oldDuration = target.duration;
-    target.duration = preciseFloat(shim.duration);
-
-    if (target.time > target.duration) {
-      target.time = target.duration;
-    }
-
-    return oldTime !== target.time || oldDuration !== target.duration;
+    this.params_.onEvent(Events.TIME_CHANGE);
   }
 
   ready = noState.ready;
   playhead = noState.playhead;
   started = noState.started;
-  time = noState.time;
+  seekableStart = noState.seekableStart;
+  currentTime = noState.currentTime;
   duration = noState.duration;
-  interstitial = noState.interstitial;
   qualities = noState.qualities;
   autoQuality = noState.autoQuality;
   audioTracks = noState.audioTracks;

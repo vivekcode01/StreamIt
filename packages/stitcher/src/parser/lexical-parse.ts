@@ -244,6 +244,9 @@ function parseLine(line: string): Tag | null {
           case "START-DATE":
             attrs.startDate = DateTime.fromISO(value);
             break;
+          case "DURATION":
+            attrs.duration = Number.parseFloat(value);
+            break;
           default: {
             if (!key.startsWith("X-")) {
               break;

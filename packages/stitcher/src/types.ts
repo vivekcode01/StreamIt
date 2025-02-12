@@ -16,7 +16,7 @@ export interface VmapParams {
 
 export interface TimedEvent {
   dateTime: DateTime;
-  maxDuration?: number;
-  assets?: Asset[];
   vast?: VastParams;
+  asset?: Asset;
+  inlineDuration?: number;
 }

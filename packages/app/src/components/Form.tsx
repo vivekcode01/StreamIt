@@ -1,9 +1,9 @@
-import { Button, Input } from "@nextui-org/react";
+import { Button, Input } from "@heroui/react";
 import cn from "clsx";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Controller } from "react-hook-form";
-import type { InputProps } from "@nextui-org/input";
+import type { InputProps } from "@heroui/input";
 import type { Control } from "react-hook-form";
 
 interface FormProps<T extends FieldRecord> {

@@ -22,8 +22,8 @@
   },
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
-    "@nextui-org/react": "^2.4.8",
-    "@nextui-org/use-infinite-scroll": "^2.1.5",
+    "@heroui/react": "2.6.14",
+    "@heroui/use-infinite-scroll": "2.2.3",
     "@superstreamer/api": "workspace:*",
     "@superstreamer/player": "workspace:*",
     "@tanstack/react-router": "^1.78.3",

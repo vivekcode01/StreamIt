@@ -1,11 +1,4 @@
-import {
-  Card,
-  Modal,
-  ModalBody,
-  ModalContent,
-  Tab,
-  Tabs,
-} from "@nextui-org/react";
+import { Card, Modal, ModalBody, ModalContent, Tab, Tabs } from "@heroui/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { CodeEditor } from "../../../components/CodeEditor";

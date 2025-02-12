@@ -13,7 +13,6 @@ export enum Events {
   AUDIO_TRACKS_CHANGE = "audioTracksChange",
   SUBTITLE_TRACKS_CHANGE = "subtitleTracksChange",
   AUTO_QUALITY_CHANGE = "autoQualityChange",
-  INTERSTITIAL_CHANGE = "interstitialChange",
   SEEKING_CHANGE = "seekingChange",
   CUEPOINTS_CHANGE = "cuePointsChange",
 }
@@ -29,7 +28,6 @@ export type HlsPlayerEventMap = {
   [Events.AUDIO_TRACKS_CHANGE]: () => void;
   [Events.SUBTITLE_TRACKS_CHANGE]: () => void;
   [Events.AUTO_QUALITY_CHANGE]: () => void;
-  [Events.INTERSTITIAL_CHANGE]: () => void;
   [Events.SEEKING_CHANGE]: () => void;
   [Events.CUEPOINTS_CHANGE]: () => void;
 } & {
@@ -56,12 +54,7 @@ export interface SubtitleTrack {
   track: MediaPlaylist;
 }
 
-export interface Asset {
+export interface CuePoint {
   time: number;
   duration: number;
-  type?: "ad" | "bumper";
-}
-
-export interface Interstitial {
-  asset: Asset | null;
 }

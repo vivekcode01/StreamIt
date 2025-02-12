@@ -1,4 +1,4 @@
-import { Select, SelectItem } from "@nextui-org/react";
+import { Select, SelectItem } from "@heroui/react";
 
 interface SelectionProps<T> {
   items: T[];
@@ -31,16 +31,16 @@ export function Selection<T extends object>({
       items={items}
       selectionMode="single"
       selectedKeys={selectedKeys}
-      onChange={(event) => {
+      onSelectionChange={(event) => {
         const item = items.find((item) => {
           const key = getKey(item);
-          return String(key) === event.target.value;
+          return String(key) === event.currentKey;
         });
         if (item) {
           onChange(item);
         }
       }}
-      disabled={items.length < 2}
+      isDisabled={items.length < 2}
     >
       {(item) => (
         <SelectItem key={String(getKey(item))}>{getLabel(item)}</SelectItem>

@@ -1,4 +1,4 @@
-import { Switch } from "@nextui-org/react";
+import { Switch } from "@heroui/react";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
@@ -34,7 +34,7 @@ export function AutoRefresh({
   }, [enabled, interval, time]);
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center gap-2">
       <Switch
         size="sm"
         isSelected={enabled}
