@@ -160,7 +160,7 @@ function EditAssetDrawer({
                 name: {
                   type: "string",
                   label: "Name",
-                  value: asset.name,
+                  value: asset.name ?? "",
                 },
               }}
               onSubmit={async (values) => {
