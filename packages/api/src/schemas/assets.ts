@@ -1,32 +1,37 @@
-import { z } from "zod";
+import { z } from "../utils/zod";
 
-const assetSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().nullable(),
-  groupId: z.number().nullable(),
-  createdAt: z.coerce.date(),
-  playables: z.number(),
-});
+export const assetSchema = z
+  .object({
+    id: z.string().uuid(),
+    name: z.string().nullable(),
+    groupId: z.number().nullable(),
+    createdAt: z.coerce.date(),
+    playables: z.number(),
+  })
+  .openapi({
+    ref: "Asset",
+    description: "Each transcode result will be registered as an asset.",
+  });
 
-export const getAssetResponseSchema = assetSchema;
-
-export const getAssetsResponseSchema = z.object({
-  page: z.number(),
-  perPage: z.number(),
-  sortKey: z.enum(["name", "playables", "groupId", "createdAt"]),
-  sortDir: z.enum(["asc", "desc"]).default("desc"),
+export const assetsPaginatedSchema = z.object({
+  filter: z.object({
+    page: z.number(),
+    perPage: z.number(),
+    sortKey: z.enum(["name", "playables", "groupId", "createdAt"]),
+    sortDir: z.enum(["asc", "desc"]),
+  }),
   items: z.array(assetSchema),
   totalPages: z.number(),
 });
 
-export const getGroupsResponseSchema = z.array(
-  z.object({
+export const groupSchema = z
+  .object({
     id: z.number(),
     name: z.string(),
-  }),
-);
+  })
+  .openapi({
+    ref: "Group",
+    description: "Each asset can be part of a group for clarity.",
+  });
 
-export const getGroupResponseSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-});
+export const groupsSchema = z.array(groupSchema);

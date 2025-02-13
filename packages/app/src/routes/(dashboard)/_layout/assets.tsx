@@ -5,8 +5,8 @@ import {
   DrawerHeader,
 } from "@heroui/drawer";
 import {
-  getAssetsResponseSchema,
-  getGroupsResponseSchema,
+  assetsPaginatedSchema,
+  groupsSchema,
   toParams,
 } from "@superstreamer/api/client";
 import {
@@ -33,7 +33,7 @@ export const Route = createFileRoute("/(dashboard)/_layout/assets")({
       page: z.coerce.number().default(1),
       perPage: z.coerce.number().default(20),
       sortKey: z
-        .enum(["createdAt", "playables", "groupId", "name"])
+        .enum(["name", "playables", "groupId", "createdAt"])
         .default("createdAt"),
       sortDir: z.enum(["asc", "desc"]).default("desc"),
     }),
@@ -48,8 +48,8 @@ export const Route = createFileRoute("/(dashboard)/_layout/assets")({
       api.assets.groups.$get(),
     ]);
     return {
-      assets: getAssetsResponseSchema.parse(await assetsResponse.json()),
-      groups: getGroupsResponseSchema.parse(await groupsResponse.json()),
+      assets: assetsPaginatedSchema.parse(await assetsResponse.json()),
+      groups: groupsSchema.parse(await groupsResponse.json()),
     };
   },
 });
@@ -57,7 +57,6 @@ export const Route = createFileRoute("/(dashboard)/_layout/assets")({
 function RouteComponent() {
   const navigate = useNavigate({ from: Route.fullPath });
   const { assets, groups } = Route.useLoaderData();
-  const filter = Route.useLoaderDeps();
   const [editAsset, setEditAsset] = useState<Asset | null>(null);
 
   return (
@@ -90,8 +89,9 @@ function RouteComponent() {
             label: "Actions",
           },
         ]}
-        {...assets}
-        filter={filter}
+        totalPages={assets.totalPages}
+        items={assets.items}
+        filter={assets.filter}
         onFilterChange={(search) => {
           navigate({ search });
         }}

@@ -5,8 +5,8 @@ import { z } from "zod";
 import { apiError } from "../errors";
 import { auth } from "../middleware";
 import {
-  getStorageFileResponseSchema,
-  getStorageFolderResponseSchema,
+  storageFileSchema,
+  storageItemsPaginatedSchema,
 } from "../schemas/storage";
 import {
   getStorageFilePayload,
@@ -17,12 +17,16 @@ import { validator } from "../validator";
 
 export const storageApp = new Hono()
   .use(auth())
+
+  /**
+   * Get a list of S3 items.
+   */
   .get(
-    "/folder",
+    "/items",
     describeRoute({
-      summary: "Get a storage folder",
+      summary: "Get items from storage",
       description:
-        "Get a folder from your S3 storage by path with all files and subfolders.",
+        "Get items for a path from your S3 storage with all files and subfolders.",
       security: [{ userToken: [] }],
       tags: ["Storage"],
       responses: {
@@ -30,7 +34,7 @@ export const storageApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(getStorageFolderResponseSchema),
+              schema: resolver(storageItemsPaginatedSchema),
             },
           },
         },
@@ -50,6 +54,10 @@ export const storageApp = new Hono()
       return c.json(folder, 200);
     },
   )
+
+  /**
+   * Get an S3 file.
+   */
   .get(
     "/file",
     describeRoute({
@@ -62,7 +70,7 @@ export const storageApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(getStorageFileResponseSchema),
+              schema: resolver(storageFileSchema),
             },
           },
         },

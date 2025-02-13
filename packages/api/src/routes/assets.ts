@@ -10,14 +10,18 @@ import {
   updateAsset,
 } from "../repositories/assets";
 import {
-  getAssetResponseSchema,
-  getAssetsResponseSchema,
-  getGroupsResponseSchema,
+  assetSchema,
+  assetsPaginatedSchema,
+  groupsSchema,
 } from "../schemas/assets";
 import { validator } from "../validator";
 
 export const assetsApp = new Hono()
   .use(auth())
+
+  /**
+   * Get a list of assets.
+   */
   .get(
     "/",
     describeRoute({
@@ -29,7 +33,7 @@ export const assetsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(getAssetsResponseSchema),
+              schema: resolver(assetsPaginatedSchema),
             },
           },
         },
@@ -47,16 +51,19 @@ export const assetsApp = new Hono()
       }),
     ),
     async (c) => {
-      const { page, perPage, sortKey, sortDir } = c.req.valid("query");
-      const assets = await getAssets({
-        page,
-        perPage,
-        sortKey,
-        sortDir,
+      const filter = c.req.valid("query");
+      const { items, totalPages } = await getAssets(filter);
+      return c.json({
+        filter,
+        items,
+        totalPages,
       });
-      return c.json(assets);
     },
   )
+
+  /**
+   * Get a list of groups.
+   */
   .get(
     "/groups",
     describeRoute({
@@ -68,7 +75,7 @@ export const assetsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(getGroupsResponseSchema),
+              schema: resolver(groupsSchema),
             },
           },
         },
@@ -79,6 +86,10 @@ export const assetsApp = new Hono()
       return c.json(groups, 200);
     },
   )
+
+  /**
+   * Get an asset.
+   */
   .get(
     "/:id",
     describeRoute({
@@ -90,7 +101,7 @@ export const assetsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(getAssetResponseSchema),
+              schema: resolver(assetSchema),
             },
           },
         },
@@ -108,6 +119,10 @@ export const assetsApp = new Hono()
       return c.json(job, 200);
     },
   )
+
+  /**
+   * Update an asset by id.
+   */
   .put(
     "/:id",
     describeRoute({

@@ -1,5 +1,11 @@
 import { db } from "../db";
 
+/**
+ * Get a user id by username and password.
+ * @param name
+ * @param password
+ * @returns
+ */
 export async function getUserIdByCredentials(name: string, password: string) {
   const user = await db
     .selectFrom("users")
@@ -19,6 +25,11 @@ export async function getUserIdByCredentials(name: string, password: string) {
   return user.id;
 }
 
+/**
+ * Get a user by id.
+ * @param id
+ * @returns
+ */
 export async function getUser(id: number) {
   return await db
     .selectFrom("users")

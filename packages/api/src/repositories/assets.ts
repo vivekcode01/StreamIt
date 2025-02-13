@@ -1,17 +1,21 @@
 import { db } from "../db";
 import type { AssetInsert, AssetUpdate, PlayableInsert } from "../db/types";
 
-interface AssetsFilter {
-  page: number;
-  perPage: number;
-  sortKey: "name" | "playables" | "groupId" | "createdAt";
-  sortDir: "asc" | "desc";
-}
-
+/**
+ * Create an asset
+ * @param fields
+ * @returns
+ */
 export async function createAsset(fields: AssetInsert) {
   return await db.insertInto("assets").values(fields).executeTakeFirstOrThrow();
 }
 
+/**
+ * Update an asset by id
+ * @param id
+ * @param fields
+ * @returns
+ */
 export async function updateAsset(id: string, fields: AssetUpdate) {
   return await db
     .updateTable("assets")
@@ -20,6 +24,18 @@ export async function updateAsset(id: string, fields: AssetUpdate) {
     .executeTakeFirst();
 }
 
+interface AssetsFilter {
+  page: number;
+  perPage: number;
+  sortKey: "name" | "playables" | "groupId" | "createdAt";
+  sortDir: "asc" | "desc";
+}
+
+/**
+ * Get a list of assets
+ * @param filter
+ * @returns
+ */
 export async function getAssets(filter: AssetsFilter) {
   let orderBy: "id" | "playables" | "groupId" | "createdAt";
   if (filter.sortKey === "name") {
@@ -52,16 +68,24 @@ export async function getAssets(filter: AssetsFilter) {
   const totalPages = Math.ceil(count / filter.perPage);
 
   return {
-    ...filter,
     items,
     totalPages,
   };
 }
 
+/**
+ * Get a list of groups
+ * @returns
+ */
 export async function getGroups() {
   return await db.selectFrom("groups").select(["id", "name"]).execute();
 }
 
+/**
+ * Get or create a group
+ * @param name
+ * @returns
+ */
 export async function getOrCreateGroup(name: string) {
   let group = await db
     .selectFrom("groups")
@@ -80,6 +104,11 @@ export async function getOrCreateGroup(name: string) {
   return group;
 }
 
+/**
+ * Create a playable
+ * @param fields
+ * @returns
+ */
 export async function createPlayable(fields: PlayableInsert) {
   return await db
     .insertInto("playables")
@@ -87,6 +116,11 @@ export async function createPlayable(fields: PlayableInsert) {
     .executeTakeFirstOrThrow();
 }
 
+/**
+ * Get an asset by id
+ * @param id
+ * @returns
+ */
 export async function getAsset(id: string) {
   const asset = await db
     .selectFrom("assets")

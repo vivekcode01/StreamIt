@@ -1,8 +1,8 @@
 import { toParams } from "@superstreamer/api/client";
+import { jobsPaginatedSchema } from "@superstreamer/api/client";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 import { z } from "zod";
-import { getJobsResponseSchema } from "../../../../../../api/src/schemas/jobs";
 import { AutoRefresh } from "../../../../components/AutoRefresh";
 import { Format } from "../../../../components/Format";
 import { FullTable } from "../../../../components/FullTable";
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/(dashboard)/_layout/jobs/")({
     z.object({
       page: z.coerce.number().default(1),
       perPage: z.coerce.number().default(20),
-      sortKey: z.enum(["createdAt", "duration", "name"]).default("createdAt"),
+      sortKey: z.enum(["name", "duration", "createdAt"]).default("createdAt"),
       sortDir: z.enum(["asc", "desc"]).default("desc"),
     }),
   ),
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/(dashboard)/_layout/jobs/")({
     const { api } = context.api;
     const response = await api.jobs.$get({ query: toParams(deps) });
     return {
-      jobs: getJobsResponseSchema.parse(await response.json()),
+      jobs: jobsPaginatedSchema.parse(await response.json()),
     };
   },
 });
@@ -31,7 +31,6 @@ export const Route = createFileRoute("/(dashboard)/_layout/jobs/")({
 function RouteComponent() {
   const navigate = useNavigate({ from: Route.fullPath });
   const { jobs } = Route.useLoaderData();
-  const filter = Route.useLoaderDeps();
 
   return (
     <div className="p-8">
@@ -63,8 +62,9 @@ function RouteComponent() {
             allowsSorting: true,
           },
         ]}
-        {...jobs}
-        filter={filter}
+        totalPages={jobs.totalPages}
+        items={jobs.items}
+        filter={jobs.filter}
         onFilterChange={(search) => {
           navigate({ search });
         }}

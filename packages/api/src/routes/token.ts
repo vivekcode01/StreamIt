@@ -6,49 +6,56 @@ import { z } from "zod";
 import { env } from "../env";
 import { apiError } from "../errors";
 import { getUserIdByCredentials } from "../repositories/users";
-import { getTokenResponseSchema } from "../schemas/token";
 import { validator } from "../validator";
 
-export const tokenApp = new Hono().post(
-  "/",
-  describeRoute({
-    summary: "Create a token",
-    description: "Create an auth token for given credentials",
-    tags: ["User"],
-    responses: {
-      200: {
-        description: "Successful response",
-        content: {
-          "application/json": {
-            schema: resolver(getTokenResponseSchema),
+export const tokenApp = new Hono()
+  /**
+   * Create a token by credentials.
+   */
+  .post(
+    "/",
+    describeRoute({
+      summary: "Create a token",
+      description: "Create an auth token for given credentials",
+      tags: ["User"],
+      responses: {
+        200: {
+          description: "Successful response",
+          content: {
+            "application/json": {
+              schema: resolver(
+                z.object({
+                  token: z.string(),
+                }),
+              ),
+            },
           },
         },
       },
-    },
-  }),
-  validator(
-    "json",
-    z.object({
-      username: z.string(),
-      password: z.string(),
     }),
-  ),
-  async (c) => {
-    const credentials = c.req.valid("json");
-    const id = await getUserIdByCredentials(
-      credentials.username,
-      credentials.password,
-    );
-    if (id === null) {
-      throw apiError("USER_INVALID_CREDENTIALS");
-    }
-    const token = await sign(
-      {
-        id,
-      },
-      env.SUPER_SECRET,
-    );
+    validator(
+      "json",
+      z.object({
+        username: z.string(),
+        password: z.string(),
+      }),
+    ),
+    async (c) => {
+      const credentials = c.req.valid("json");
+      const id = await getUserIdByCredentials(
+        credentials.username,
+        credentials.password,
+      );
+      if (id === null) {
+        throw apiError("USER_INVALID_CREDENTIALS");
+      }
+      const token = await sign(
+        {
+          id,
+        },
+        env.SUPER_SECRET,
+      );
 
-    return c.json({ token }, 200);
-  },
-);
+      return c.json({ token }, 200);
+    },
+  );

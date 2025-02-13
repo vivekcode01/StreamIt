@@ -1,6 +1,10 @@
-import { z } from "zod";
+import { z } from "../utils/zod";
 
-export const getUserResponseSchema = z.object({
-  id: z.number(),
-  username: z.string(),
-});
+export const userSchema = z
+  .object({
+    id: z.number(),
+    username: z.string(),
+  })
+  .openapi({
+    ref: "User",
+  });

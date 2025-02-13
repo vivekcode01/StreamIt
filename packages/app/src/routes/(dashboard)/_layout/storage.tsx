@@ -1,17 +1,17 @@
 import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
 import { toParams } from "@superstreamer/api/client";
+import { storageItemsPaginatedSchema } from "@superstreamer/api/client";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 import { File, Folder } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
-import { getStorageFolderResponseSchema } from "../../../../../api/src/schemas/storage";
 import { useApi } from "../../../api";
 import { FilePreview } from "../../../components/FilePreview";
 import { Format } from "../../../components/Format";
-import { FullTable } from "../../../components/FullTable";
+import { FullTableScroll } from "../../../components/FullTableScroll";
 import { useInfinite } from "../../../hooks/useInfinite";
-import type { ApiClient, StorageFolderItem } from "@superstreamer/api/client";
+import type { ApiClient, StorageItem } from "@superstreamer/api/client";
 
 export const Route = createFileRoute("/(dashboard)/_layout/storage")({
   component: RouteComponent,
@@ -59,7 +59,7 @@ function RouteComponent() {
           ))}
         </Breadcrumbs>
       </div>
-      <FullTable
+      <FullTableScroll
         classNames={{
           base: "grow",
           wrapper: "grow basis-0",
@@ -105,14 +105,14 @@ function RouteComponent() {
 }
 
 async function getFolderItems(api: ApiClient, path: string, cursor: string) {
-  const response = await api.storage.folder.$get({
+  const response = await api.storage.items.$get({
     query: toParams({
       path,
       cursor,
       take: 30,
     }),
   });
-  return getStorageFolderResponseSchema.parse(await response.json());
+  return storageItemsPaginatedSchema.parse(await response.json());
 }
 
 function parseBreadcrumbs(path: string) {
@@ -136,7 +136,7 @@ function Item({
   item,
   setPreviewPath,
 }: {
-  item: StorageFolderItem;
+  item: StorageItem;
   setPreviewPath(value: string): void;
 }) {
   const chunks = item.path.split("/");
@@ -164,7 +164,7 @@ function Item({
   }
 }
 
-function Icon({ item }: { item: StorageFolderItem }) {
+function Icon({ item }: { item: StorageItem }) {
   if (item.type === "folder") {
     return <Folder className="w-4 h-4" />;
   }

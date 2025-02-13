@@ -16,14 +16,7 @@ import { z } from "zod";
 import { apiError } from "../errors";
 import { auth } from "../middleware";
 import { getJob, getJobLogs, getJobs } from "../repositories/jobs";
-import {
-  getJobLogsResponseSchema,
-  // getJobResponseSchema,
-  // getJobsResponseSchema,
-  getPackageResponseSchema,
-  getPipelineResponseSchema,
-  getTranscodeResponseSchema,
-} from "../schemas/jobs";
+import { jobSchema, jobsPaginatedSchema } from "../schemas/jobs";
 import { validator } from "../validator";
 
 const inputSchema = z.discriminatedUnion("type", [
@@ -68,6 +61,11 @@ const streamSchema = z.discriminatedUnion("type", [
 
 export const jobsApp = new Hono()
   .use(auth())
+
+  /**
+   * Push a pipeline job,
+   * a combination of a transcode and package job with sane defaults.
+   */
   .post(
     "/pipeline",
     describeRoute({
@@ -79,7 +77,11 @@ export const jobsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(getPipelineResponseSchema),
+              schema: resolver(
+                z.object({
+                  jobId: z.string(),
+                }),
+              ),
             },
           },
         },
@@ -109,6 +111,10 @@ export const jobsApp = new Hono()
       return c.json({ jobId }, 200);
     },
   )
+
+  /**
+   * Push a transcode job.
+   */
   .post(
     "/transcode",
     describeRoute({
@@ -120,7 +126,11 @@ export const jobsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(getTranscodeResponseSchema),
+              schema: resolver(
+                z.object({
+                  jobId: z.string(),
+                }),
+              ),
             },
           },
         },
@@ -146,6 +156,10 @@ export const jobsApp = new Hono()
       return c.json({ jobId }, 200);
     },
   )
+
+  /**
+   * Push a package job.
+   */
   .post(
     "/package",
     describeRoute({
@@ -157,7 +171,11 @@ export const jobsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(getPackageResponseSchema),
+              schema: resolver(
+                z.object({
+                  jobId: z.string(),
+                }),
+              ),
             },
           },
         },
@@ -184,6 +202,10 @@ export const jobsApp = new Hono()
       return c.json({ jobId }, 200);
     },
   )
+
+  /**
+   * Get a list of jobs.
+   */
   .get(
     "/",
     describeRoute({
@@ -195,8 +217,7 @@ export const jobsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              // TODO: This contains a circular dependency, must fix it by referencing.
-              schema: resolver(z.any()),
+              schema: resolver(jobsPaginatedSchema),
             },
           },
         },
@@ -212,11 +233,22 @@ export const jobsApp = new Hono()
       }),
     ),
     async (c) => {
-      const query = c.req.valid("query");
-      const jobs = await getJobs(query);
-      return c.json(jobs, 200);
+      const filter = c.req.valid("query");
+      const { items, totalPages } = await getJobs(filter);
+      return c.json(
+        {
+          filter,
+          items,
+          totalPages,
+        },
+        200,
+      );
     },
   )
+
+  /**
+   * Get a job by id.
+   */
   .get(
     "/:id",
     describeRoute({
@@ -228,8 +260,7 @@ export const jobsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              // TODO: This contains a circular dependency, must fix it by referencing.
-              schema: resolver(z.any()),
+              schema: resolver(jobSchema),
             },
           },
         },
@@ -257,6 +288,10 @@ export const jobsApp = new Hono()
       return c.json(job, 200);
     },
   )
+
+  /**
+   * Get a list of job logs by job id.
+   */
   .get(
     "/:id/logs",
     describeRoute({
@@ -268,7 +303,7 @@ export const jobsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(getJobLogsResponseSchema),
+              schema: resolver(z.array(z.string())),
             },
           },
         },

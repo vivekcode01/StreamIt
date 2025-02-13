@@ -1,82 +1,67 @@
-import { Pagination, Spinner } from "@heroui/react";
-import { Select, SelectItem } from "@heroui/select";
 import {
+  Pagination,
+  Select,
+  SelectItem,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
-} from "@heroui/table";
-import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
-import type { SortDescriptor, TableProps } from "@heroui/table";
-import type { ReactNode } from "@tanstack/react-router";
+} from "@heroui/react";
+import type { SortDescriptor } from "@heroui/react";
+import type { ReactNode } from "react";
 
-export interface Column {
-  id: string;
-  label: string;
-  allowsSorting?: boolean;
-  className?: string;
-}
-
-export interface Filter {
+export interface FullTableFilter {
   page: number;
   perPage: number;
   sortKey: string;
   sortDir: "asc" | "desc";
 }
 
-interface FullTableProps<T, F extends Filter> {
-  classNames?: TableProps["classNames"];
-  columns: Column[];
-  items: T[];
-  mapRow(props: T): { key: string; cells: ReactNode[] };
-  filter?: F;
-  onFilterChange?(filter: F): void;
-  hasMore?: boolean;
-  onLoadMore?(): void;
-  totalPages?: number;
+export interface FullTableColumn {
+  id: string;
+  label: string;
+  allowsSorting?: boolean;
+  className?: string;
 }
 
-export function FullTable<T, F extends Filter>({
-  classNames,
+interface FullTableProps<T, F extends FullTableFilter> {
+  columns: FullTableColumn[];
+  items: T[];
+  mapRow(props: T): { key: string; cells: ReactNode[] };
+  filter: F;
+  onFilterChange(filter: F): void;
+  totalPages: number;
+}
+
+export function FullTable<T, F extends FullTableFilter>({
   columns,
   items,
   mapRow,
   filter,
   onFilterChange,
-  hasMore,
-  onLoadMore,
   totalPages,
 }: FullTableProps<T, F>) {
   const sortDescriptor: SortDescriptor = {
-    column: filter?.sortKey ?? "",
-    direction: filter?.sortDir === "asc" ? "ascending" : "descending",
+    column: filter.sortKey,
+    direction: filter.sortDir === "asc" ? "ascending" : "descending",
   };
 
-  const [loaderRef, scrollerRef] = useInfiniteScroll({
-    onLoadMore,
-  });
-
-  const updateFilter = (value: Record<string, string | number | undefined>) => {
-    if (onFilterChange && filter) {
-      onFilterChange({ ...filter, ...value });
-    }
+  const updateFilter = (fields: Partial<FullTableFilter>) => {
+    onFilterChange({ ...filter, ...fields });
   };
 
   return (
     <>
       <Table
-        classNames={classNames}
-        baseRef={scrollerRef}
-        sortDescriptor={sortDescriptor ?? undefined}
+        sortDescriptor={sortDescriptor}
         onSortChange={(sd) => {
           updateFilter({
-            sortKey: sd.column,
+            sortKey: sd.column.toString(),
             sortDir: sd.direction === "ascending" ? "asc" : "desc",
           });
         }}
-        bottomContent={hasMore ? <Spinner ref={loaderRef} /> : null}
       >
         <TableHeader columns={columns}>
           {(column) => (
@@ -102,32 +87,30 @@ export function FullTable<T, F extends Filter>({
           })}
         </TableBody>
       </Table>
-      {filter && totalPages !== undefined ? (
-        <div className="flex items-center gap-4 mt-4">
-          <Select
-            label="Rows per page"
-            className="max-w-[140px]"
-            selectionMode="single"
-            size="sm"
-            selectedKeys={[filter.perPage.toString()]}
-            onSelectionChange={(values) => {
-              if (values.currentKey) {
-                updateFilter({ perPage: +values.currentKey });
-              }
-            }}
-            items={[{ key: "10" }, { key: "20" }, { key: "30" }]}
-          >
-            {(item) => <SelectItem key={item.key}>{item.key}</SelectItem>}
-          </Select>
-          <Pagination
-            total={totalPages}
-            initialPage={filter.page}
-            onChange={(page) => {
-              updateFilter({ page });
-            }}
-          />
-        </div>
-      ) : null}
+      <div className="flex items-center gap-4 mt-4">
+        <Select
+          label="Rows per page"
+          className="max-w-[140px]"
+          selectionMode="single"
+          size="sm"
+          selectedKeys={[filter.perPage.toString()]}
+          onSelectionChange={(values) => {
+            if (values.currentKey) {
+              updateFilter({ perPage: +values.currentKey });
+            }
+          }}
+          items={[{ key: "10" }, { key: "20" }, { key: "30" }]}
+        >
+          {(item) => <SelectItem key={item.key}>{item.key}</SelectItem>}
+        </Select>
+        <Pagination
+          total={totalPages}
+          initialPage={filter.page}
+          onChange={(page) => {
+            updateFilter({ page });
+          }}
+        />
+      </div>
     </>
   );
 }

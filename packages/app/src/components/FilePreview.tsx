@@ -1,7 +1,7 @@
 import { Modal, ModalBody, ModalContent } from "@heroui/react";
+import { storageFileSchema } from "@superstreamer/api/client";
 import useSWR from "swr";
 import { DataView } from "./DataView";
-import { getStorageFileResponseSchema } from "../../../api/src/schemas/storage";
 import { useApi } from "../api";
 import type { StorageFile } from "@superstreamer/api/client";
 
@@ -19,7 +19,7 @@ export function FilePreview({ path, onClose }: FilePreviewProps) {
 
     const response = await api.storage.file.$get({ query: { path } });
     const data = await response.json();
-    return getStorageFileResponseSchema.parse(data);
+    return storageFileSchema.parse(data);
   });
 
   return (

@@ -11,22 +11,6 @@ import { env } from "../env";
 import { isRecordWithNumbers } from "../utils/type-guard";
 import type { JobNode, JobState, Queue } from "bullmq";
 
-export interface Job {
-  id: string;
-  name: string;
-  state: "waiting" | "running" | "failed" | "completed";
-  progress?: Record<string, number>;
-  createdAt: number;
-  processedAt?: number;
-  finishedAt?: number;
-  duration?: number;
-  inputData: string;
-  outputData?: string;
-  failedReason?: string;
-  stacktrace?: string[];
-  children: Job[];
-}
-
 const flowProducer = new FlowProducer({
   connection: {
     host: env.REDIS_HOST,
@@ -43,6 +27,11 @@ const allQueus = [
   outcomeQueue,
 ];
 
+/**
+ * Finds a queue by name, must be part of allQues.
+ * @param name
+ * @returns
+ */
 function findQueueByName(name: string): Queue {
   const queue = allQueus.find((queue) => queue.name === name);
   if (!queue) {
@@ -51,6 +40,11 @@ function findQueueByName(name: string): Queue {
   return queue;
 }
 
+/**
+ * Formats a concatenated id pair, such as "id_queueName".
+ * @param id
+ * @returns
+ */
 function formatIdPair(id: string): [Queue, string] {
   const queueName = id.split("_", 1)[0];
   if (!queueName) {
@@ -66,6 +60,27 @@ interface JobsFilter {
   sortDir: "asc" | "desc";
 }
 
+interface Job {
+  id: string;
+  name: string;
+  state: "waiting" | "running" | "failed" | "completed";
+  progress?: Record<string, number>;
+  createdAt: number;
+  processedAt?: number;
+  finishedAt?: number;
+  duration?: number;
+  inputData: string;
+  outputData?: string;
+  failedReason?: string;
+  stacktrace?: string[];
+  children: Job[];
+}
+
+/**
+ * Get a list of jobs.
+ * @param filter
+ * @returns
+ */
 export async function getJobs(filter: JobsFilter) {
   let items: Job[] = [];
 
@@ -104,12 +119,17 @@ export async function getJobs(filter: JobsFilter) {
   items = items.slice(index, index + filter.perPage);
 
   return {
-    ...filter,
     items,
     totalPages,
   };
 }
 
+/**
+ * Get a job by id, can be resolved to the upmost parent.
+ * @param id
+ * @param fromRoot
+ * @returns
+ */
 export async function getJob(
   id: string,
   fromRoot?: boolean,
@@ -121,6 +141,11 @@ export async function getJob(
   return await formatJobNode(node);
 }
 
+/**
+ * Get a list of logs for a particular job.
+ * @param id
+ * @returns
+ */
 export async function getJobLogs(id: string): Promise<string[]> {
   const [queue, jobId] = formatIdPair(id);
 
@@ -129,6 +154,12 @@ export async function getJobLogs(id: string): Promise<string[]> {
   return logs;
 }
 
+/**
+ * Get a job node.
+ * @param id
+ * @param fromRoot
+ * @returns
+ */
 async function getJobNode(
   id: string,
   fromRoot?: boolean,
@@ -157,6 +188,11 @@ async function getJobNode(
   });
 }
 
+/**
+ * Find the root job from a given job.
+ * @param job
+ * @returns
+ */
 async function findRootJob(job?: RawJob): Promise<RawJob | null> {
   if (!job) {
     return null;
@@ -174,6 +210,11 @@ async function findRootJob(job?: RawJob): Promise<RawJob | null> {
   return job;
 }
 
+/**
+ * Format the job node to a job.
+ * @param node
+ * @returns
+ */
 async function formatJobNode(node: JobNode): Promise<Job> {
   const { job, children } = node;
   if (!job.id) {
@@ -237,6 +278,11 @@ async function formatJobNode(node: JobNode): Promise<Job> {
   };
 }
 
+/**
+ * Map BullMQ job state to our own job state.
+ * @param jobState
+ * @returns
+ */
 function mapJobState(jobState: JobState | "unknown"): Job["state"] {
   if (jobState === "active" || jobState === "waiting-children") {
     return "running";

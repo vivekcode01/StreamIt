@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "../utils/zod";
 
 const baseJobSchema = z.object({
   id: z.string(),
@@ -19,31 +19,29 @@ type Job = z.infer<typeof baseJobSchema> & {
   children: Job[];
 };
 
-const jobSchema: z.ZodType<Job> = baseJobSchema.extend({
-  children: z.lazy(() => jobSchema.array()),
-});
+export const jobSchema: z.ZodType<Job> = baseJobSchema
+  .extend({
+    children: z
+      .lazy(() => jobSchema.array())
+      .openapi({
+        type: "array",
+        items: {
+          $ref: "Job",
+        },
+      }),
+  })
+  .openapi({
+    ref: "Job",
+    description: "A single job.",
+  });
 
-export const getJobResponseSchema = jobSchema;
-
-export const getJobsResponseSchema = z.object({
-  page: z.number(),
-  perPage: z.number(),
-  sortKey: z.enum(["name", "duration", "createdAt"]),
-  sortDir: z.enum(["asc", "desc"]),
+export const jobsPaginatedSchema = z.object({
+  filter: z.object({
+    page: z.number(),
+    perPage: z.number(),
+    sortKey: z.enum(["name", "duration", "createdAt"]),
+    sortDir: z.enum(["asc", "desc"]),
+  }),
   items: z.array(jobSchema),
   totalPages: z.number(),
 });
-
-export const getPipelineResponseSchema = z.object({
-  jobId: z.string(),
-});
-
-export const getTranscodeResponseSchema = z.object({
-  jobId: z.string(),
-});
-
-export const getPackageResponseSchema = z.object({
-  jobId: z.string(),
-});
-
-export const getJobLogsResponseSchema = z.array(z.string());
