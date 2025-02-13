@@ -55,6 +55,7 @@ export function FullTable<T, F extends FullTableFilter>({
   return (
     <>
       <Table
+        aria-label="table"
         sortDescriptor={sortDescriptor}
         onSortChange={(sd) => {
           updateFilter({

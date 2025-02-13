@@ -32,7 +32,7 @@ function PlayButton() {
   );
 
   return (
-    <Button isIconOnly onClick={playOrPause}>
+    <Button isIconOnly onPress={playOrPause}>
       <i className="material-icons">{playing ? "pause" : "play_arrow"}</i>
     </Button>
   );

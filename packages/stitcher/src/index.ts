@@ -3,11 +3,11 @@ import { cors } from "hono/cors";
 import { openAPISpecs } from "hono-openapi";
 import { env } from "./env";
 import { outApp } from "./routes/out";
-import { sessionApp } from "./routes/session";
+import { sessionsApp } from "./routes/sessions";
 
 const app = new Hono()
   .use(cors())
-  .route("/session", sessionApp)
+  .route("/sessions", sessionsApp)
   .route("/out", outApp);
 
 app.get(

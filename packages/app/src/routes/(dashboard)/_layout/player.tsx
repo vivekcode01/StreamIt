@@ -20,14 +20,14 @@ function RouteComponent() {
 
   const schema = useSwaggerSchema(
     `${window.__ENV__.PUBLIC_STITCHER_ENDPOINT}/openapi`,
-    "/session",
+    "/sessions",
   );
 
   const onSave = async (body: string) => {
     setError(null);
 
     const response = await fetch(
-      `${window.__ENV__.PUBLIC_STITCHER_ENDPOINT}/session`,
+      `${window.__ENV__.PUBLIC_STITCHER_ENDPOINT}/sessions`,
       {
         method: "post",
         headers: {

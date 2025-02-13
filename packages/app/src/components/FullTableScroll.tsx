@@ -41,6 +41,7 @@ export function FullTableScroll<T>({
 
   return (
     <Table
+      aria-label="table"
       classNames={classNames}
       baseRef={scrollerRef}
       bottomContent={hasMore ? <Spinner ref={loaderRef} /> : null}

@@ -1,14 +1,30 @@
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
+import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
 import { createMasterUrl } from "../playlist";
 import { createSession } from "../session";
 import { validator } from "../validator";
 
-export const sessionApp = new Hono().post(
+export const sessionsApp = new Hono().post(
   "/",
   describeRoute({
     summary: "Create a session",
+    tags: ["Sessions"],
+    responses: {
+      200: {
+        description: "Successful response",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                url: z.string(),
+              }),
+            ),
+          },
+        },
+      },
+    },
   }),
   validator(
     "json",
