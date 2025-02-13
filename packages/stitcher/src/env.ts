@@ -5,7 +5,6 @@ export const env = getEnv(
   z.object({
     PORT: z.coerce.number().default(52002),
 
-    KV: z.enum(["memory", "redis", "cloudflare-kv"]).default("redis"),
     REDIS_HOST: z.string().default("localhost"),
     REDIS_PORT: z.coerce.number().default(6379),
 
