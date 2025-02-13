@@ -1,190 +1,75 @@
-import { Elysia, t } from "elysia";
-import { DateTime } from "luxon";
-import { filterSchema } from "../filters";
-import { decrypt } from "../lib/crypto";
-import {
-  createMasterUrl,
-  formatAssetList,
-  formatMasterPlaylist,
-  formatMediaPlaylist,
-} from "../playlist";
-import { createSession, getSession } from "../session";
+import { Hono } from "hono";
+import { describeRoute } from "hono-openapi";
+import { z } from "zod";
+import { createMasterUrl } from "../playlist";
+import { createSession } from "../session";
+import { validator } from "../validator";
 
-export const sessionRoutes = new Elysia()
-  .post(
-    "/session",
-    async ({ body }) => {
-      const session = await createSession(body);
-
-      const filter = body.filter;
-
-      const url = createMasterUrl({
-        url: session.url,
-        filter,
-        session,
-      });
-
-      return { url };
-    },
-    {
-      detail: {
-        summary: "Create a session",
-      },
-      body: t.Object({
-        uri: t.String({
-          description:
-            'Reference to a master playlist, you can point to an asset with "asset://{uuid}" or as http(s).',
-        }),
-        interstitials: t.Optional(
-          t.Array(
-            t.Intersect([
-              t.Object({
-                time: t.Union([t.Number(), t.String()]),
+export const sessionApp = new Hono().post(
+  "/",
+  describeRoute({
+    summary: "Create a session",
+  }),
+  validator(
+    "json",
+    z.object({
+      uri: z.string(),
+      interstitials: z
+        .array(
+          z.intersection(
+            z.object({
+              time: z.union([z.number(), z.string()]),
+            }),
+            z.discriminatedUnion("type", [
+              z.object({
+                type: z.literal("asset"),
+                uri: z.string(),
               }),
-              t.Union([
-                t.Object({
-                  type: t.Literal("asset"),
-                  uri: t.String(),
-                }),
-                t.Object({
-                  type: t.Literal("vast"),
-                  url: t.String(),
-                }),
-              ]),
+              z.object({
+                type: z.literal("vast"),
+                url: z.string(),
+              }),
             ]),
           ),
-        ),
-        regions: t.Optional(
-          t.Array(
-            t.Object({
-              time: t.Union([t.Number(), t.String()]),
-              inlineDuration: t.Optional(t.Number()),
-            }),
-          ),
-        ),
-        filter: t.Optional(
-          t.Object(
-            {
-              resolution: t.Optional(
-                t.String({
-                  description: 'Filter on resolution, like "<=720".',
-                }),
-              ),
-              audioLanguage: t.Optional(t.String()),
-            },
-            {
-              description: "Filter applies to master and media playlist.",
-            },
-          ),
-        ),
-        vmap: t.Optional(
-          t.Object(
-            {
-              url: t.String(),
-            },
-            {
-              description:
-                "Describes a VMAP, will transcode ads and insert interstitials on the fly.",
-            },
-          ),
-        ),
-        vast: t.Optional(
-          t.Object(
-            {
-              url: t.String(),
-            },
-            {
-              description: "Describes a VAST",
-            },
-          ),
-        ),
-        expiry: t.Optional(
-          t.Number({
-            description:
-              "In seconds, the session will no longer be available after this time.",
-            default: 3600,
-            minimum: 60,
+        )
+        .optional(),
+      regions: z
+        .array(
+          z.object({
+            time: z.union([z.number(), z.string()]),
+            inlineDuration: z.number().optional(),
           }),
-        ),
-      }),
-    },
-  )
-  .get(
-    "/out/master.m3u8",
-    async ({ set, query }) => {
-      const url = decrypt(query.eurl);
+        )
+        .optional(),
+      filter: z
+        .object({
+          resolution: z.string().optional(),
+          audioLanguage: z.string().optional(),
+        })
+        .optional(),
+      vmap: z
+        .object({
+          url: z.string(),
+        })
+        .optional(),
+      vast: z
+        .object({
+          url: z.string(),
+        })
+        .optional(),
+      expiry: z.number().default(60 * 60 * 12),
+    }),
+  ),
+  async (c) => {
+    const body = c.req.valid("json");
+    const session = await createSession(body);
 
-      const session = await getSession(query.sid);
+    const url = createMasterUrl({
+      url: session.url,
+      filter: body.filter,
+      session,
+    });
 
-      const playlist = await formatMasterPlaylist({
-        origUrl: url,
-        session,
-        filter: query.fil,
-      });
-
-      set.headers["content-type"] = "application/vnd.apple.mpegurl";
-
-      return playlist;
-    },
-    {
-      detail: {
-        hide: true,
-      },
-      query: t.Object({
-        eurl: t.String(),
-        sid: t.String(),
-        fil: filterSchema,
-      }),
-    },
-  )
-  .get(
-    "/out/playlist.m3u8",
-    async ({ set, query }) => {
-      const session = await getSession(query.sid);
-
-      const url = decrypt(query.eurl);
-      const type = query.type;
-
-      const playlist = await formatMediaPlaylist(url, session, type);
-
-      set.headers["content-type"] = "application/vnd.apple.mpegurl";
-
-      return playlist;
-    },
-    {
-      detail: {
-        hide: true,
-      },
-      query: t.Object({
-        eurl: t.String(),
-        sid: t.String(),
-        type: t.Union([
-          t.Literal("video"),
-          t.Literal("audio"),
-          t.Literal("subtitles"),
-        ]),
-      }),
-    },
-  )
-  .get(
-    "/out/asset-list.json",
-    async ({ query }) => {
-      const sessionId = query.sid;
-      const dateTime = DateTime.fromISO(query.dt);
-
-      const session = await getSession(sessionId);
-
-      return await formatAssetList(session, dateTime, query.mdur);
-    },
-    {
-      detail: {
-        hide: true,
-      },
-      query: t.Object({
-        dt: t.String(),
-        sid: t.String(),
-        mdur: t.Optional(t.Number()),
-        _HLS_primary_id: t.Optional(t.String()),
-      }),
-    },
-  );
+    return c.json({ url }, 200);
+  },
+);

@@ -3,41 +3,35 @@
   "version": "1.1.0",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch --inspect=ws://localhost:6500/sprs-stitcher ./runtime/local.ts",
-    "build": "bun build ./runtime/local.ts --target=bun --outdir=./dist",
+    "dev": "bun --watch --inspect=ws://localhost:6500/sprs-stitcher ./src/index.ts",
+    "build": "bun build ./src/index.ts --target=bun --outdir=./dist",
     "test": "bun test",
-    "lint": "tsc && eslint",
-    "dev:cloudflare": "wrangler dev runtime/cloudflare.ts",
-    "deploy:cloudflare": "wrangler deploy --minify runtime/cloudflare.ts"
+    "lint": "tsc && eslint"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20241022.0",
     "@types/bun": "latest",
     "@types/hh-mm-ss": "^1.2.3",
-    "@types/lru-cache": "^7.10.10",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^22.9.0",
     "@types/uuid": "^10.0.0",
     "config": "workspace:*",
     "eslint": "^9.14.0",
-    "typescript": "^5.6.3",
-    "wrangler": "^3.92.0"
+    "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@elysiajs/cors": "^1.1.1",
-    "@matvp91/elysia-swagger": "^2.0.0",
+    "@hono/zod-validator": "^0.4.2",
     "@superstreamer/api": "workspace:*",
     "@xmldom/xmldom": "^0.8.10",
-    "dom-parser": "^1.1.5",
-    "elysia": "^1.1.24",
     "hh-mm-ss": "^1.2.0",
-    "lru-cache": "^11.0.2",
+    "hono": "^4.7.0",
+    "hono-openapi": "^0.4.4",
     "luxon": "^3.5.0",
     "redis": "^4.7.0",
     "secure-encrypt": "^1.0.12",
     "shared": "workspace:*",
     "superjson": "^2.2.1",
     "uuid": "^10.0.0",
-    "vast-client": "workspace:*"
+    "vast-client": "workspace:*",
+    "zod": "^3.24.2",
+    "zod-openapi": "^4.2.3"
   }
 }

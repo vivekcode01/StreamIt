@@ -1,5 +1,5 @@
-import { randomUUID } from "crypto";
 import { DateTime } from "luxon";
+import * as uuid from "uuid";
 import { kv } from "./adapters/kv";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
@@ -46,7 +46,7 @@ interface RegionInput {
 
 export async function createSession(params: {
   uri: string;
-  expiry?: number;
+  expiry: number;
   vmap?: {
     url: string;
   };
@@ -56,21 +56,17 @@ export async function createSession(params: {
   interstitials?: InterstitialInput[];
   regions?: RegionInput[];
 }) {
-  const id = randomUUID();
+  const id = uuid.v4();
   const startTime = DateTime.now();
   const url = resolveUri(params.uri);
 
   const session: Session = {
     id,
     url,
-    // A session is valid for 3 hours by default.
-    expiry: params.expiry ?? 60 * 60 * 3,
-
+    expiry: params.expiry,
     startTime,
-
     vmap: params.vmap,
     vast: params.vast,
-
     events: [],
   };
 

@@ -19,7 +19,7 @@ function RouteComponent() {
   const [error, setError] = useState<string | null>(null);
 
   const schema = useSwaggerSchema(
-    `${window.__ENV__.PUBLIC_STITCHER_ENDPOINT}/swagger/json`,
+    `${window.__ENV__.PUBLIC_STITCHER_ENDPOINT}/openapi`,
     "/session",
   );
 
@@ -62,7 +62,7 @@ function RouteComponent() {
             <Tab key="config" title="Config">
               <ScrollCard>
                 <Form
-                  submit="Play"
+                  submit="Load"
                   fields={{
                     url: {
                       label: "URL",

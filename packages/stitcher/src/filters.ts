@@ -1,4 +1,3 @@
-import { t } from "elysia";
 import type { MasterPlaylist } from "./parser";
 
 export interface Filter {
@@ -12,13 +11,6 @@ export function formatFilterToQueryParam(filter?: Filter) {
   }
   return btoa(JSON.stringify(filter));
 }
-
-export const filterSchema = t.Optional(
-  t
-    .Transform(t.String())
-    .Decode((value) => JSON.parse(atob(value)) as Filter)
-    .Encode((filter) => btoa(JSON.stringify(filter))),
-);
 
 function parseRange(input: string): [number, number] | null {
   const match = input.match(/^(\d+)-(\d+)$/);
