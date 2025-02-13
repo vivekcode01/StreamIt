@@ -1,6 +1,5 @@
 import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
 import { toParams } from "@superstreamer/api/client";
-import { storageItemsPaginatedSchema } from "@superstreamer/api/client";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 import { File, Folder } from "lucide-react";
@@ -112,7 +111,7 @@ async function getFolderItems(api: ApiClient, path: string, cursor: string) {
       take: 30,
     }),
   });
-  return storageItemsPaginatedSchema.parse(await response.json());
+  return await response.json();
 }
 
 function parseBreadcrumbs(path: string) {

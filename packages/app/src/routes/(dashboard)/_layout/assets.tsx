@@ -4,11 +4,7 @@ import {
   DrawerContent,
   DrawerHeader,
 } from "@heroui/drawer";
-import {
-  assetsPaginatedSchema,
-  groupsSchema,
-  toParams,
-} from "@superstreamer/api/client";
+import { assetsPaginatedSchema, toParams } from "@superstreamer/api/client";
 import {
   createFileRoute,
   Link,
@@ -49,7 +45,7 @@ export const Route = createFileRoute("/(dashboard)/_layout/assets")({
     ]);
     return {
       assets: assetsPaginatedSchema.parse(await assetsResponse.json()),
-      groups: groupsSchema.parse(await groupsResponse.json()),
+      groups: await groupsResponse.json(),
     };
   },
 });

@@ -1,5 +1,4 @@
 import { toParams } from "@superstreamer/api/client";
-import { jobsPaginatedSchema } from "@superstreamer/api/client";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 import { z } from "zod";
@@ -23,7 +22,7 @@ export const Route = createFileRoute("/(dashboard)/_layout/jobs/")({
     const { api } = context.api;
     const response = await api.jobs.$get({ query: toParams(deps) });
     return {
-      jobs: jobsPaginatedSchema.parse(await response.json()),
+      jobs: await response.json(),
     };
   },
 });

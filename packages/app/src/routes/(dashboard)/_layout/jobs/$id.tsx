@@ -1,5 +1,4 @@
 import { toParams } from "@superstreamer/api/client";
-import { jobSchema } from "@superstreamer/api/client";
 import { createFileRoute } from "@tanstack/react-router";
 import { AutoRefresh } from "../../../../components/AutoRefresh";
 import { JobPage } from "../../../../components/JobPage";
@@ -49,7 +48,7 @@ async function getJob(api: ApiClient, id: string) {
     param: { id },
     query: toParams({ fromRoot: true }),
   });
-  const rootJob = jobSchema.parse(await response.json());
+  const rootJob = await response.json();
 
   const findJob = (job: Job): Job | null => {
     if (job.id === id) {
