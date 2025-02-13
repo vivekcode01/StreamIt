@@ -70,9 +70,9 @@ export const outApp = new Hono()
       z.object({
         dt: z.string(),
         sid: z.string(),
-        mdur: z.number().optional(),
+        mdur: z.coerce.number().optional(),
         _HLS_primary_id: z.string().optional(),
-        // TODO: _HLS_start_offset
+        _HLS_start_offset: z.coerce.number().optional(),
       }),
     ),
     async (c) => {

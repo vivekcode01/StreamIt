@@ -1,7 +1,4 @@
 import {
-  Pagination,
-  Select,
-  SelectItem,
   Spinner,
   Table,
   TableBody,
