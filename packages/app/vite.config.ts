@@ -41,7 +41,6 @@ export default defineConfig(({ mode }) => {
           chunkFileNames: "[name]-[hash].js",
           entryFileNames: "[name]-[hash].js",
           manualChunks: (id: string) => {
-            console.log(id);
             if (id.includes("@heroui")) {
               return "heroui";
             } else if (id.includes("@react-aria")) {
