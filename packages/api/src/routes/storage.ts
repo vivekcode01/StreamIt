@@ -5,40 +5,15 @@ import { z } from "zod";
 import { apiError } from "../errors";
 import { auth } from "../middleware";
 import {
+  getStorageFileResponseSchema,
+  getStorageFolderResponseSchema,
+} from "../schemas/storage";
+import {
   getStorageFilePayload,
   getStorageFileUrl,
   getStorageFolder,
 } from "../utils/s3";
 import { validator } from "../validator";
-
-const folderItemSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("file"),
-    path: z.string(),
-    size: z.number(),
-  }),
-  z.object({
-    type: z.literal("folder"),
-    path: z.string(),
-  }),
-]);
-
-const folderSchema = z.object({
-  cursor: z.string().optional(),
-  items: z.array(folderItemSchema),
-});
-
-const fileSchema = z.discriminatedUnion("mode", [
-  z.object({
-    mode: z.literal("url"),
-    type: z.enum(["video", "audio"]),
-    url: z.string(),
-  }),
-  z.object({
-    mode: z.literal("payload"),
-    payload: z.string(),
-  }),
-]);
 
 export const storageApp = new Hono()
   .use(auth())
@@ -55,7 +30,7 @@ export const storageApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(folderSchema),
+              schema: resolver(getStorageFolderResponseSchema),
             },
           },
         },
@@ -65,7 +40,7 @@ export const storageApp = new Hono()
       "query",
       z.object({
         path: z.string(),
-        take: z.number().default(10),
+        take: z.coerce.number().default(10),
         cursor: z.string().optional(),
       }),
     ),
@@ -87,7 +62,7 @@ export const storageApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(fileSchema),
+              schema: resolver(getStorageFileResponseSchema),
             },
           },
         },

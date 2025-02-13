@@ -16,6 +16,14 @@ import { z } from "zod";
 import { apiError } from "../errors";
 import { auth } from "../middleware";
 import { getJob, getJobLogs, getJobs } from "../repositories/jobs";
+import {
+  getJobLogsResponseSchema,
+  // getJobResponseSchema,
+  // getJobsResponseSchema,
+  getPackageResponseSchema,
+  getPipelineResponseSchema,
+  getTranscodeResponseSchema,
+} from "../schemas/jobs";
 import { validator } from "../validator";
 
 const inputSchema = z.discriminatedUnion("type", [
@@ -58,29 +66,6 @@ const streamSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-const jobSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  state: z.enum(["waiting", "running", "failed", "completed"]),
-  progress: z.record(z.string(), z.number()).optional(),
-  createdAt: z.number(),
-  processedAt: z.number().optional(),
-  finishedAt: z.number().optional(),
-  duration: z.number().optional(),
-  inputData: z.string(),
-  outputData: z.string().optional(),
-  failedReason: z.string().optional(),
-  stacktrace: z.array(z.string()).optional(),
-  children: z.array(z.any()),
-});
-
-const jobsFilterSchema = z.object({
-  page: z.number().default(1),
-  perPage: z.number().default(20),
-  sortKey: z.enum(["name", "duration", "createdAt"]).default("createdAt"),
-  sortDir: z.enum(["asc", "desc"]).default("desc"),
-});
-
 export const jobsApp = new Hono()
   .use(auth())
   .post(
@@ -94,11 +79,7 @@ export const jobsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(
-                z.object({
-                  jobId: z.string(),
-                }),
-              ),
+              schema: resolver(getPipelineResponseSchema),
             },
           },
         },
@@ -139,11 +120,7 @@ export const jobsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(
-                z.object({
-                  jobId: z.string(),
-                }),
-              ),
+              schema: resolver(getTranscodeResponseSchema),
             },
           },
         },
@@ -180,11 +157,7 @@ export const jobsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(
-                z.object({
-                  jobId: z.string(),
-                }),
-              ),
+              schema: resolver(getPackageResponseSchema),
             },
           },
         },
@@ -222,21 +195,22 @@ export const jobsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(
-                z.intersection(
-                  jobsFilterSchema,
-                  z.object({
-                    items: z.array(jobSchema),
-                    totalPages: z.number(),
-                  }),
-                ),
-              ),
+              // TODO: This contains a circular dependency, must fix it by referencing.
+              schema: resolver(z.any()),
             },
           },
         },
       },
     }),
-    validator("query", jobsFilterSchema),
+    validator(
+      "query",
+      z.object({
+        page: z.coerce.number().default(1),
+        perPage: z.coerce.number().default(20),
+        sortKey: z.enum(["name", "duration", "createdAt"]).default("createdAt"),
+        sortDir: z.enum(["asc", "desc"]).default("desc"),
+      }),
+    ),
     async (c) => {
       const query = c.req.valid("query");
       const jobs = await getJobs(query);
@@ -254,7 +228,8 @@ export const jobsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(jobSchema),
+              // TODO: This contains a circular dependency, must fix it by referencing.
+              schema: resolver(z.any()),
             },
           },
         },
@@ -269,7 +244,7 @@ export const jobsApp = new Hono()
     validator(
       "query",
       z.object({
-        fromRoot: z.boolean().default(false),
+        fromRoot: z.coerce.boolean().default(false),
       }),
     ),
     async (c) => {
@@ -293,7 +268,7 @@ export const jobsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(z.array(z.string())),
+              schema: resolver(getJobLogsResponseSchema),
             },
           },
         },

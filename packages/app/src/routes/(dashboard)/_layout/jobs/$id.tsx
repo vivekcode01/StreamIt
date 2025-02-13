@@ -1,4 +1,6 @@
+import { toParams } from "@superstreamer/api/client";
 import { createFileRoute } from "@tanstack/react-router";
+import { getJobResponseSchema } from "../../../../../../api/src/schemas/jobs";
 import { AutoRefresh } from "../../../../components/AutoRefresh";
 import { JobPage } from "../../../../components/JobPage";
 import { JobTree } from "../../../../components/JobTree";
@@ -7,16 +9,16 @@ import type { ApiClient, Job } from "@superstreamer/api/client";
 export const Route = createFileRoute("/(dashboard)/_layout/jobs/$id")({
   component: RouteComponent,
   loader: async ({ params, context }) => {
-    const { rootJob, job } = await getJob(context.auth.api, params.id);
-    if (!job) {
-      throw new Error("Missing job");
-    }
-    const { data: logs } = await context.auth.api
-      .jobs({ id: params.id })
-      .logs.get();
-    if (!logs) {
-      throw new Error("Missing logs");
-    }
+    const { api } = context.api;
+    const { rootJob, job } = await getJob(api, params.id);
+
+    const response = await api.jobs[":id"].logs.$get({
+      param: {
+        id: params.id,
+      },
+    });
+    const logs = await response.json();
+
     return {
       rootJob,
       job,
@@ -43,13 +45,11 @@ function RouteComponent() {
 }
 
 async function getJob(api: ApiClient, id: string) {
-  const { data: rootJob } = await api
-    .jobs({ id })
-    .get({ query: { fromRoot: true } });
-
-  if (!rootJob) {
-    throw new Error("No root job found");
-  }
+  const response = await api.jobs[":id"].$get({
+    param: { id },
+    query: toParams({ fromRoot: true }),
+  });
+  const rootJob = getJobResponseSchema.parse(await response.json());
 
   const findJob = (job: Job): Job | null => {
     if (job.id === id) {
@@ -64,8 +64,14 @@ async function getJob(api: ApiClient, id: string) {
     return null;
   };
 
+  const job = findJob(rootJob);
+
+  if (!job) {
+    throw new Error("Cannot find job from root job");
+  }
+
   return {
     rootJob,
-    job: findJob(rootJob),
+    job,
   };
 }

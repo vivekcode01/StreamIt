@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { openAPISpecs } from "hono-openapi";
 import { env } from "./env";
 import { ApiError } from "./errors";
@@ -15,6 +16,7 @@ import "./workers";
 import "./db/migrate";
 
 const app = new Hono()
+  .use(cors())
   .route("/token", tokenApp)
   .route("/user", userApp)
   .route("/storage", storageApp)
@@ -32,6 +34,26 @@ app.get(
           "The Superstreamer API is organized around REST, returns JSON-encoded responses " +
           "and uses standard HTTP response codes and verbs.",
       },
+      tags: [
+        {
+          name: "Jobs",
+          description:
+            "Handle tasks related to jobs, including video processing and job status monitoring.",
+        },
+        {
+          name: "Assets",
+          description: "Inspect assets.",
+        },
+        {
+          name: "Storage",
+          description: "Anything related to your configured S3 bucket.",
+        },
+        {
+          name: "User",
+          description:
+            "Methods related to user actions, including authentication and personal settings updates.",
+        },
+      ],
       components: {
         securitySchemes: {
           userToken: {

@@ -4,6 +4,7 @@ import {
   useNavigate,
   useRouter,
 } from "@tanstack/react-router";
+import { useApi } from "../../../api";
 import { useAuth } from "../../../auth";
 import { Form } from "../../../components/Form";
 
@@ -14,7 +15,8 @@ export const Route = createFileRoute("/auth/_layout/sign-in")({
 function Index() {
   const router = useRouter();
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { api } = useApi();
+  const { setToken } = useAuth();
 
   return (
     <Card className="p-4">
@@ -36,7 +38,11 @@ function Index() {
             },
           }}
           onSubmit={async (values) => {
-            await signIn(values.username, values.password);
+            const response = await api.token.$post({
+              json: values,
+            });
+            const { token } = await response.json();
+            setToken(token);
             await router.invalidate();
             await navigate({ to: "/" });
           }}

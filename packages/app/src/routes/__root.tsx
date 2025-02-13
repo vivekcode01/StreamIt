@@ -1,11 +1,13 @@
 import {
-  createRootRoute,
+  createRootRouteWithContext,
   Outlet,
   useLocation,
   useRouterState,
 } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import topbar from "topbar";
+import type { ApiContext } from "../api";
+import type { AuthContext } from "../auth";
 
 topbar.config({
   barThickness: 2,
@@ -16,7 +18,10 @@ topbar.config({
   shadowColor: "rgba(0, 0, 0, .2)",
 });
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{
+  auth: AuthContext;
+  api: ApiContext;
+}>()({
   component: RootComponent,
 });
 

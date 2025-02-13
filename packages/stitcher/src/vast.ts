@@ -28,37 +28,39 @@ async function scheduleForPackage(assetId: string, url: string) {
     return;
   }
 
-  await api.pipeline.post({
-    assetId,
-    group: "ad",
-    inputs: [
-      {
-        path: url,
-        type: "video",
-      },
-      {
-        path: url,
-        type: "audio",
-        language: "eng",
-      },
-    ],
-    streams: [
-      {
-        type: "video",
-        codec: "h264",
-        height: 720,
-      },
-      {
-        type: "video",
-        codec: "h264",
-        height: 480,
-      },
-      {
-        type: "audio",
-        codec: "aac",
-        language: "eng",
-      },
-    ],
+  await api.client.jobs.pipeline.$post({
+    json: {
+      assetId,
+      group: "ad",
+      inputs: [
+        {
+          path: url,
+          type: "video",
+        },
+        {
+          path: url,
+          type: "audio",
+          language: "eng",
+        },
+      ],
+      streams: [
+        {
+          type: "video",
+          codec: "h264",
+          height: 720,
+        },
+        {
+          type: "video",
+          codec: "h264",
+          height: 480,
+        },
+        {
+          type: "audio",
+          codec: "aac",
+          language: "eng",
+        },
+      ],
+    },
   });
 }
 
@@ -67,14 +69,17 @@ async function fetchAsset(id: string) {
     // If we have no api configured, we cannot use it.
     return null;
   }
-  const { data, status } = await api.assets({ id }).get();
-  if (status === 404) {
+  const response = await api.client.assets[":id"].$get({
+    param: { id },
+  });
+  if (!response.ok) {
     return null;
   }
-  if (status === 200) {
-    return data;
+  const asset = await response.json();
+  if (!asset) {
+    return null;
   }
-  throw new Error(`Failed to fetch asset, got status ${status}`);
+  return asset;
 }
 
 async function mapAdToAsset(ad: VastAd): Promise<Asset | null> {
@@ -91,7 +96,7 @@ async function mapAdToAsset(ad: VastAd): Promise<Asset | null> {
     const asset = await fetchAsset(id);
 
     if (asset) {
-      url = resolveUri(`asset://${id}`);
+      url = resolveUri(`asset://${asset.id}`);
     } else {
       const fileUrl = getCreativeStaticUrl(creative);
       if (fileUrl) {

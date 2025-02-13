@@ -49,13 +49,10 @@ export function FullTable<T, F extends Filter>({
   onLoadMore,
   totalPages,
 }: FullTableProps<T, F>) {
-  let sortDescriptor: SortDescriptor | undefined;
-  if (filter) {
-    sortDescriptor = {
-      column: filter.sortKey,
-      direction: filter.sortDir === "asc" ? "ascending" : "descending",
-    };
-  }
+  const sortDescriptor: SortDescriptor = {
+    column: filter?.sortKey ?? "",
+    direction: filter?.sortDir === "asc" ? "ascending" : "descending",
+  };
 
   const [loaderRef, scrollerRef] = useInfiniteScroll({
     onLoadMore,

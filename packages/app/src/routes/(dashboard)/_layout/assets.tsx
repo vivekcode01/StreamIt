@@ -5,6 +5,11 @@ import {
   DrawerHeader,
 } from "@heroui/drawer";
 import {
+  getAssetsResponseSchema,
+  getGroupsResponseSchema,
+  toParams,
+} from "@superstreamer/api/client";
+import {
   createFileRoute,
   Link,
   useNavigate,
@@ -14,7 +19,7 @@ import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 import { CircleSlash, SquarePen } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
-import { useAuth } from "../../../auth";
+import { useApi } from "../../../api";
 import { Form } from "../../../components/Form";
 import { Format } from "../../../components/Format";
 import { FullTable } from "../../../components/FullTable";
@@ -35,9 +40,16 @@ export const Route = createFileRoute("/(dashboard)/_layout/assets")({
   ),
   loaderDeps: ({ search }) => ({ ...search }),
   loader: async ({ deps, context }) => {
+    const { api } = context.api;
+    const [assetsResponse, groupsResponse] = await Promise.all([
+      api.assets.$get({
+        query: toParams(deps),
+      }),
+      api.assets.groups.$get(),
+    ]);
     return {
-      assets: await context.auth.api.assets.get({ query: deps }),
-      groups: await context.auth.api.groups.get(),
+      assets: getAssetsResponseSchema.parse(await assetsResponse.json()),
+      groups: getGroupsResponseSchema.parse(await groupsResponse.json()),
     };
   },
 });
@@ -47,10 +59,6 @@ function RouteComponent() {
   const { assets, groups } = Route.useLoaderData();
   const filter = Route.useLoaderDeps();
   const [editAsset, setEditAsset] = useState<Asset | null>(null);
-
-  if (!assets.data || !groups.data) {
-    return null;
-  }
 
   return (
     <div className="p-8">
@@ -82,7 +90,7 @@ function RouteComponent() {
             label: "Actions",
           },
         ]}
-        {...assets.data}
+        {...assets}
         filter={filter}
         onFilterChange={(search) => {
           navigate({ search });
@@ -92,7 +100,7 @@ function RouteComponent() {
           cells: [
             <Name asset={item} />,
             <Playables asset={item} />,
-            <GroupTag groups={groups.data} asset={item} />,
+            <GroupTag groups={groups} asset={item} />,
             <Format format="date" value={item.createdAt} />,
             <div className="flex items-center">
               <button onClick={() => setEditAsset(item)}>
@@ -146,7 +154,7 @@ function EditAssetDrawer({
   onClose: () => void;
 }) {
   const router = useRouter();
-  const { api } = useAuth();
+  const { api } = useApi();
 
   return (
     <Drawer isOpen={asset !== null} onClose={onClose}>
@@ -164,7 +172,12 @@ function EditAssetDrawer({
                 },
               }}
               onSubmit={async (values) => {
-                await api.assets({ id: asset.id }).put(values);
+                await api.assets[":id"].$put({
+                  param: {
+                    id: asset.id,
+                  },
+                  json: values,
+                });
                 await router.invalidate();
                 onClose();
               }}

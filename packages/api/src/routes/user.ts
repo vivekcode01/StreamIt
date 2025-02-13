@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
-import { z } from "zod";
 import { auth } from "../middleware";
 import { getUser } from "../repositories/users";
+import { getUserResponseSchema } from "../schemas/user";
 import type { AuthVariables } from "../middleware";
 
 export const userApp = new Hono<{
@@ -22,12 +22,7 @@ export const userApp = new Hono<{
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(
-                z.object({
-                  id: z.number(),
-                  username: z.string(),
-                }),
-              ),
+              schema: resolver(getUserResponseSchema),
             },
           },
         },

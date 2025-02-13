@@ -50,10 +50,6 @@ export function Sidebar() {
           to: "/api",
           name: "API",
         },
-        {
-          to: "/stitcher-api",
-          name: "Stitcher API",
-        },
       ],
     },
   ];

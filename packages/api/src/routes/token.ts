@@ -6,6 +6,7 @@ import { z } from "zod";
 import { env } from "../env";
 import { apiError } from "../errors";
 import { getUserIdByCredentials } from "../repositories/users";
+import { getTokenResponseSchema } from "../schemas/token";
 import { validator } from "../validator";
 
 export const tokenApp = new Hono().post(
@@ -19,11 +20,7 @@ export const tokenApp = new Hono().post(
         description: "Successful response",
         content: {
           "application/json": {
-            schema: resolver(
-              z.object({
-                token: z.string(),
-              }),
-            ),
+            schema: resolver(getTokenResponseSchema),
           },
         },
       },

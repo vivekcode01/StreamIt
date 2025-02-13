@@ -38,4 +38,6 @@ export function auth() {
 
     await next();
   };
+
+  // TODO: Check x-api-key header
 }

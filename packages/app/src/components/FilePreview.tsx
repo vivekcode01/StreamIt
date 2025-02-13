@@ -1,7 +1,8 @@
 import { Modal, ModalBody, ModalContent } from "@heroui/react";
 import useSWR from "swr";
 import { DataView } from "./DataView";
-import { useAuth } from "../auth";
+import { getStorageFileResponseSchema } from "../../../api/src/schemas/storage";
+import { useApi } from "../api";
 import type { StorageFile } from "@superstreamer/api/client";
 
 interface FilePreviewProps {
@@ -10,17 +11,15 @@ interface FilePreviewProps {
 }
 
 export function FilePreview({ path, onClose }: FilePreviewProps) {
-  const { api } = useAuth();
+  const { api } = useApi();
   const { data } = useSWR(["file-preview", path], async ([_, path]) => {
     if (!path) {
       return null;
     }
 
-    const result = await api.storage.file.get({ query: { path } });
-    if (result.error) {
-      throw result.error;
-    }
-    return result.data;
+    const response = await api.storage.file.$get({ query: { path } });
+    const data = await response.json();
+    return getStorageFileResponseSchema.parse(data);
   });
 
   return (
@@ -73,12 +72,12 @@ function PathName({ path }: { path: string }) {
     <div className="flex gap-1">
       {chunks.map((chunk, index) => {
         return (
-          <>
+          <div key={index}>
             <span>{chunk}</span>
             {index < chunks.length - 1 ? (
               <span className="opacity-50">/</span>
             ) : null}
-          </>
+          </div>
         );
       })}
     </div>

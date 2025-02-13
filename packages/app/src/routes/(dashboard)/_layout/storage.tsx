@@ -1,10 +1,12 @@
 import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
+import { toParams } from "@superstreamer/api/client";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 import { File, Folder } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
-import { useAuth } from "../../../auth";
+import { getStorageFolderResponseSchema } from "../../../../../api/src/schemas/storage";
+import { useApi } from "../../../api";
 import { FilePreview } from "../../../components/FilePreview";
 import { Format } from "../../../components/Format";
 import { FullTable } from "../../../components/FullTable";
@@ -20,14 +22,15 @@ export const Route = createFileRoute("/(dashboard)/_layout/storage")({
   ),
   loaderDeps: ({ search }) => ({ ...search }),
   loader: async ({ deps, context }) => {
-    return await getFolderItems(context.auth.api, deps.path, "");
+    const { api } = context.api;
+    return await getFolderItems(api, deps.path, "");
   },
 });
 
 function RouteComponent() {
   const deps = Route.useLoaderDeps();
   const result = Route.useLoaderData();
-  const { api } = useAuth();
+  const { api } = useApi();
   const [previewPath, setPreviewPath] = useState<string | null>(null);
 
   const { hasMore, items, loadMore } = useInfinite(result, async (cursor) => {
@@ -102,17 +105,14 @@ function RouteComponent() {
 }
 
 async function getFolderItems(api: ApiClient, path: string, cursor: string) {
-  const { data } = await api.storage.folder.get({
-    query: {
+  const response = await api.storage.folder.$get({
+    query: toParams({
       path,
       cursor,
       take: 30,
-    },
+    }),
   });
-  if (!data) {
-    throw new Error("Failed data");
-  }
-  return data;
+  return getStorageFolderResponseSchema.parse(await response.json());
 }
 
 function parseBreadcrumbs(path: string) {

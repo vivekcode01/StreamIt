@@ -3,25 +3,18 @@ import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
 import { auth } from "../middleware";
-import { getAssets, updateAsset } from "../repositories/assets";
+import {
+  getAsset,
+  getAssets,
+  getGroups,
+  updateAsset,
+} from "../repositories/assets";
+import {
+  getAssetResponseSchema,
+  getAssetsResponseSchema,
+  getGroupsResponseSchema,
+} from "../schemas/assets";
 import { validator } from "../validator";
-
-const assetSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().nullable(),
-  groupId: z.number().nullable(),
-  createdAt: z.date(),
-  playables: z.number(),
-});
-
-const assetsFilterSchema = z.object({
-  page: z.number().default(1),
-  perPage: z.number().default(20),
-  sortKey: z
-    .enum(["name", "playables", "groupId", "createdAt"])
-    .default("createdAt"),
-  sortDir: z.enum(["asc", "desc"]).default("desc"),
-});
 
 export const assetsApp = new Hono()
   .use(auth())
@@ -36,25 +29,83 @@ export const assetsApp = new Hono()
           description: "Successful response",
           content: {
             "application/json": {
-              schema: resolver(
-                z.intersection(
-                  assetsFilterSchema,
-                  z.object({
-                    items: z.array(assetSchema),
-                    totalPages: z.number(),
-                  }),
-                ),
-              ),
+              schema: resolver(getAssetsResponseSchema),
             },
           },
         },
       },
     }),
-    validator("query", assetsFilterSchema),
+    validator(
+      "query",
+      z.object({
+        page: z.coerce.number().default(1),
+        perPage: z.coerce.number().default(20),
+        sortKey: z
+          .enum(["name", "playables", "groupId", "createdAt"])
+          .default("createdAt"),
+        sortDir: z.enum(["asc", "desc"]).default("desc"),
+      }),
+    ),
     async (c) => {
-      const query = c.req.valid("query");
-      const assets = await getAssets(query);
+      const { page, perPage, sortKey, sortDir } = c.req.valid("query");
+      const assets = await getAssets({
+        page,
+        perPage,
+        sortKey,
+        sortDir,
+      });
       return c.json(assets);
+    },
+  )
+  .get(
+    "/groups",
+    describeRoute({
+      summary: "Get all asset groups",
+      security: [{ userToken: [] }],
+      tags: ["Assets"],
+      responses: {
+        200: {
+          description: "Successful response",
+          content: {
+            "application/json": {
+              schema: resolver(getGroupsResponseSchema),
+            },
+          },
+        },
+      },
+    }),
+    async (c) => {
+      const groups = await getGroups();
+      return c.json(groups, 200);
+    },
+  )
+  .get(
+    "/:id",
+    describeRoute({
+      summary: "Get an asset",
+      security: [{ userToken: [] }],
+      tags: ["Assets"],
+      responses: {
+        200: {
+          description: "Successful response",
+          content: {
+            "application/json": {
+              schema: resolver(getAssetResponseSchema),
+            },
+          },
+        },
+      },
+    }),
+    validator(
+      "param",
+      z.object({
+        id: z.string(),
+      }),
+    ),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const job = await getAsset(id);
+      return c.json(job, 200);
     },
   )
   .put(

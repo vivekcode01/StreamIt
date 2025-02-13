@@ -1,6 +1,8 @@
+import { toParams } from "@superstreamer/api/client";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 import { z } from "zod";
+import { getJobsResponseSchema } from "../../../../../../api/src/schemas/jobs";
 import { AutoRefresh } from "../../../../components/AutoRefresh";
 import { Format } from "../../../../components/Format";
 import { FullTable } from "../../../../components/FullTable";
@@ -18,18 +20,18 @@ export const Route = createFileRoute("/(dashboard)/_layout/jobs/")({
   ),
   loaderDeps: ({ search }) => ({ ...search }),
   loader: async ({ deps, context }) => {
-    return await context.auth.api.jobs.get({ query: deps });
+    const { api } = context.api;
+    const response = await api.jobs.$get({ query: toParams(deps) });
+    return {
+      jobs: getJobsResponseSchema.parse(await response.json()),
+    };
   },
 });
 
 function RouteComponent() {
   const navigate = useNavigate({ from: Route.fullPath });
-  const { data } = Route.useLoaderData();
+  const { jobs } = Route.useLoaderData();
   const filter = Route.useLoaderDeps();
-
-  if (!data) {
-    return null;
-  }
 
   return (
     <div className="p-8">
@@ -61,7 +63,7 @@ function RouteComponent() {
             allowsSorting: true,
           },
         ]}
-        {...data}
+        {...jobs}
         filter={filter}
         onFilterChange={(search) => {
           navigate({ search });

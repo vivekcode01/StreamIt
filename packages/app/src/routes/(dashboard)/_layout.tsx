@@ -1,10 +1,15 @@
-import { Navigate } from "@tanstack/react-router";
+import { Navigate, redirect } from "@tanstack/react-router";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useAuth } from "../../auth";
 import { Sidebar } from "../../components/Sidebar";
 
 export const Route = createFileRoute("/(dashboard)/_layout")({
   component: LayoutComponent,
+  beforeLoad: ({ context }) => {
+    if (!context.auth.token) {
+      throw redirect({ to: "/auth/sign-in" });
+    }
+  },
 });
 
 function LayoutComponent() {
