@@ -277,7 +277,10 @@ function Qualities() {
 }
 
 function hms(seconds: number) {
-  return (new Date(seconds * 1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)?.[0] ?? "00:00:00");
+  return (
+    new Date(seconds * 1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)?.[0] ??
+    "00:00:00"
+  );
 }
 
 function getPercentage(time: number, duration: number, seekableStart: number) {
