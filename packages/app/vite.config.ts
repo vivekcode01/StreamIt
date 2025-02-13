@@ -40,6 +40,17 @@ export default defineConfig(({ mode }) => {
           assetFileNames: "[name]-[hash][extname]",
           chunkFileNames: "[name]-[hash].js",
           entryFileNames: "[name]-[hash].js",
+          manualChunks: (id: string) => {
+            console.log(id);
+            if (id.includes("@heroui")) {
+              return "heroui";
+            } else if (id.includes("@react-aria")) {
+              return "react-aria";
+            } else if (id.includes("react-dom")) {
+              return "react-dom";
+            }
+            return "index";
+          },
         },
       },
     },
