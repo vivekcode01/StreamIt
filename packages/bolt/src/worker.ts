@@ -1,11 +1,15 @@
 import { WaitingChildrenError, Worker } from "bullmq";
 import { assert } from "shared/assert";
-import { connection } from "./env";
+import { env } from "./env";
 import { WorkerDir } from "./lib/worker-dir";
 import { WorkerProgressTracker } from "./lib/worker-progress-tracker";
-import type { Job } from "bullmq";
-
+import type { ConnectionOptions, Job } from "bullmq";
 export type { WorkerDir } from "./lib/worker-dir";
+
+const connection: ConnectionOptions = {
+  host: env.REDIS_HOST,
+  port: env.REDIS_PORT,
+};
 
 export function runWorkers(
   definitions: {

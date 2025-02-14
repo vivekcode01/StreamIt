@@ -1,6 +1,5 @@
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
-import { getEnv } from "shared/env";
 import { defineConfig } from "vite";
 import { z } from "zod";
 import type { Plugin } from "vite";
@@ -8,13 +7,13 @@ import type { Plugin } from "vite";
 // When we inject new PUBLIC_ variables, make sure to add them
 // in src/globals.d.ts too. All of these are optional because we
 // can inject them through SSI.
-const env = getEnv(
-  z.object({
+const env = z
+  .object({
     PUBLIC_API_ENDPOINT: z.string().optional(),
     PUBLIC_STITCHER_ENDPOINT: z.string().optional(),
     TAG: z.string().default("latest"),
-  }),
-);
+  })
+  .parse(process.env);
 
 let version = process.env.npm_package_version;
 if (env.TAG !== "latest") {

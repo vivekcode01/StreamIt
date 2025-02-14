@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { openAPISpecs } from "hono-openapi";
-import { env } from "./env";
 import { ApiError } from "./errors";
 import { assetsApp } from "./routes/assets";
 import { jobsApp } from "./routes/jobs";
@@ -86,9 +85,6 @@ app.onError((error, c) => {
   );
 });
 
-export default {
-  ...app,
-  port: env.PORT,
-};
+export default app;
 
 export type AppType = typeof app;
