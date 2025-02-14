@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { openAPISpecs } from "hono-openapi";
-import { env } from "./env";
 import { outApp } from "./routes/out";
 import { sessionsApp } from "./routes/sessions";
 
@@ -24,7 +23,4 @@ app.get(
   }),
 );
 
-export default {
-  ...app,
-  port: env.PORT,
-};
+export default app;

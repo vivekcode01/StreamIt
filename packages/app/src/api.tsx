@@ -1,5 +1,5 @@
 import { createClient } from "@superstreamer/api/client";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useMemo } from "react";
 import { useAuth } from "./auth";
 import type { ApiClient } from "@superstreamer/api/client";
 import type { ReactNode } from "react";
@@ -15,20 +15,14 @@ interface ApiProviderProps {
 }
 
 export function ApiProvider({ children }: ApiProviderProps) {
-  const [api] = useState(() =>
-    createClient(window.__ENV__.PUBLIC_API_ENDPOINT),
-  );
   const { token } = useAuth();
 
-  useEffect(() => {
-    api.setToken(token);
-  }, [api, token]);
-
-  return (
-    <ApiContext.Provider value={{ api: api.client }}>
-      {children}
-    </ApiContext.Provider>
+  const api = useMemo(
+    () => createClient(window.__ENV__.PUBLIC_API_ENDPOINT, token),
+    [token],
   );
+
+  return <ApiContext.Provider value={{ api }}>{children}</ApiContext.Provider>;
 }
 
 export function useApi() {

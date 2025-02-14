@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { env } from "hono/adapter";
 import { DateTime } from "luxon";
 import { z } from "zod";
 import { decrypt } from "../lib/crypto";
@@ -27,14 +28,23 @@ export const outApp = new Hono()
     ),
     async (c) => {
       const query = c.req.valid("query");
-      const url = decrypt(query.eurl);
-      const session = await getSession(query.sid);
 
-      const playlist = await formatMasterPlaylist({
-        origUrl: url,
-        session,
-        filter: query.fil,
-      });
+      const { PUBLIC_STITCHER_ENDPOINT } = env<{
+        PUBLIC_STITCHER_ENDPOINT: string;
+      }>(c);
+
+      const url = decrypt(query.eurl);
+      const session = await getSession(c, query.sid);
+
+      const playlist = await formatMasterPlaylist(
+        {
+          origUrl: url,
+          session,
+          filter: query.fil,
+        },
+        PUBLIC_STITCHER_ENDPOINT,
+        c,
+      );
 
       c.header("Content-Type", "application/vnd.apple.mpegurl");
 
@@ -53,10 +63,20 @@ export const outApp = new Hono()
     ),
     async (c) => {
       const query = c.req.valid("query");
-      const url = decrypt(query.eurl);
-      const session = await getSession(query.sid);
 
-      const playlist = await formatMediaPlaylist(url, session, query.type);
+      const { PUBLIC_STITCHER_ENDPOINT } = env<{
+        PUBLIC_STITCHER_ENDPOINT: string;
+      }>(c);
+
+      const url = decrypt(query.eurl);
+      const session = await getSession(c, query.sid);
+
+      const playlist = await formatMediaPlaylist(
+        url,
+        session,
+        query.type,
+        PUBLIC_STITCHER_ENDPOINT,
+      );
 
       c.header("Content-Type", "application/vnd.apple.mpegurl");
 
@@ -78,9 +98,20 @@ export const outApp = new Hono()
     async (c) => {
       const query = c.req.valid("query");
       const dateTime = DateTime.fromISO(query.dt);
-      const session = await getSession(query.sid);
+      const session = await getSession(c, query.sid);
 
-      const assetList = await formatAssetList(session, dateTime, query.mdur);
+      const { PUBLIC_S3_ENDPOINT, PUBLIC_API_ENDPOINT } = env<{
+        PUBLIC_S3_ENDPOINT: string;
+        PUBLIC_API_ENDPOINT: string;
+      }>(c);
+
+      const assetList = await formatAssetList(
+        PUBLIC_S3_ENDPOINT,
+        PUBLIC_API_ENDPOINT,
+        session,
+        dateTime,
+        query.mdur,
+      );
 
       return c.json(assetList, 200);
     },

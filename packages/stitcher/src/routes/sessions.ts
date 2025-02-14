@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { env } from "hono/adapter";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
@@ -78,13 +79,22 @@ export const sessionsApp = new Hono().post(
   ),
   async (c) => {
     const body = c.req.valid("json");
-    const session = await createSession(body);
 
-    const url = createMasterUrl({
-      url: session.url,
-      filter: body.filter,
-      session,
-    });
+    const { PUBLIC_S3_ENDPOINT, PUBLIC_STITCHER_ENDPOINT } = env<{
+      PUBLIC_S3_ENDPOINT: string;
+      PUBLIC_STITCHER_ENDPOINT: string;
+    }>(c);
+
+    const session = await createSession(body, PUBLIC_S3_ENDPOINT, c);
+
+    const url = createMasterUrl(
+      {
+        url: session.url,
+        filter: body.filter,
+        session,
+      },
+      PUBLIC_STITCHER_ENDPOINT,
+    );
 
     return c.json({ url }, 200);
   },

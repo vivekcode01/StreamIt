@@ -1,34 +1,44 @@
+import { createClient } from "@superstreamer/api/client";
 import { DOMParser } from "@xmldom/xmldom";
 import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
-import { api } from "./lib/api-client";
 import { resolveUri } from "./lib/url";
 import type { Asset } from "./types";
+import type { ApiClient } from "@superstreamer/api/client";
 import type { VastAd, VastCreativeLinear, VastResponse } from "vast-client";
 
 const NAMESPACE_UUID_AD = "5b212a7e-d6a2-43bf-bd30-13b1ca1f9b13";
 
-export async function getAssetsFromVastUrl(url: string) {
+export async function getAssetsFromVastUrl(
+  url: string,
+  publicS3Endpoint: string,
+  publicApiEndpoint: string | null,
+) {
   const vastClient = new VASTClient();
   const vastResponse = await vastClient.get(url);
-  return await mapVastResponseToAssets(vastResponse);
+  const api = publicApiEndpoint ? createClient(publicApiEndpoint) : null;
+  return await mapVastResponseToAssets(vastResponse, api, publicS3Endpoint);
 }
 
-export async function getAssetsFromVastData(data: string) {
+export async function getAssetsFromVastData(
+  data: string,
+  publicS3Endpoint: string,
+  publicApiEndpoint: string | null,
+) {
   const vastClient = new VASTClient();
   const parser = new DOMParser();
   const xml = parser.parseFromString(data, "text/xml");
   const vastResponse = await vastClient.parseVAST(xml);
-  return await mapVastResponseToAssets(vastResponse);
+  const api = publicApiEndpoint ? createClient(publicApiEndpoint) : null;
+  return await mapVastResponseToAssets(vastResponse, api, publicS3Endpoint);
 }
 
-async function scheduleForPackage(assetId: string, url: string) {
-  if (!api) {
-    // API is not configured, we cannot schedule for packaging.
-    return;
-  }
-
-  await api.client.jobs.pipeline.$post({
+async function scheduleForPackage(
+  assetId: string,
+  url: string,
+  api: ApiClient,
+) {
+  await api.jobs.pipeline.$post({
     json: {
       assetId,
       group: "ad",
@@ -64,12 +74,8 @@ async function scheduleForPackage(assetId: string, url: string) {
   });
 }
 
-async function fetchAsset(id: string) {
-  if (!api) {
-    // If we have no api configured, we cannot use it.
-    return null;
-  }
-  const response = await api.client.assets[":id"].$get({
+async function fetchAsset(api: ApiClient, id: string) {
+  const response = await api.assets[":id"].$get({
     param: { id },
   });
   if (!response.ok) {
@@ -82,44 +88,63 @@ async function fetchAsset(id: string) {
   return asset;
 }
 
-async function mapAdToAsset(ad: VastAd): Promise<Asset | null> {
+async function getAdUrl(
+  creative: VastCreativeLinear,
+  api: ApiClient | null,
+  publicS3Endpoint: string,
+) {
+  const url = getCreativeStreamingUrl(creative);
+  if (url) {
+    return url;
+  }
+
+  if (api) {
+    const id = getAdId(creative);
+    const asset = await fetchAsset(api, id);
+
+    if (asset) {
+      return resolveUri(`asset://${asset.id}`, publicS3Endpoint);
+    }
+
+    const staticUrl = getCreativeStaticUrl(creative);
+    if (staticUrl) {
+      await scheduleForPackage(id, staticUrl, api);
+    }
+  }
+
+  return null;
+}
+
+async function mapAdToAsset(
+  ad: VastAd,
+  api: ApiClient | null,
+  publicS3Endpoint: string,
+): Promise<Asset | null> {
   const creative = getCreative(ad);
   if (!creative) {
     return null;
   }
 
-  const id = getAdId(creative);
-
-  let url = getCreativeStreamingUrl(creative);
-
-  if (!url) {
-    const asset = await fetchAsset(id);
-
-    if (asset) {
-      url = resolveUri(`asset://${asset.id}`);
-    } else {
-      const fileUrl = getCreativeStaticUrl(creative);
-      if (fileUrl) {
-        await scheduleForPackage(id, fileUrl);
-      }
-    }
-  }
-
+  const url = await getAdUrl(creative, api, publicS3Endpoint);
   if (!url) {
     return null;
   }
 
   return {
-    url: url,
+    url,
     duration: creative.duration,
   };
 }
 
-async function mapVastResponseToAssets(response: VastResponse) {
+async function mapVastResponseToAssets(
+  response: VastResponse,
+  api: ApiClient | null,
+  publicS3Endpoint: string,
+) {
   const assets: Asset[] = [];
 
   for (const ad of response.ads) {
-    const asset = await mapAdToAsset(ad);
+    const asset = await mapAdToAsset(ad, api, publicS3Endpoint);
     if (!asset) {
       continue;
     }

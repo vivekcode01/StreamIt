@@ -21,36 +21,36 @@ export type StorageFile = z.infer<typeof storageFileSchema>;
 
 export type User = z.infer<typeof userSchema>;
 
-export type ApiClient = ReturnType<typeof hc<AppType>>;
-
 export * from "../src/schemas/assets";
 export * from "../src/schemas/jobs";
 export * from "../src/schemas/storage";
 export * from "../src/schemas/user";
 
-export function createClient(url: string) {
-  let token_: string | null = null;
+export type ApiClient = ReturnType<typeof createClient>;
 
-  const client = hc<AppType>(url, {
+/**
+ * Create a client for API interaction
+ * @param url
+ * @param token
+ * @returns
+ */
+export function createClient(url: string, token: string | null = null) {
+  return hc<AppType>(url, {
     headers: () => {
       const headers: Record<string, string> = {};
-      if (token_ !== null) {
-        headers["Authorization"] = `Bearer ${token_}`;
+      if (token !== null) {
+        headers["Authorization"] = `Bearer ${token}`;
       }
       return headers;
     },
   });
-
-  const setToken = (token: string | null) => {
-    token_ = token;
-  };
-
-  return {
-    client,
-    setToken,
-  };
 }
 
+/**
+ * Parse params to a record of strings.
+ * @param obj
+ * @returns
+ */
 export function toParams<T extends object>(obj: T): Record<keyof T, string> {
   return Object.fromEntries(
     Object.entries(obj).map(([key, value]) => [key, String(value)]),

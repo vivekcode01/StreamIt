@@ -10,7 +10,11 @@ interface Group {
   inlineDuration?: number;
 }
 
-export function getStaticDateRanges(session: Session, segments: Segment[]) {
+export function getStaticDateRanges(
+  publicStitcherEndpoint: string,
+  session: Session,
+  segments: Segment[],
+) {
   const groups = new Map<number, Group>();
 
   for (const event of session.events) {
@@ -28,11 +32,15 @@ export function getStaticDateRanges(session: Session, segments: Segment[]) {
   Array.from(groups.entries()).forEach(([ts, group]) => {
     const dateTime = DateTime.fromMillis(ts);
 
-    const assetListUrl = createUrl("out/asset-list.json", {
-      dt: dateTime.toISO(),
-      sid: session.id,
-      mdur: group.inlineDuration,
-    });
+    const assetListUrl = createUrl(
+      publicStitcherEndpoint,
+      "out/asset-list.json",
+      {
+        dt: dateTime.toISO(),
+        sid: session.id,
+        mdur: group.inlineDuration,
+      },
+    );
 
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",
@@ -102,6 +110,8 @@ function getTimedEventsFromSegments(segments: Segment[]) {
 }
 
 export async function getAssets(
+  publicS3Endpoint: string,
+  publicApiEndpoint: string,
   session: Session,
   dateTime: DateTime,
   maxDuration?: number,
@@ -123,13 +133,21 @@ export async function getAssets(
         const vastUrl = replaceUrlParams(url, {
           maxDuration,
         });
-        const vastAssets = await getAssetsFromVastUrl(vastUrl);
+        const vastAssets = await getAssetsFromVastUrl(
+          vastUrl,
+          publicS3Endpoint,
+          publicApiEndpoint,
+        );
         assets.push(...vastAssets);
       }
 
       // The event contains inline VAST data.
       if (data) {
-        const vastAssets = await getAssetsFromVastData(data);
+        const vastAssets = await getAssetsFromVastData(
+          data,
+          publicS3Endpoint,
+          publicApiEndpoint,
+        );
         assets.push(...vastAssets);
       }
     }
@@ -145,7 +163,11 @@ export async function getAssets(
     const vastUrl = replaceUrlParams(session.vast.url, {
       maxDuration,
     });
-    const tempAssets = await getAssetsFromVastUrl(vastUrl);
+    const tempAssets = await getAssetsFromVastUrl(
+      vastUrl,
+      publicS3Endpoint,
+      publicApiEndpoint,
+    );
     assets.push(...tempAssets);
   }
 

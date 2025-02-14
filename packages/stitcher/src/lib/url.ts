@@ -1,11 +1,10 @@
 import * as path from "path";
-import { env } from "../env";
 
 const uuidRegex = /^[a-z,0-9,-]{36,36}$/;
 
 const ASSET_PROTOCOL = "asset:";
 
-export function resolveUri(uri: string) {
+export function resolveUri(uri: string, publicS3Endpoint: string) {
   if (uri.startsWith("http://") || uri.startsWith("https://")) {
     return uri;
   }
@@ -25,7 +24,7 @@ export function resolveUri(uri: string) {
     const [assetId, prefix = "hls"] = uri
       .substring(`${ASSET_PROTOCOL}//`.length)
       .split("@");
-    return `${env.PUBLIC_S3_ENDPOINT}/package/${assetId}/${prefix}/master.m3u8`;
+    return `${publicS3Endpoint}/package/${assetId}/${prefix}/master.m3u8`;
   }
 
   throw new Error(`Invalid uri: "${uri}"`);
@@ -60,10 +59,11 @@ export function joinUrl(urlFile: string, filePath: string) {
 }
 
 export function createUrl(
+  publicStitcherEndpoint: string,
   path: string,
   params: Record<string, string | number | undefined | null> = {},
 ) {
-  return buildUrl(`${env.PUBLIC_STITCHER_ENDPOINT}/${path}`, params);
+  return buildUrl(`${publicStitcherEndpoint}/${path}`, params);
 }
 
 export function replaceUrlParams(
