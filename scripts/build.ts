@@ -3,8 +3,7 @@ import { buildClientPackages } from "./devtools/client-packages";
 
 await buildClientPackages();
 
-await Promise.all([
-  $`bun run --filter="@superstreamer/app" build`,
-  $`bun run --filter="@superstreamer/artisan" build`,
-  $`bun run --filter="@superstreamer/stitcher" build`,
-])
+await $`bun run --filter="@superstreamer/api" build`;
+await $`bun run --filter="@superstreamer/app" build`;
+await $`bun run --filter="@superstreamer/artisan" build`;
+await $`bun run --filter="@superstreamer/stitcher" build`;
