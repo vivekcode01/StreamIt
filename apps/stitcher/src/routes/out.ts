@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { DateTime } from "luxon";
 import { z } from "zod";
 import { api } from "../middleware/api";
-import { encdec } from "../middleware/crypt";
+import { encdec } from "../middleware/encdec";
 import { globals } from "../middleware/globals";
 import { kv } from "../middleware/kv";
 import {
@@ -34,25 +34,20 @@ export const outApp = new Hono()
     async (c) => {
       const query = c.req.valid("query");
 
-      const globals = c.get("globals");
-      const kv = c.get("kv");
-      const encdec = c.get("encdec");
+      const context = {
+        globals: c.get("globals"),
+        kv: c.get("kv"),
+        encdec: c.get("encdec"),
+      };
 
-      const url = encdec.decrypt(query.eurl);
-      const session = await getSession(query.sid, kv);
+      const url = context.encdec.decrypt(query.eurl);
+      const session = await getSession(context, query.sid);
 
-      const playlist = await formatMasterPlaylist(
-        {
-          origUrl: url,
-          session,
-          filter: query.fil,
-        },
-        {
-          globals,
-          encdec,
-          kv,
-        },
-      );
+      const playlist = await formatMasterPlaylist(context, {
+        origUrl: url,
+        session,
+        filter: query.fil,
+      });
 
       c.header("Content-Type", "application/vnd.apple.mpegurl");
 
@@ -72,17 +67,18 @@ export const outApp = new Hono()
     async (c) => {
       const query = c.req.valid("query");
 
-      const kv = c.get("kv");
-      const globals = c.get("globals");
-      const encdec = c.get("encdec");
+      const context = {
+        globals: c.get("globals"),
+        kv: c.get("kv"),
+        encdec: c.get("encdec"),
+      };
 
-      const url = encdec.decrypt(query.eurl);
-      const session = await getSession(query.sid, kv);
+      const session = await getSession(context, query.sid);
+
+      const url = context.encdec.decrypt(query.eurl);
 
       const playlist = await formatMediaPlaylist(
-        {
-          globals,
-        },
+        context,
         url,
         session,
         query.type,
@@ -108,17 +104,19 @@ export const outApp = new Hono()
     api(),
     async (c) => {
       const query = c.req.valid("query");
-      const kv = c.get("kv");
-      const globals = c.get("globals");
-      const api = c.get("api");
+
+      const context = {
+        globals: c.get("globals"),
+        kv: c.get("kv"),
+        api: c.get("api"),
+      };
+
+      const session = await getSession(context, query.sid);
+
       const dateTime = DateTime.fromISO(query.dt);
-      const session = await getSession(query.sid, kv);
 
       const assetList = await formatAssetList(
-        {
-          globals,
-          api,
-        },
+        context,
         session,
         dateTime,
         query.mdur,

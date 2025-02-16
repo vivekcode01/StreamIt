@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
-import { encdec } from "../middleware/crypt";
+import { encdec } from "../middleware/encdec";
 import { globals } from "../middleware/globals";
 import { kv } from "../middleware/kv";
 import { createMasterUrl } from "../playlist";
@@ -86,22 +86,19 @@ export const sessionsApp = new Hono()
     async (c) => {
       const body = c.req.valid("json");
 
-      const session = await createSession(body, {
+      const context = {
         globals: c.get("globals"),
         kv: c.get("kv"),
-      });
+        encdec: c.get("encdec"),
+      };
 
-      const url = createMasterUrl(
-        {
-          url: session.url,
-          filter: body.filter,
-          session,
-        },
-        {
-          globals: c.get("globals"),
-          encdec: c.get("encdec"),
-        },
-      );
+      const session = await createSession(context, body);
+
+      const url = createMasterUrl(context, {
+        url: session.url,
+        filter: body.filter,
+        session,
+      });
 
       return c.json({ url }, 200);
     },

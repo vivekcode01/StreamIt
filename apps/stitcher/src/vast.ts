@@ -10,29 +10,29 @@ import type { VastAd, VastCreativeLinear, VastResponse } from "vast-client";
 const NAMESPACE_UUID_AD = "5b212a7e-d6a2-43bf-bd30-13b1ca1f9b13";
 
 export async function getAssetsFromVastUrl(
-  url: string,
   context: {
     globals: Globals;
     api?: Api;
   },
+  url: string,
 ) {
   const vastClient = new VASTClient();
   const vastResponse = await vastClient.get(url);
-  return await mapVastResponseToAssets(vastResponse, context);
+  return await mapVastResponseToAssets(context, vastResponse);
 }
 
 export async function getAssetsFromVastData(
-  data: string,
   context: {
     globals: Globals;
     api?: Api;
   },
+  data: string,
 ) {
   const vastClient = new VASTClient();
   const parser = new DOMParser();
   const xml = parser.parseFromString(data, "text/xml");
   const vastResponse = await vastClient.parseVAST(xml);
-  return await mapVastResponseToAssets(vastResponse, context);
+  return await mapVastResponseToAssets(context, vastResponse);
 }
 
 async function scheduleForPackage(assetId: string, url: string, api: Api) {
@@ -87,11 +87,11 @@ async function fetchAsset(api: Api, id: string) {
 }
 
 async function getAdUrl(
-  creative: VastCreativeLinear,
   context: {
     globals: Globals;
     api?: Api;
   },
+  creative: VastCreativeLinear,
 ) {
   const url = getCreativeStreamingUrl(creative);
   if (url) {
@@ -103,7 +103,7 @@ async function getAdUrl(
     const asset = await fetchAsset(context.api, id);
 
     if (asset) {
-      return resolveUri(`asset://${asset.id}`, context);
+      return resolveUri(context, `asset://${asset.id}`);
     }
 
     const staticUrl = getCreativeStaticUrl(creative);
@@ -116,18 +116,18 @@ async function getAdUrl(
 }
 
 async function mapAdToAsset(
-  ad: VastAd,
   context: {
     globals: Globals;
     api?: Api;
   },
+  ad: VastAd,
 ): Promise<Asset | null> {
   const creative = getCreative(ad);
   if (!creative) {
     return null;
   }
 
-  const url = await getAdUrl(creative, context);
+  const url = await getAdUrl(context, creative);
   if (!url) {
     return null;
   }
@@ -139,16 +139,16 @@ async function mapAdToAsset(
 }
 
 async function mapVastResponseToAssets(
-  response: VastResponse,
   context: {
     globals: Globals;
     api?: Api;
   },
+  response: VastResponse,
 ) {
   const assets: Asset[] = [];
 
   for (const ad of response.ads) {
-    const asset = await mapAdToAsset(ad, context);
+    const asset = await mapAdToAsset(context, ad);
     if (!asset) {
       continue;
     }

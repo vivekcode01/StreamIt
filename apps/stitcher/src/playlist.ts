@@ -12,7 +12,7 @@ import { updateSession } from "./session";
 import { fetchVmap, toAdBreakTimeOffset } from "./vmap";
 import type { Filter } from "./filters";
 import type { Api } from "./middleware/api";
-import type { Encdec } from "./middleware/crypt";
+import type { Encdec } from "./middleware/encdec";
 import type { Globals } from "./middleware/globals";
 import type { Kv } from "./middleware/kv";
 import type { MasterPlaylist, MediaPlaylist } from "./parser";
@@ -22,18 +22,18 @@ import type { VmapAdBreak } from "./vmap";
 import type { DateTime } from "luxon";
 
 export async function formatMasterPlaylist(
-  params: {
-    origUrl: string;
-    session: Session;
-    filter?: Filter;
-  },
   context: {
     globals: Globals;
     encdec: Encdec;
     kv: Kv;
   },
+  params: {
+    origUrl: string;
+    session: Session;
+    filter?: Filter;
+  },
 ) {
-  await initSessionOnMasterReq(params.session, context);
+  await initSessionOnMasterReq(context, params.session);
 
   const master = await fetchMasterPlaylist(params.origUrl);
 
@@ -41,7 +41,7 @@ export async function formatMasterPlaylist(
     filterMasterPlaylist(master, params.filter);
   }
 
-  rewriteMasterPlaylistUrls(master, params, context);
+  rewriteMasterPlaylistUrls(context, master, params);
 
   return stringifyMasterPlaylist(master);
 }
@@ -123,14 +123,14 @@ export async function fetchDuration(url: string) {
 }
 
 export function createMasterUrl(
+  context: {
+    globals: Globals;
+    encdec: Encdec;
+  },
   params: {
     url: string;
     session: Session;
     filter?: Filter;
-  },
-  context: {
-    globals: Globals;
-    encdec: Encdec;
   },
 ) {
   const fil = formatFilterToQueryParam(params.filter);
@@ -145,14 +145,14 @@ export function createMasterUrl(
 }
 
 function createMediaUrl(
+  context: {
+    globals: Globals;
+    encdec: Encdec;
+  },
   params: {
     url: string;
     sessionId: string;
     type: "video" | "audio" | "subtitles";
-  },
-  context: {
-    globals: Globals;
-    encdec: Encdec;
   },
 ) {
   return createUrl(context, "out/playlist.m3u8", {
@@ -163,26 +163,23 @@ function createMediaUrl(
 }
 
 export function rewriteMasterPlaylistUrls(
+  context: {
+    globals: Globals;
+    encdec: Encdec;
+  },
   master: MasterPlaylist,
   params: {
     origUrl: string;
     session: Session;
   },
-  context: {
-    globals: Globals;
-    encdec: Encdec;
-  },
 ) {
   for (const variant of master.variants) {
     const url = joinUrl(params.origUrl, variant.uri);
-    variant.uri = createMediaUrl(
-      {
-        url,
-        sessionId: params.session.id,
-        type: "video",
-      },
-      context,
-    );
+    variant.uri = createMediaUrl(context, {
+      url,
+      sessionId: params.session.id,
+      type: "video",
+    });
   }
 
   for (const rendition of master.renditions) {
@@ -203,14 +200,11 @@ export function rewriteMasterPlaylistUrls(
       continue;
     }
 
-    rendition.uri = createMediaUrl(
-      {
-        url,
-        sessionId: params.session.id,
-        type,
-      },
-      context,
-    );
+    rendition.uri = createMediaUrl(context, {
+      url,
+      sessionId: params.session.id,
+      type,
+    });
   }
 }
 
@@ -240,10 +234,10 @@ export function rewriteSpliceInfoSegments(media: MediaPlaylist) {
 }
 
 async function initSessionOnMasterReq(
-  session: Session,
   context: {
     kv: Kv;
   },
+  session: Session,
 ) {
   let storeSession = false;
 
@@ -267,7 +261,7 @@ async function initSessionOnMasterReq(
   }
 
   if (storeSession) {
-    await updateSession(session, context.kv);
+    await updateSession(context, session);
   }
 }
 

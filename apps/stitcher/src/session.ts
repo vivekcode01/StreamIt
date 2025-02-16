@@ -46,6 +46,10 @@ interface RegionInput {
 }
 
 export async function createSession(
+  context: {
+    globals: Globals;
+    kv: Kv;
+  },
   params: {
     uri: string;
     expiry: number;
@@ -58,14 +62,10 @@ export async function createSession(
     interstitials?: InterstitialInput[];
     regions?: RegionInput[];
   },
-  context: {
-    globals: Globals;
-    kv: Kv;
-  },
 ) {
   const id = uuid.v4();
   const startTime = DateTime.now();
-  const url = resolveUri(params.uri, context);
+  const url = resolveUri(context, params.uri);
 
   const session: Session = {
     id,
@@ -80,7 +80,7 @@ export async function createSession(
   if (params.interstitials) {
     const events = await Promise.all(
       params.interstitials.map((interstitial) =>
-        mapInterstitialToTimedEvent(startTime, interstitial, context),
+        mapInterstitialToTimedEvent(context, startTime, interstitial),
       ),
     );
     session.events.push(...events);
@@ -99,25 +99,25 @@ export async function createSession(
   return session;
 }
 
-export async function getSession(id: string, kv: Kv) {
-  const data = await kv.get(`session:${id}`);
+export async function getSession(context: { kv: Kv }, id: string) {
+  const data = await context.kv.get(`session:${id}`);
   if (!data) {
     throw new Error(`No session found for id ${id}`);
   }
   return JSON.parse<Session>(data);
 }
 
-export async function updateSession(session: Session, kv: Kv) {
+export async function updateSession(context: { kv: Kv }, session: Session) {
   const value = JSON.stringify(session);
-  await kv.set(`session:${session.id}`, value, session.expiry);
+  await context.kv.set(`session:${session.id}`, value, session.expiry);
 }
 
 export async function mapInterstitialToTimedEvent(
-  startTime: DateTime,
-  interstitial: InterstitialInput,
   context: {
     globals: Globals;
   },
+  startTime: DateTime,
+  interstitial: InterstitialInput,
 ): Promise<TimedEvent> {
   const dateTime = toDateTime(startTime, interstitial.time);
 
@@ -126,7 +126,7 @@ export async function mapInterstitialToTimedEvent(
   };
 
   if (interstitial.type === "asset") {
-    const url = resolveUri(interstitial.uri, context);
+    const url = resolveUri(context, interstitial.uri);
     event.asset = {
       url,
       duration: await fetchDuration(url),

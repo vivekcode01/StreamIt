@@ -6,10 +6,10 @@ const uuidRegex = /^[a-z,0-9,-]{36,36}$/;
 const ASSET_PROTOCOL = "asset:";
 
 export function resolveUri(
-  uri: string,
   context: {
     globals: Globals;
   },
+  uri: string,
 ) {
   if (uri.startsWith("http://") || uri.startsWith("https://")) {
     return uri;

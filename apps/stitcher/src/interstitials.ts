@@ -135,13 +135,13 @@ export async function getAssets(
         const vastUrl = replaceUrlParams(url, {
           maxDuration,
         });
-        const vastAssets = await getAssetsFromVastUrl(vastUrl, context);
+        const vastAssets = await getAssetsFromVastUrl(context, vastUrl);
         assets.push(...vastAssets);
       }
 
       // The event contains inline VAST data.
       if (data) {
-        const vastAssets = await getAssetsFromVastData(data, context);
+        const vastAssets = await getAssetsFromVastData(context, data);
         assets.push(...vastAssets);
       }
     }
@@ -157,7 +157,7 @@ export async function getAssets(
     const vastUrl = replaceUrlParams(session.vast.url, {
       maxDuration,
     });
-    const tempAssets = await getAssetsFromVastUrl(vastUrl, context);
+    const tempAssets = await getAssetsFromVastUrl(context, vastUrl);
     assets.push(...tempAssets);
   }
 
