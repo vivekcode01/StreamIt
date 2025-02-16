@@ -1,10 +1,16 @@
 import * as path from "path";
+import type { Globals } from "../middleware/globals";
 
 const uuidRegex = /^[a-z,0-9,-]{36,36}$/;
 
 const ASSET_PROTOCOL = "asset:";
 
-export function resolveUri(uri: string, publicS3Endpoint: string) {
+export function resolveUri(
+  uri: string,
+  context: {
+    globals: Globals;
+  },
+) {
   if (uri.startsWith("http://") || uri.startsWith("https://")) {
     return uri;
   }
@@ -24,7 +30,7 @@ export function resolveUri(uri: string, publicS3Endpoint: string) {
     const [assetId, prefix = "hls"] = uri
       .substring(`${ASSET_PROTOCOL}//`.length)
       .split("@");
-    return `${publicS3Endpoint}/package/${assetId}/${prefix}/master.m3u8`;
+    return `${context.globals.s3Endpoint}/package/${assetId}/${prefix}/master.m3u8`;
   }
 
   throw new Error(`Invalid uri: "${uri}"`);
@@ -59,11 +65,13 @@ export function joinUrl(urlFile: string, filePath: string) {
 }
 
 export function createUrl(
-  publicStitcherEndpoint: string,
+  context: {
+    globals: Globals;
+  },
   path: string,
   params: Record<string, string | number | undefined | null> = {},
 ) {
-  return buildUrl(`${publicStitcherEndpoint}/${path}`, params);
+  return buildUrl(`${context.globals.stitcherEndpoint}/${path}`, params);
 }
 
 export function replaceUrlParams(

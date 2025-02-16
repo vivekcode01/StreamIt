@@ -1,43 +1,41 @@
-import { createClient } from "@superstreamer/api/client";
 import { DOMParser } from "@xmldom/xmldom";
 import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
 import { resolveUri } from "./lib/url";
+import type { Api } from "./middleware/api";
+import type { Globals } from "./middleware/globals";
 import type { Asset } from "./types";
-import type { ApiClient } from "@superstreamer/api/client";
 import type { VastAd, VastCreativeLinear, VastResponse } from "vast-client";
 
 const NAMESPACE_UUID_AD = "5b212a7e-d6a2-43bf-bd30-13b1ca1f9b13";
 
 export async function getAssetsFromVastUrl(
   url: string,
-  publicS3Endpoint: string,
-  publicApiEndpoint: string | null,
+  context: {
+    globals: Globals;
+    api?: Api;
+  },
 ) {
   const vastClient = new VASTClient();
   const vastResponse = await vastClient.get(url);
-  const api = publicApiEndpoint ? createClient(publicApiEndpoint) : null;
-  return await mapVastResponseToAssets(vastResponse, api, publicS3Endpoint);
+  return await mapVastResponseToAssets(vastResponse, context);
 }
 
 export async function getAssetsFromVastData(
   data: string,
-  publicS3Endpoint: string,
-  publicApiEndpoint: string | null,
+  context: {
+    globals: Globals;
+    api?: Api;
+  },
 ) {
   const vastClient = new VASTClient();
   const parser = new DOMParser();
   const xml = parser.parseFromString(data, "text/xml");
   const vastResponse = await vastClient.parseVAST(xml);
-  const api = publicApiEndpoint ? createClient(publicApiEndpoint) : null;
-  return await mapVastResponseToAssets(vastResponse, api, publicS3Endpoint);
+  return await mapVastResponseToAssets(vastResponse, context);
 }
 
-async function scheduleForPackage(
-  assetId: string,
-  url: string,
-  api: ApiClient,
-) {
+async function scheduleForPackage(assetId: string, url: string, api: Api) {
   await api.jobs.pipeline.$post({
     json: {
       assetId,
@@ -74,7 +72,7 @@ async function scheduleForPackage(
   });
 }
 
-async function fetchAsset(api: ApiClient, id: string) {
+async function fetchAsset(api: Api, id: string) {
   const response = await api.assets[":id"].$get({
     param: { id },
   });
@@ -90,25 +88,27 @@ async function fetchAsset(api: ApiClient, id: string) {
 
 async function getAdUrl(
   creative: VastCreativeLinear,
-  api: ApiClient | null,
-  publicS3Endpoint: string,
+  context: {
+    globals: Globals;
+    api?: Api;
+  },
 ) {
   const url = getCreativeStreamingUrl(creative);
   if (url) {
     return url;
   }
 
-  if (api) {
+  if (context.api) {
     const id = getAdId(creative);
-    const asset = await fetchAsset(api, id);
+    const asset = await fetchAsset(context.api, id);
 
     if (asset) {
-      return resolveUri(`asset://${asset.id}`, publicS3Endpoint);
+      return resolveUri(`asset://${asset.id}`, context);
     }
 
     const staticUrl = getCreativeStaticUrl(creative);
     if (staticUrl) {
-      await scheduleForPackage(id, staticUrl, api);
+      await scheduleForPackage(id, staticUrl, context.api);
     }
   }
 
@@ -117,15 +117,17 @@ async function getAdUrl(
 
 async function mapAdToAsset(
   ad: VastAd,
-  api: ApiClient | null,
-  publicS3Endpoint: string,
+  context: {
+    globals: Globals;
+    api?: Api;
+  },
 ): Promise<Asset | null> {
   const creative = getCreative(ad);
   if (!creative) {
     return null;
   }
 
-  const url = await getAdUrl(creative, api, publicS3Endpoint);
+  const url = await getAdUrl(creative, context);
   if (!url) {
     return null;
   }
@@ -138,13 +140,15 @@ async function mapAdToAsset(
 
 async function mapVastResponseToAssets(
   response: VastResponse,
-  api: ApiClient | null,
-  publicS3Endpoint: string,
+  context: {
+    globals: Globals;
+    api?: Api;
+  },
 ) {
   const assets: Asset[] = [];
 
   for (const ad of response.ads) {
-    const asset = await mapAdToAsset(ad, api, publicS3Endpoint);
+    const asset = await mapAdToAsset(ad, context);
     if (!asset) {
       continue;
     }

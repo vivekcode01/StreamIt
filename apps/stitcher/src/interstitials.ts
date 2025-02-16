@@ -1,6 +1,8 @@
 import { DateTime } from "luxon";
 import { createUrl, replaceUrlParams } from "./lib/url";
 import { getAssetsFromVastData, getAssetsFromVastUrl } from "./vast";
+import type { Api } from "./middleware/api";
+import type { Globals } from "./middleware/globals";
 import type { DateRange, Segment } from "./parser";
 import type { Session } from "./session";
 import type { Asset, TimedEvent } from "./types";
@@ -11,7 +13,9 @@ interface Group {
 }
 
 export function getStaticDateRanges(
-  publicStitcherEndpoint: string,
+  context: {
+    globals: Globals;
+  },
   session: Session,
   segments: Segment[],
 ) {
@@ -32,15 +36,11 @@ export function getStaticDateRanges(
   Array.from(groups.entries()).forEach(([ts, group]) => {
     const dateTime = DateTime.fromMillis(ts);
 
-    const assetListUrl = createUrl(
-      publicStitcherEndpoint,
-      "out/asset-list.json",
-      {
-        dt: dateTime.toISO(),
-        sid: session.id,
-        mdur: group.inlineDuration,
-      },
-    );
+    const assetListUrl = createUrl(context, "out/asset-list.json", {
+      dt: dateTime.toISO(),
+      sid: session.id,
+      mdur: group.inlineDuration,
+    });
 
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",
@@ -110,8 +110,10 @@ function getTimedEventsFromSegments(segments: Segment[]) {
 }
 
 export async function getAssets(
-  publicS3Endpoint: string,
-  publicApiEndpoint: string,
+  context: {
+    globals: Globals;
+    api?: Api;
+  },
   session: Session,
   dateTime: DateTime,
   maxDuration?: number,
@@ -133,21 +135,13 @@ export async function getAssets(
         const vastUrl = replaceUrlParams(url, {
           maxDuration,
         });
-        const vastAssets = await getAssetsFromVastUrl(
-          vastUrl,
-          publicS3Endpoint,
-          publicApiEndpoint,
-        );
+        const vastAssets = await getAssetsFromVastUrl(vastUrl, context);
         assets.push(...vastAssets);
       }
 
       // The event contains inline VAST data.
       if (data) {
-        const vastAssets = await getAssetsFromVastData(
-          data,
-          publicS3Endpoint,
-          publicApiEndpoint,
-        );
+        const vastAssets = await getAssetsFromVastData(data, context);
         assets.push(...vastAssets);
       }
     }
@@ -163,11 +157,7 @@ export async function getAssets(
     const vastUrl = replaceUrlParams(session.vast.url, {
       maxDuration,
     });
-    const tempAssets = await getAssetsFromVastUrl(
-      vastUrl,
-      publicS3Endpoint,
-      publicApiEndpoint,
-    );
+    const tempAssets = await getAssetsFromVastUrl(vastUrl, context);
     assets.push(...tempAssets);
   }
 

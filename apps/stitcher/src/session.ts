@@ -3,9 +3,9 @@ import * as uuid from "uuid";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
 import { fetchDuration } from "./playlist";
-import { getRedisKey, setRedisKeyValue } from "./redis";
+import type { Globals } from "./middleware/globals";
+import type { Kv } from "./middleware/kv";
 import type { TimedEvent } from "./types";
-import type { Context } from "hono";
 
 export interface Session {
   id: string;
@@ -58,12 +58,14 @@ export async function createSession(
     interstitials?: InterstitialInput[];
     regions?: RegionInput[];
   },
-  publicS3Endpoint: string,
-  context: Context,
+  context: {
+    globals: Globals;
+    kv: Kv;
+  },
 ) {
   const id = uuid.v4();
   const startTime = DateTime.now();
-  const url = resolveUri(params.uri, publicS3Endpoint);
+  const url = resolveUri(params.uri, context);
 
   const session: Session = {
     id,
@@ -78,7 +80,7 @@ export async function createSession(
   if (params.interstitials) {
     const events = await Promise.all(
       params.interstitials.map((interstitial) =>
-        mapInterstitialToTimedEvent(startTime, interstitial, publicS3Endpoint),
+        mapInterstitialToTimedEvent(startTime, interstitial, context),
       ),
     );
     session.events.push(...events);
@@ -92,33 +94,30 @@ export async function createSession(
   }
 
   const value = JSON.stringify(session);
-  await setRedisKeyValue(context, `session:${id}`, value, session.expiry);
+  await context.kv.set(`session:${id}`, value, session.expiry);
 
   return session;
 }
 
-export async function getSession(context: Context, id: string) {
-  const data = await getRedisKey(context, `session:${id}`);
+export async function getSession(id: string, kv: Kv) {
+  const data = await kv.get(`session:${id}`);
   if (!data) {
     throw new Error(`No session found for id ${id}`);
   }
   return JSON.parse<Session>(data);
 }
 
-export async function updateSession(context: Context, session: Session) {
+export async function updateSession(session: Session, kv: Kv) {
   const value = JSON.stringify(session);
-  await setRedisKeyValue(
-    context,
-    `session:${session.id}`,
-    value,
-    session.expiry,
-  );
+  await kv.set(`session:${session.id}`, value, session.expiry);
 }
 
 export async function mapInterstitialToTimedEvent(
   startTime: DateTime,
   interstitial: InterstitialInput,
-  publicS3Endpoint: string,
+  context: {
+    globals: Globals;
+  },
 ): Promise<TimedEvent> {
   const dateTime = toDateTime(startTime, interstitial.time);
 
@@ -127,7 +126,7 @@ export async function mapInterstitialToTimedEvent(
   };
 
   if (interstitial.type === "asset") {
-    const url = resolveUri(interstitial.uri, publicS3Endpoint);
+    const url = resolveUri(interstitial.uri, context);
     event.asset = {
       url,
       duration: await fetchDuration(url),

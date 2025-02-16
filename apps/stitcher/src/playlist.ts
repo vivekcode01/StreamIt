@@ -1,7 +1,6 @@
 import { assert } from "shared/assert";
 import { filterMasterPlaylist, formatFilterToQueryParam } from "./filters";
 import { getAssets, getStaticDateRanges } from "./interstitials";
-import { encrypt } from "./lib/crypto";
 import { createUrl, joinUrl, replaceUrlParams } from "./lib/url";
 import {
   parseMasterPlaylist,
@@ -12,11 +11,14 @@ import {
 import { updateSession } from "./session";
 import { fetchVmap, toAdBreakTimeOffset } from "./vmap";
 import type { Filter } from "./filters";
+import type { Api } from "./middleware/api";
+import type { Encdec } from "./middleware/crypt";
+import type { Globals } from "./middleware/globals";
+import type { Kv } from "./middleware/kv";
 import type { MasterPlaylist, MediaPlaylist } from "./parser";
 import type { Session } from "./session";
 import type { TimedEvent } from "./types";
 import type { VmapAdBreak } from "./vmap";
-import type { Context } from "hono";
 import type { DateTime } from "luxon";
 
 export async function formatMasterPlaylist(
@@ -25,10 +27,13 @@ export async function formatMasterPlaylist(
     session: Session;
     filter?: Filter;
   },
-  publicStitcherEndpoint: string,
-  context: Context,
+  context: {
+    globals: Globals;
+    encdec: Encdec;
+    kv: Kv;
+  },
 ) {
-  await initSessionOnMasterReq(context, params.session);
+  await initSessionOnMasterReq(params.session, context);
 
   const master = await fetchMasterPlaylist(params.origUrl);
 
@@ -36,16 +41,18 @@ export async function formatMasterPlaylist(
     filterMasterPlaylist(master, params.filter);
   }
 
-  rewriteMasterPlaylistUrls(master, params, publicStitcherEndpoint);
+  rewriteMasterPlaylistUrls(master, params, context);
 
   return stringifyMasterPlaylist(master);
 }
 
 export async function formatMediaPlaylist(
+  context: {
+    globals: Globals;
+  },
   mediaUrl: string,
   session: Session,
   type: "video" | "audio" | "subtitles",
-  publicStitcherEndpoint: string,
 ) {
   const media = await fetchMediaPlaylist(mediaUrl);
 
@@ -58,11 +65,7 @@ export async function formatMediaPlaylist(
 
   // Apply dateRanges to each video playlist.
   if (type === "video") {
-    media.dateRanges = getStaticDateRanges(
-      publicStitcherEndpoint,
-      session,
-      media.segments,
-    );
+    media.dateRanges = getStaticDateRanges(context, session, media.segments);
   }
 
   rewriteSpliceInfoSegments(media);
@@ -73,19 +76,15 @@ export async function formatMediaPlaylist(
 }
 
 export async function formatAssetList(
-  publicS3Endpoint: string,
-  publicApiEndpoint: string,
+  context: {
+    globals: Globals;
+    api?: Api;
+  },
   session: Session,
   dateTime: DateTime,
   maxDuration?: number,
 ) {
-  const assets = await getAssets(
-    publicS3Endpoint,
-    publicApiEndpoint,
-    session,
-    dateTime,
-    maxDuration,
-  );
+  const assets = await getAssets(context, session, dateTime, maxDuration);
 
   return {
     ASSETS: assets.map((asset) => {
@@ -129,12 +128,15 @@ export function createMasterUrl(
     session: Session;
     filter?: Filter;
   },
-  publicStitcherEndpoint: string,
+  context: {
+    globals: Globals;
+    encdec: Encdec;
+  },
 ) {
   const fil = formatFilterToQueryParam(params.filter);
 
-  const url = createUrl(publicStitcherEndpoint, "out/master.m3u8", {
-    eurl: encrypt(params.url),
+  const url = createUrl(context, "out/master.m3u8", {
+    eurl: context.encdec.encrypt(params.url),
     sid: params.session.id,
     fil,
   });
@@ -148,10 +150,13 @@ function createMediaUrl(
     sessionId: string;
     type: "video" | "audio" | "subtitles";
   },
-  publicStitcherEndpoint: string,
+  context: {
+    globals: Globals;
+    encdec: Encdec;
+  },
 ) {
-  return createUrl(publicStitcherEndpoint, "out/playlist.m3u8", {
-    eurl: encrypt(params.url),
+  return createUrl(context, "out/playlist.m3u8", {
+    eurl: context.encdec.encrypt(params.url),
     sid: params.sessionId,
     type: params.type,
   });
@@ -163,7 +168,10 @@ export function rewriteMasterPlaylistUrls(
     origUrl: string;
     session: Session;
   },
-  publicStitcherEndpoint: string,
+  context: {
+    globals: Globals;
+    encdec: Encdec;
+  },
 ) {
   for (const variant of master.variants) {
     const url = joinUrl(params.origUrl, variant.uri);
@@ -173,7 +181,7 @@ export function rewriteMasterPlaylistUrls(
         sessionId: params.session.id,
         type: "video",
       },
-      publicStitcherEndpoint,
+      context,
     );
   }
 
@@ -201,7 +209,7 @@ export function rewriteMasterPlaylistUrls(
         sessionId: params.session.id,
         type,
       },
-      publicStitcherEndpoint,
+      context,
     );
   }
 }
@@ -231,7 +239,12 @@ export function rewriteSpliceInfoSegments(media: MediaPlaylist) {
   });
 }
 
-async function initSessionOnMasterReq(context: Context, session: Session) {
+async function initSessionOnMasterReq(
+  session: Session,
+  context: {
+    kv: Kv;
+  },
+) {
   let storeSession = false;
 
   // If we have a vmap config but no result yet, we'll resolve it.
@@ -254,7 +267,7 @@ async function initSessionOnMasterReq(context: Context, session: Session) {
   }
 
   if (storeSession) {
-    await updateSession(context, session);
+    await updateSession(session, context.kv);
   }
 }
 

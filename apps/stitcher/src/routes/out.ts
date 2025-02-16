@@ -1,8 +1,10 @@
 import { Hono } from "hono";
-import { env } from "hono/adapter";
 import { DateTime } from "luxon";
 import { z } from "zod";
-import { decrypt } from "../lib/crypto";
+import { api } from "../middleware/api";
+import { encdec } from "../middleware/crypt";
+import { globals } from "../middleware/globals";
+import { kv } from "../middleware/kv";
 import {
   formatAssetList,
   formatMasterPlaylist,
@@ -13,6 +15,9 @@ import { validator } from "../validator";
 import type { Filter } from "../filters";
 
 export const outApp = new Hono()
+  .use(globals())
+  .use(kv())
+  .use(encdec())
   .get(
     "/master.m3u8",
     validator(
@@ -29,12 +34,12 @@ export const outApp = new Hono()
     async (c) => {
       const query = c.req.valid("query");
 
-      const { PUBLIC_STITCHER_ENDPOINT } = env<{
-        PUBLIC_STITCHER_ENDPOINT: string;
-      }>(c);
+      const globals = c.get("globals");
+      const kv = c.get("kv");
+      const encdec = c.get("encdec");
 
-      const url = decrypt(query.eurl);
-      const session = await getSession(c, query.sid);
+      const url = encdec.decrypt(query.eurl);
+      const session = await getSession(query.sid, kv);
 
       const playlist = await formatMasterPlaylist(
         {
@@ -42,8 +47,11 @@ export const outApp = new Hono()
           session,
           filter: query.fil,
         },
-        PUBLIC_STITCHER_ENDPOINT,
-        c,
+        {
+          globals,
+          encdec,
+          kv,
+        },
       );
 
       c.header("Content-Type", "application/vnd.apple.mpegurl");
@@ -64,18 +72,20 @@ export const outApp = new Hono()
     async (c) => {
       const query = c.req.valid("query");
 
-      const { PUBLIC_STITCHER_ENDPOINT } = env<{
-        PUBLIC_STITCHER_ENDPOINT: string;
-      }>(c);
+      const kv = c.get("kv");
+      const globals = c.get("globals");
+      const encdec = c.get("encdec");
 
-      const url = decrypt(query.eurl);
-      const session = await getSession(c, query.sid);
+      const url = encdec.decrypt(query.eurl);
+      const session = await getSession(query.sid, kv);
 
       const playlist = await formatMediaPlaylist(
+        {
+          globals,
+        },
         url,
         session,
         query.type,
-        PUBLIC_STITCHER_ENDPOINT,
       );
 
       c.header("Content-Type", "application/vnd.apple.mpegurl");
@@ -95,19 +105,20 @@ export const outApp = new Hono()
         _HLS_start_offset: z.coerce.number().optional(),
       }),
     ),
+    api(),
     async (c) => {
       const query = c.req.valid("query");
+      const kv = c.get("kv");
+      const globals = c.get("globals");
+      const api = c.get("api");
       const dateTime = DateTime.fromISO(query.dt);
-      const session = await getSession(c, query.sid);
-
-      const { PUBLIC_S3_ENDPOINT, PUBLIC_API_ENDPOINT } = env<{
-        PUBLIC_S3_ENDPOINT: string;
-        PUBLIC_API_ENDPOINT: string;
-      }>(c);
+      const session = await getSession(query.sid, kv);
 
       const assetList = await formatAssetList(
-        PUBLIC_S3_ENDPOINT,
-        PUBLIC_API_ENDPOINT,
+        {
+          globals,
+          api,
+        },
         session,
         dateTime,
         query.mdur,
