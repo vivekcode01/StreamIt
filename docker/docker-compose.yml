@@ -5,14 +5,6 @@ volumes:
   superstreamer_postgres_data:
 
 services:
-  superstreamer-app:
-    image: "superstreamerapp/app:alpha"
-    ports:
-      - 52000:52000
-    environment:
-      - PUBLIC_API_ENDPOINT=http://localhost:52001
-      - PUBLIC_STITCHER_ENDPOINT=http://localhost:52002
-
   superstreamer-api:
     image: "superstreamerapp/api:alpha"
     restart: always
@@ -21,21 +13,18 @@ services:
     depends_on:
       - superstreamer-postgres
       - superstreamer-redis
-    env_file: config.env
+    env_file: .env
     environment:
+      - PORT=52001
       - REDIS_HOST=superstreamer-redis
+      - REDIS_PORT=6379
       - DATABASE_URI=postgresql://postgres:sprs@superstreamer-postgres/sprs
 
-  superstreamer-stitcher:
-    image: "superstreamerapp/stitcher:alpha"
-    restart: always
+  superstreamer-app:
+    image: "superstreamerapp/app:alpha"
     ports:
-      - 52002:52002
-    depends_on:
-      - superstreamer-redis
-    env_file: config.env
+      - 52000:52000
     environment:
-      - REDIS_HOST=superstreamer-redis
       - PUBLIC_API_ENDPOINT=http://localhost:52001
       - PUBLIC_STITCHER_ENDPOINT=http://localhost:52002
 
@@ -44,9 +33,25 @@ services:
     restart: always
     depends_on:
       - superstreamer-redis
-    env_file: config.env
+    env_file: .env
     environment:
       - REDIS_HOST=superstreamer-redis
+      - REDIS_PORT=6379
+
+  superstreamer-stitcher:
+    image: "superstreamerapp/stitcher:alpha"
+    restart: always
+    ports:
+      - 52002:52002
+    depends_on:
+      - superstreamer-redis
+    env_file: .env
+    environment:
+      - PORT=52002
+      - REDIS_PORT=6379
+      - REDIS_HOST=superstreamer-redis
+      - PUBLIC_API_ENDPOINT=http://localhost:52001
+      - PUBLIC_STITCHER_ENDPOINT=http://localhost:52002
 
   superstreamer-redis:
     image: redis/redis-stack-server:7.2.0-v6
