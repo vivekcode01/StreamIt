@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
-import { createUrl, replaceUrlParams } from "./lib/url";
-import { getAssetsFromVastData, getAssetsFromVastUrl } from "./vast";
+import { createUrl } from "./lib/url";
+import { getAssetsFromVastParams } from "./vast";
 import type { AppContext } from "./app-context";
 import type { DateRange, Segment } from "./parser";
 import type { Session } from "./session";
@@ -121,23 +121,12 @@ export async function getAssets(
   const assets: Asset[] = [];
 
   for (const event of events) {
+    // The event contains VAST params, let's resolve them.
     if (event.vast) {
-      const { url, data } = event.vast;
-
-      // The event contains a VAST url.
-      if (url) {
-        const vastUrl = replaceUrlParams(url, {
-          maxDuration,
-        });
-        const vastAssets = await getAssetsFromVastUrl(context, vastUrl);
-        assets.push(...vastAssets);
-      }
-
-      // The event contains inline VAST data.
-      if (data) {
-        const vastAssets = await getAssetsFromVastData(context, data);
-        assets.push(...vastAssets);
-      }
+      const vastAssets = await getAssetsFromVastParams(context, event.vast, {
+        maxDuration,
+      });
+      assets.push(...vastAssets);
     }
 
     // The event contains a list of assets, explicitly defined.
@@ -147,11 +136,10 @@ export async function getAssets(
   }
 
   // If we have a generic vast config on our session, use that one to resolve (eg; for live streams)
-  if (session.vast?.url) {
-    const vastUrl = replaceUrlParams(session.vast.url, {
+  if (session.vast) {
+    const tempAssets = await getAssetsFromVastParams(context, session.vast, {
       maxDuration,
     });
-    const tempAssets = await getAssetsFromVastUrl(context, vastUrl);
     assets.push(...tempAssets);
   }
 

@@ -20,6 +20,9 @@ export function apiError(code: ApiErrorCode) {
   throw new ApiError(code, status);
 }
 
+/**
+ * Represents a known API error, will be mapped to a response.
+ */
 export class ApiError extends Error {
   constructor(
     public code: ApiErrorCode,

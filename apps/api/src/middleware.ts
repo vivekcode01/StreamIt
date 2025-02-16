@@ -9,6 +9,10 @@ export interface AuthVariables {
   };
 }
 
+/**
+ * Check whether we are authenticated.
+ * @returns
+ */
 export function auth() {
   return async (c: Context, next: Next) => {
     let token: string | undefined;

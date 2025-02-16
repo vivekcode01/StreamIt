@@ -2,25 +2,38 @@ import { DOMParser } from "@xmldom/xmldom";
 import { assert } from "shared/assert";
 import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
-import { resolveUri } from "./lib/url";
+import { replaceUrlParams, resolveUri } from "./lib/url";
 import type { AppContext } from "./app-context";
-import type { Asset } from "./types";
+import type { Asset, VastParams } from "./types";
 import type { VastAd, VastCreativeLinear, VastResponse } from "vast-client";
 
 const NAMESPACE_UUID_AD = "5b212a7e-d6a2-43bf-bd30-13b1ca1f9b13";
 
-export async function getAssetsFromVastUrl(context: AppContext, url: string) {
+export async function getAssetsFromVastParams(
+  context: AppContext,
+  params: VastParams,
+  urlParams: Record<string, string | number | undefined>,
+) {
   const vastClient = new VASTClient();
-  const vastResponse = await vastClient.get(url);
-  return await mapVastResponseToAssets(context, vastResponse);
-}
 
-export async function getAssetsFromVastData(context: AppContext, data: string) {
-  const vastClient = new VASTClient();
-  const parser = new DOMParser();
-  const xml = parser.parseFromString(data, "text/xml");
-  const vastResponse = await vastClient.parseVAST(xml);
-  return await mapVastResponseToAssets(context, vastResponse);
+  const assets: Asset[] = [];
+
+  if (params.url) {
+    const vastUrl = replaceUrlParams(params.url, urlParams);
+    const vastResponse = await vastClient.get(vastUrl);
+    const vastAssets = await mapVastResponseToAssets(context, vastResponse);
+    assets.push(...vastAssets);
+  }
+
+  if (params.data) {
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(params.data, "text/xml");
+    const vastResponse = await vastClient.parseVAST(xml);
+    const vastAssets = await mapVastResponseToAssets(context, vastResponse);
+    assets.push(...vastAssets);
+  }
+
+  return assets;
 }
 
 async function scheduleForPackage(
