@@ -11,6 +11,7 @@
     "@changesets/cli": "^2.27.9"
   },
   "workspaces": [
+    "apps/*",
     "packages/*",
     "extern/*"
   ]
