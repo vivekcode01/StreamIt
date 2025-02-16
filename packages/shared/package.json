@@ -14,7 +14,7 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "find-config": "^1.0.0",
-    "zod": "^3.23.8"
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/find-config": "^1.0.4",

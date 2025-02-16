@@ -1,5 +1,4 @@
 .env
-.turbo
 
 # Logs
 logs
@@ -28,13 +27,8 @@ dist-ssr
 *.sln
 *.sw?
 
-config.env
-
 vite.config.ts.timestamp*
 *.tsbuildinfo
-
-config.env*
-!config.env.example
 
 .wrangler
 

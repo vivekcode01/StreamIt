@@ -1,5 +1,5 @@
 import { $ } from "bun";
-import { buildClientPackages } from "./devtools/client-packages";
+import { buildClientPackages } from "./misc/helpers";
 
 await buildClientPackages();
 

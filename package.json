@@ -1,7 +1,7 @@
 {
   "name": "superstreamer",
   "scripts": {
-    "dev": "NODE_ENV=development bun run --filter=\"@superstreamer/*\" dev",
+    "dev": "NODE_ENV=development bun run ./scripts/dev.ts",
     "build": "NODE_ENV=production bun run ./scripts/build.ts",
     "lint": "bun run ./scripts/lint.ts",
     "test": "bun run ./scripts/test.ts",
@@ -11,6 +11,7 @@
     "@changesets/cli": "^2.27.9"
   },
   "workspaces": [
+    "apps/*",
     "packages/*",
     "extern/*"
   ]

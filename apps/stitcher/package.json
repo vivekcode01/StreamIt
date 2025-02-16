@@ -1,0 +1,40 @@
+{
+  "name": "@superstreamer/stitcher",
+  "version": "1.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch --inspect=ws://localhost:6500/sprs-stitcher ./src/index.ts",
+    "dev:wrangler": "wrangler dev ./src/index.ts",
+    "build": "bun build ./src/index.ts --target=bun --outdir=./dist",
+    "test": "bun test",
+    "lint": "tsc && eslint"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250214.0",
+    "@types/bun": "latest",
+    "@types/hh-mm-ss": "^1.2.3",
+    "@types/luxon": "^3.4.2",
+    "@types/uuid": "^10.0.0",
+    "config": "workspace:*",
+    "eslint": "^9.14.0",
+    "typescript": "^5.6.3",
+    "wrangler": "^3.109.1"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.4.2",
+    "@superstreamer/api": "workspace:*",
+    "@xmldom/xmldom": "^0.8.10",
+    "hh-mm-ss": "^1.2.0",
+    "hono": "^4.7.0",
+    "hono-openapi": "^0.4.4",
+    "luxon": "^3.5.0",
+    "redis": "^4.7.0",
+    "secure-encrypt": "^1.0.12",
+    "shared": "workspace:*",
+    "superjson": "^2.2.1",
+    "uuid": "^10.0.0",
+    "vast-client": "workspace:*",
+    "zod": "^3.24.2",
+    "zod-openapi": "^4.2.3"
+  }
+}

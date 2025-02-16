@@ -1,0 +1,14 @@
+<html>
+  <body>
+    <script id="api-reference"></script>
+    <script>
+      const params = JSON.parse(new URLSearchParams(window.location.search).get("params"));
+
+      const ref = document.getElementById("api-reference");
+
+      ref.dataset.url = params.url;
+      ref.dataset.configuration = JSON.stringify(params.config);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.25.110/dist/browser/standalone.min.js"></script>
+  </body>
+</html>
