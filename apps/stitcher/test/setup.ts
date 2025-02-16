@@ -24,10 +24,9 @@ mock.module("vast-client", () => ({
 // The day my son was born!
 setSystemTime(new Date(2021, 4, 2, 10, 12, 5, 250));
 
-process.env = {
-  NODE_ENV: "test",
-  TZ: "UTC",
-  PUBLIC_S3_ENDPOINT: "s3-endpoint",
-  PUBLIC_STITCHER_ENDPOINT: "stitcher-endpoint",
-  SUPER_SECRET: "secret",
-};
+Bun.env["TZ"] = "UTC";
+
+Bun.env["REDIS_HOST"] = "redis-host";
+Bun.env["REDIS_PORT"] = "0000";
+Bun.env["PUBLIC_S3_ENDPOINT"] = "https://s3.com";
+Bun.env["PUBLIC_STITCHER_ENDPOINT"] = "https://stitcher.com";
