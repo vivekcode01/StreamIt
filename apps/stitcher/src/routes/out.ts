@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { DateTime } from "luxon";
+import { validator } from "shared/hono/middleware";
 import { z } from "zod";
 import { getAppContext } from "../app-context";
 import {
@@ -8,7 +9,6 @@ import {
   formatMediaPlaylist,
 } from "../playlist";
 import { getSession } from "../session";
-import { validator } from "../validator";
 import type { Filter } from "../filters";
 
 export const outApp = new Hono()

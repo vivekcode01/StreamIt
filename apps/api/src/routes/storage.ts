@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
+import { validator } from "shared/hono/middleware";
 import { z } from "zod";
 import { apiError } from "../errors";
 import { auth } from "../middleware";
@@ -13,7 +14,6 @@ import {
   getStorageFileUrl,
   getStorageFolder,
 } from "../utils/s3";
-import { validator } from "../validator";
 
 export const storageApp = new Hono()
   .use(auth())

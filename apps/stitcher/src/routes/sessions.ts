@@ -1,11 +1,11 @@
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
+import { validator } from "shared/hono/middleware";
 import { z } from "zod";
 import { getAppContext } from "../app-context";
 import { createMasterUrl } from "../playlist";
 import { createSession } from "../session";
-import { validator } from "../validator";
 
 export const sessionsApp = new Hono().post(
   "/",
