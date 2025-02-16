@@ -47,9 +47,6 @@ export const sessionsApp = new Hono().post(
                 type: z.literal("vast"),
                 url: z.string(),
               }),
-              z.object({
-                type: z.literal("metadata"),
-              }),
             ]),
           ),
         )
