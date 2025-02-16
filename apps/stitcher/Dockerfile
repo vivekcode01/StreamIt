@@ -5,4 +5,4 @@ COPY ./dist .
 
 USER bun
 EXPOSE 52002/tcp
-CMD [ "bun", "run", "./local.js" ]
+CMD [ "bun", "run", "./index.js" ]

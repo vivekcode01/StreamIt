@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { KVNamespace } from "@cloudflare/workers-types";
 import type { ApiClient } from "@superstreamer/api/client";
 import type { Context } from "hono";
+import type { RedisClientType } from "redis";
 
 const runtimeKey = getRuntimeKey();
 
@@ -51,6 +52,8 @@ export async function getAppContext(c: Context): Promise<AppContext> {
   };
 }
 
+let redisClient: RedisClientType | null = null;
+
 async function createKv(
   c: Context<{
     Bindings: {
@@ -76,23 +79,27 @@ async function createKv(
 
   const { createClient } = await import("redis");
 
-  const client = createClient({
-    socket: {
-      host: env.REDIS_HOST,
-      port: env.REDIS_PORT,
-    },
-  });
+  if (!redisClient) {
+    redisClient = createClient({
+      socket: {
+        host: env.REDIS_HOST,
+        port: env.REDIS_PORT,
+      },
+    });
 
-  await client.connect();
+    await redisClient.connect();
+  }
 
   return {
     async set(key, value, ttl) {
-      await client.set(`stitcher:${key}`, value, {
+      assert(redisClient);
+      await redisClient.set(`stitcher:${key}`, value, {
         EX: ttl,
       });
     },
     async get(key) {
-      return await client.get(`stitcher:${key}`);
+      assert(redisClient);
+      return await redisClient.get(`stitcher:${key}`);
     },
   };
 }

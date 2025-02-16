@@ -7,7 +7,7 @@ if [[ ! " ${tags[@]} " =~ " $1 " ]]; then
   exit 1
 fi
 
-declare -a arr=("api" "artisan" "app" "stitcher")
+declare -a arr=("api" "app" "artisan" "stitcher")
 
 for package in "${arr[@]}"
 do

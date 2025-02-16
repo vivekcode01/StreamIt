@@ -7,13 +7,13 @@ if [[ ! " ${tags[@]} " =~ " $1 " ]]; then
   exit 1
 fi
 
-declare -a arr=("api" "artisan" "app" "stitcher")
+declare -a arr=("api" "app" "artisan" "stitcher")
 
 dir=$(pwd)
 
 for package in "${arr[@]}"
 do
-   cd $dir/packages/$package
+   cd $dir/../apps/$package
    echo "👷 Building $package"
    TAG=$1 pnpm run build
    docker build . --no-cache --platform linux/amd64,linux/arm64 --tag=superstreamerapp/$package:$1
