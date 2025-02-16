@@ -8,7 +8,7 @@ import type { Asset, TimedEvent } from "./types";
 
 interface Group {
   showTimeline: boolean;
-  inlineDuration?: number;
+  duration?: number;
 }
 
 export function getStaticDateRanges(
@@ -36,7 +36,7 @@ export function getStaticDateRanges(
     const assetListUrl = createUrl(context, "out/asset-list.json", {
       dt: dateTime.toISO(),
       sid: session.id,
-      mdur: group.inlineDuration,
+      mdur: group.duration,
     });
 
     const clientAttributes: Record<string, number | string> = {
@@ -44,9 +44,13 @@ export function getStaticDateRanges(
       "ASSET-LIST": assetListUrl,
       "CONTENT-MAY-VARY": "YES",
       "TIMELINE-STYLE": group.showTimeline ? "HIGHLIGHT" : "PRIMARY",
-      "TIMELINE-OCCUPIES": group.inlineDuration ? "RANGE" : "POINT",
-      "RESUME-OFFSET": group.inlineDuration ?? 0,
+      "TIMELINE-OCCUPIES": group.duration ? "RANGE" : "POINT",
+      "RESUME-OFFSET": group.duration ?? 0,
     };
+
+    if (group.duration) {
+      clientAttributes["PLAYOUT-LIMIT"] = group.duration;
+    }
 
     const cue: string[] = [];
     if (dateTime.equals(session.startTime)) {
@@ -61,7 +65,7 @@ export function getStaticDateRanges(
       classId: "com.apple.hls.interstitial",
       id: `sprs.${dateTime.toMillis()}`,
       startDate: dateTime,
-      duration: group.inlineDuration,
+      duration: group.duration,
       clientAttributes,
     });
   });
@@ -80,8 +84,10 @@ function groupEvent(groups: Map<number, Group>, event: TimedEvent) {
     groups.set(ts, group);
   }
 
-  if (event.inlineDuration) {
-    group.inlineDuration = event.inlineDuration;
+  // If we have another event with a duration, we'll take the largest one to cover
+  // the entire interstitial.
+  if (event.duration && (!group.duration || event.duration > group.duration)) {
+    group.duration = event.duration;
   }
 
   if (event.vast) {
@@ -99,7 +105,7 @@ function getTimedEventsFromSegments(segments: Segment[]) {
 
     events.push({
       dateTime: segment.programDateTime,
-      inlineDuration: segment.spliceInfo.duration,
+      duration: segment.spliceInfo.duration,
     });
   }
 

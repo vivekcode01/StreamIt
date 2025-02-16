@@ -36,6 +36,7 @@ export const sessionsApp = new Hono().post(
           z.intersection(
             z.object({
               time: z.union([z.number(), z.string()]),
+              duration: z.number().optional(),
             }),
             z.discriminatedUnion("type", [
               z.object({
@@ -46,16 +47,11 @@ export const sessionsApp = new Hono().post(
                 type: z.literal("vast"),
                 url: z.string(),
               }),
+              z.object({
+                type: z.literal("metadata"),
+              }),
             ]),
           ),
-        )
-        .optional(),
-      regions: z
-        .array(
-          z.object({
-            time: z.union([z.number(), z.string()]),
-            inlineDuration: z.number().optional(),
-          }),
         )
         .optional(),
       filter: z

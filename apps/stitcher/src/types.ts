@@ -18,5 +18,5 @@ export interface TimedEvent {
   dateTime: DateTime;
   vast?: VastParams;
   asset?: Asset;
-  inlineDuration?: number;
+  duration?: number;
 }

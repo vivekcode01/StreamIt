@@ -49,7 +49,7 @@ export class HlsPlayer {
 
     this.state_ = new State({
       onEvent: (event: Events) => this.emit_(event),
-      getTiming: () => hls.interstitialsManager?.primary,
+      getTiming: () => hls.interstitialsManager?.integrated,
     });
 
     hls.attachMedia(this.media_);

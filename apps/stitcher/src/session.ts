@@ -28,6 +28,7 @@ export interface Session {
 
 type InterstitialInput = {
   time: string | number;
+  duration?: number;
 } & (
   | {
       type: "asset";
@@ -39,11 +40,6 @@ type InterstitialInput = {
     }
 );
 
-interface RegionInput {
-  time: string | number;
-  inlineDuration?: number;
-}
-
 interface CreateSessionParams {
   uri: string;
   expiry: number;
@@ -54,7 +50,6 @@ interface CreateSessionParams {
     url?: string;
   };
   interstitials?: InterstitialInput[];
-  regions?: RegionInput[];
 }
 
 export async function createSession(
@@ -80,13 +75,6 @@ export async function createSession(
       params.interstitials.map((interstitial) =>
         mapInterstitialToTimedEvent(context, startTime, interstitial),
       ),
-    );
-    session.events.push(...events);
-  }
-
-  if (params.regions) {
-    const events = params.regions.map((region) =>
-      mapRegionToTimedEvent(startTime, region),
     );
     session.events.push(...events);
   }
@@ -119,6 +107,7 @@ export async function mapInterstitialToTimedEvent(
 
   const event: TimedEvent = {
     dateTime,
+    duration: interstitial.duration,
   };
 
   if (interstitial.type === "asset") {
@@ -136,18 +125,6 @@ export async function mapInterstitialToTimedEvent(
   }
 
   return event;
-}
-
-export function mapRegionToTimedEvent(
-  startTime: DateTime,
-  region: RegionInput,
-): TimedEvent {
-  const dateTime = toDateTime(startTime, region.time);
-
-  return {
-    dateTime,
-    inlineDuration: region.inlineDuration,
-  };
 }
 
 function toDateTime(startTime: DateTime, time: string | number) {
