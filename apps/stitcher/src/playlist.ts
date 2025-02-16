@@ -10,11 +10,8 @@ import {
 } from "./parser";
 import { updateSession } from "./session";
 import { fetchVmap, toAdBreakTimeOffset } from "./vmap";
+import type { AppContext } from "./app-context";
 import type { Filter } from "./filters";
-import type { Api } from "./middleware/api";
-import type { Encdec } from "./middleware/encdec";
-import type { Globals } from "./middleware/globals";
-import type { Kv } from "./middleware/kv";
 import type { MasterPlaylist, MediaPlaylist } from "./parser";
 import type { Session } from "./session";
 import type { TimedEvent } from "./types";
@@ -22,39 +19,31 @@ import type { VmapAdBreak } from "./vmap";
 import type { DateTime } from "luxon";
 
 export async function formatMasterPlaylist(
-  context: {
-    globals: Globals;
-    encdec: Encdec;
-    kv: Kv;
-  },
-  params: {
-    origUrl: string;
-    session: Session;
-    filter?: Filter;
-  },
+  context: AppContext,
+  session: Session,
+  url: string,
+  filter?: Filter,
 ) {
-  await initSessionOnMasterReq(context, params.session);
+  await initSessionOnMasterReq(context, session);
 
-  const master = await fetchMasterPlaylist(params.origUrl);
+  const master = await fetchMasterPlaylist(url);
 
-  if (params.filter) {
-    filterMasterPlaylist(master, params.filter);
+  if (filter) {
+    filterMasterPlaylist(master, filter);
   }
 
-  rewriteMasterPlaylistUrls(context, master, params);
+  rewriteMasterPlaylistUrls(context, session, url, master);
 
   return stringifyMasterPlaylist(master);
 }
 
 export async function formatMediaPlaylist(
-  context: {
-    globals: Globals;
-  },
-  mediaUrl: string,
+  context: AppContext,
   session: Session,
+  url: string,
   type: "video" | "audio" | "subtitles",
 ) {
-  const media = await fetchMediaPlaylist(mediaUrl);
+  const media = await fetchMediaPlaylist(url);
 
   const firstSegment = media.segments[0];
   assert(firstSegment);
@@ -70,16 +59,13 @@ export async function formatMediaPlaylist(
 
   rewriteSpliceInfoSegments(media);
 
-  rewriteMediaPlaylistUrls(media, mediaUrl);
+  rewriteMediaPlaylistUrls(url, media);
 
   return stringifyMediaPlaylist(media);
 }
 
 export async function formatAssetList(
-  context: {
-    globals: Globals;
-    api?: Api;
-  },
+  context: AppContext,
   session: Session,
   dateTime: DateTime,
   maxDuration?: number,
@@ -123,63 +109,42 @@ export async function fetchDuration(url: string) {
 }
 
 export function createMasterUrl(
-  context: {
-    globals: Globals;
-    encdec: Encdec;
-  },
-  params: {
-    url: string;
-    session: Session;
-    filter?: Filter;
-  },
+  context: AppContext,
+  session: Session,
+  url: string,
+  filter?: Filter,
 ) {
-  const fil = formatFilterToQueryParam(params.filter);
+  const fil = formatFilterToQueryParam(filter);
 
-  const url = createUrl(context, "out/master.m3u8", {
-    eurl: context.encdec.encrypt(params.url),
-    sid: params.session.id,
+  return createUrl(context, "out/master.m3u8", {
+    eurl: context.cipher.encrypt(url),
+    sid: session.id,
     fil,
   });
-
-  return url;
 }
 
 function createMediaUrl(
-  context: {
-    globals: Globals;
-    encdec: Encdec;
-  },
-  params: {
-    url: string;
-    sessionId: string;
-    type: "video" | "audio" | "subtitles";
-  },
+  context: AppContext,
+  session: Session,
+  url: string,
+  type: "video" | "audio" | "subtitles",
 ) {
   return createUrl(context, "out/playlist.m3u8", {
-    eurl: context.encdec.encrypt(params.url),
-    sid: params.sessionId,
-    type: params.type,
+    eurl: context.cipher.encrypt(url),
+    sid: session.id,
+    type,
   });
 }
 
 export function rewriteMasterPlaylistUrls(
-  context: {
-    globals: Globals;
-    encdec: Encdec;
-  },
+  context: AppContext,
+  session: Session,
+  masterUrl: string,
   master: MasterPlaylist,
-  params: {
-    origUrl: string;
-    session: Session;
-  },
 ) {
   for (const variant of master.variants) {
-    const url = joinUrl(params.origUrl, variant.uri);
-    variant.uri = createMediaUrl(context, {
-      url,
-      sessionId: params.session.id,
-      type: "video",
-    });
+    const variantUrl = joinUrl(masterUrl, variant.uri);
+    variant.uri = createMediaUrl(context, session, variantUrl, "video");
   }
 
   for (const rendition of master.renditions) {
@@ -187,7 +152,7 @@ export function rewriteMasterPlaylistUrls(
       continue;
     }
 
-    const url = joinUrl(params.origUrl, rendition.uri);
+    const renditionUrl = joinUrl(masterUrl, rendition.uri);
 
     let type: "audio" | "subtitles" | undefined;
     if (rendition.type === "AUDIO") {
@@ -200,17 +165,13 @@ export function rewriteMasterPlaylistUrls(
       continue;
     }
 
-    rendition.uri = createMediaUrl(context, {
-      url,
-      sessionId: params.session.id,
-      type,
-    });
+    rendition.uri = createMediaUrl(context, session, renditionUrl, type);
   }
 }
 
 export function rewriteMediaPlaylistUrls(
-  media: MediaPlaylist,
   mediaUrl: string,
+  media: MediaPlaylist,
 ) {
   media.segments.forEach((segment) => {
     if (segment.map?.uri === "init.mp4") {
@@ -233,12 +194,7 @@ export function rewriteSpliceInfoSegments(media: MediaPlaylist) {
   });
 }
 
-async function initSessionOnMasterReq(
-  context: {
-    kv: Kv;
-  },
-  session: Session,
-) {
+async function initSessionOnMasterReq(context: AppContext, session: Session) {
   let storeSession = false;
 
   // If we have a vmap config but no result yet, we'll resolve it.

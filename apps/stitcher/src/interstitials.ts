@@ -1,8 +1,7 @@
 import { DateTime } from "luxon";
 import { createUrl, replaceUrlParams } from "./lib/url";
 import { getAssetsFromVastData, getAssetsFromVastUrl } from "./vast";
-import type { Api } from "./middleware/api";
-import type { Globals } from "./middleware/globals";
+import type { AppContext } from "./app-context";
 import type { DateRange, Segment } from "./parser";
 import type { Session } from "./session";
 import type { Asset, TimedEvent } from "./types";
@@ -13,9 +12,7 @@ interface Group {
 }
 
 export function getStaticDateRanges(
-  context: {
-    globals: Globals;
-  },
+  context: AppContext,
   session: Session,
   segments: Segment[],
 ) {
@@ -110,10 +107,7 @@ function getTimedEventsFromSegments(segments: Segment[]) {
 }
 
 export async function getAssets(
-  context: {
-    globals: Globals;
-    api?: Api;
-  },
+  context: AppContext,
   session: Session,
   dateTime: DateTime,
   maxDuration?: number,

@@ -1,10 +1,7 @@
 import { Hono } from "hono";
 import { DateTime } from "luxon";
 import { z } from "zod";
-import { api } from "../middleware/api";
-import { encdec } from "../middleware/encdec";
-import { globals } from "../middleware/globals";
-import { kv } from "../middleware/kv";
+import { getAppContext } from "../app-context";
 import {
   formatAssetList,
   formatMasterPlaylist,
@@ -15,9 +12,6 @@ import { validator } from "../validator";
 import type { Filter } from "../filters";
 
 export const outApp = new Hono()
-  .use(globals())
-  .use(kv())
-  .use(encdec())
   .get(
     "/master.m3u8",
     validator(
@@ -34,20 +28,17 @@ export const outApp = new Hono()
     async (c) => {
       const query = c.req.valid("query");
 
-      const context = {
-        globals: c.get("globals"),
-        kv: c.get("kv"),
-        encdec: c.get("encdec"),
-      };
+      const context = await getAppContext(c);
 
-      const url = context.encdec.decrypt(query.eurl);
+      const url = context.cipher.decrypt(query.eurl);
       const session = await getSession(context, query.sid);
 
-      const playlist = await formatMasterPlaylist(context, {
-        origUrl: url,
+      const playlist = await formatMasterPlaylist(
+        context,
         session,
-        filter: query.fil,
-      });
+        url,
+        query.fil,
+      );
 
       c.header("Content-Type", "application/vnd.apple.mpegurl");
 
@@ -67,20 +58,16 @@ export const outApp = new Hono()
     async (c) => {
       const query = c.req.valid("query");
 
-      const context = {
-        globals: c.get("globals"),
-        kv: c.get("kv"),
-        encdec: c.get("encdec"),
-      };
+      const context = await getAppContext(c);
 
       const session = await getSession(context, query.sid);
 
-      const url = context.encdec.decrypt(query.eurl);
+      const url = context.cipher.decrypt(query.eurl);
 
       const playlist = await formatMediaPlaylist(
         context,
-        url,
         session,
+        url,
         query.type,
       );
 
@@ -101,15 +88,10 @@ export const outApp = new Hono()
         _HLS_start_offset: z.coerce.number().optional(),
       }),
     ),
-    api(),
     async (c) => {
       const query = c.req.valid("query");
 
-      const context = {
-        globals: c.get("globals"),
-        kv: c.get("kv"),
-        api: c.get("api"),
-      };
+      const context = await getAppContext(c);
 
       const session = await getSession(context, query.sid);
 

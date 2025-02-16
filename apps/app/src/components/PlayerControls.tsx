@@ -1,9 +1,8 @@
 import { Button } from "@heroui/react";
-import { Events } from "@superstreamer/player";
 import cn from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { Selection } from "./Selection";
-import { usePlayer, usePlayerSelector } from "../context/PlayerContext";
+import { usePlayerSelector } from "../context/PlayerContext";
 import { useSeekbar } from "../hooks/useSeekbar";
 import type { ReactNode, RefObject } from "react";
 
@@ -39,45 +38,20 @@ function PlayButton() {
 }
 
 function Seekbar() {
-  const { player } = usePlayer();
   const seekableStart = usePlayerSelector((player) => player.seekableStart);
   const currentTime = usePlayerSelector((player) => player.currentTime);
   const duration = usePlayerSelector((player) => player.duration);
   const seekTo = usePlayerSelector((player) => player.seekTo);
-
-  const [lastSeekTime, setLastSeekTime] = useState<number | null>(null);
 
   const seekbar = useSeekbar({
     min: seekableStart,
     max: duration,
     onSeeked: (time) => {
       seekTo(time);
-      setLastSeekTime(time);
     },
   });
 
-  useEffect(() => {
-    if (!player) {
-      return;
-    }
-
-    const onTimeChange = () => {
-      if (player.seeking || lastSeekTime == null) {
-        return;
-      }
-      if (player.currentTime > lastSeekTime) {
-        setLastSeekTime(null);
-      }
-    };
-
-    player.on(Events.TIME_CHANGE, onTimeChange);
-    return () => {
-      player.off(Events.TIME_CHANGE, onTimeChange);
-    };
-  }, [player, lastSeekTime]);
-
-  const fakeTime = lastSeekTime ?? currentTime;
-  let percentage = getPercentage(fakeTime, duration, seekableStart);
+  let percentage = getPercentage(currentTime, duration, seekableStart);
   if (seekbar.seeking) {
     percentage = seekbar.x;
   }

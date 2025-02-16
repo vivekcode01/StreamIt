@@ -3,8 +3,7 @@ import * as uuid from "uuid";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
 import { fetchDuration } from "./playlist";
-import type { Globals } from "./middleware/globals";
-import type { Kv } from "./middleware/kv";
+import type { AppContext } from "./app-context";
 import type { TimedEvent } from "./types";
 
 export interface Session {
@@ -45,23 +44,22 @@ interface RegionInput {
   inlineDuration?: number;
 }
 
+interface CreateSessionParams {
+  uri: string;
+  expiry: number;
+  vmap?: {
+    url: string;
+  };
+  vast?: {
+    url?: string;
+  };
+  interstitials?: InterstitialInput[];
+  regions?: RegionInput[];
+}
+
 export async function createSession(
-  context: {
-    globals: Globals;
-    kv: Kv;
-  },
-  params: {
-    uri: string;
-    expiry: number;
-    vmap?: {
-      url: string;
-    };
-    vast?: {
-      url?: string;
-    };
-    interstitials?: InterstitialInput[];
-    regions?: RegionInput[];
-  },
+  context: AppContext,
+  params: CreateSessionParams,
 ) {
   const id = uuid.v4();
   const startTime = DateTime.now();
@@ -99,7 +97,7 @@ export async function createSession(
   return session;
 }
 
-export async function getSession(context: { kv: Kv }, id: string) {
+export async function getSession(context: AppContext, id: string) {
   const data = await context.kv.get(`session:${id}`);
   if (!data) {
     throw new Error(`No session found for id ${id}`);
@@ -107,15 +105,13 @@ export async function getSession(context: { kv: Kv }, id: string) {
   return JSON.parse<Session>(data);
 }
 
-export async function updateSession(context: { kv: Kv }, session: Session) {
+export async function updateSession(context: AppContext, session: Session) {
   const value = JSON.stringify(session);
   await context.kv.set(`session:${session.id}`, value, session.expiry);
 }
 
 export async function mapInterstitialToTimedEvent(
-  context: {
-    globals: Globals;
-  },
+  context: AppContext,
   startTime: DateTime,
   interstitial: InterstitialInput,
 ): Promise<TimedEvent> {
