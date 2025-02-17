@@ -26,7 +26,7 @@ The interstitial structure is:
 - RESUME-OFFSET: 10 (equal to the duration)
 - No PLAYOUT-LIMIT (ad server decides)
 
-Due to the DURATION tag, HLS.js treats the linear ad breaks as if they are not there in the first place. Unless we add CUE=ONCE.
+Due to the DURATION tag, HLS.js treats the linear ad breaks as if they are not there in the first place. Unless we add CUE=ONCE (although we probably should never add ONCE in this case).
 
 For live, with replacement (ad replacement)
 
