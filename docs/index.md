@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: Superstreamer
-  text: Deliver video
+  text: Video streaming
   tagline: Building blocks for video streaming that's smooth, simple, and scales like a champ!
   actions:
     - theme: brand

@@ -108,46 +108,53 @@ function sidebarGuide() {
           text: "Getting Started",
           link: "getting-started",
         },
-      ],
-    },
-    {
-      text: "Project",
-      items: [
         {
           text: "What's included",
           link: "whats-included",
         },
+      ],
+    },
+    {
+      text: "Manage media",
+      items: [
         {
-          text: "Building blocks",
-          link: "building-blocks",
+          text: "Overview",
+          link: "media-overview",
+        },
+        {
+          text: "Media processing",
           items: [
             {
-              text: "Video processing",
-              link: "video-processing",
+              text: "Import video",
+              link: "media-import-video",
             },
             {
-              text: "Video personalization",
-              link: "video-personalization",
+              text: "Transcode & package",
+              link: "media-transcode-package",
             },
             {
-              text: "Player",
-              link: "player",
+              text: "Assets",
+              link: "media-assets",
             },
           ],
         },
         {
-          text: "Tutorials",
-          items: [
-            {
-              text: "Play adaptive video",
-              link: "tutorials/play-adaptive-video"
-            },
-            {
-              text: "Add bumper like Netflix",
-              link: "tutorials/add-bumper-like-netflix"
-            }
-          ]
-        }
+          text: "Manage assets",
+          link: "media-manage-assets",
+        },
+        {
+          text: "Dashboard",
+          link: "media-dashboard",
+        },
+      ],
+    },
+    {
+      text: "Stitcher",
+      items: [
+        {
+          text: "Overview",
+          link: "stitcher-overview",
+        },
       ],
     },
     {

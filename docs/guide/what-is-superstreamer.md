@@ -38,28 +38,25 @@ To users, video seems simple – it just plays, right? But delivering a smooth e
 
 - Optimize for speed and quality
 
-  Need your videos to load faster and look great? This tool makes sure your videos play quickly and at the best quality, no matter the device. If your viewers have slow internet, the [transcode tool](/guide/video-processing#start-a-transcode) step can adjust the video quality so it still plays smoothly without buffering.
+  Need your videos to load faster and look great? Superstreamer makes sure your videos play quickly and at the best quality, no matter the device. Do your viewers have unpredictable or slow internet? [Transcoding](/guide/video-processing#start-a-transcode) can adjust the video quality so it still plays smoothly without buffering.
 
 - Convert to different formats
 
-  Want to play your video on any device? Our transcode tool changes your video to the right format so everyone can watch it, in different qualities depending on the viewer' bandwidth.
-
-- Monetize your content
-
-  Our ad insertion tool lets you add ads at the perfect moment to earn revenue while keeping the viewer engaged.
+  Want to play your video on any device? [Transcoding](/guide/video-processing#start-a-transcode) changes your video to the right format so everyone can watch it, in different qualities depending on the viewer' bandwidth.
 
 - Package for streaming
 
-  Ready to show your video online? Our [package tool](/guide/video-processing#start-a-package) packages your video so it streams smoothly to your viewers, no matter where they are.
+  Ready to show your video online? [Package](/guide/video-processing#start-a-package) your video so it streams smoothly to your viewers, no matter where they are.
 
-- Create custom playlists
 
-  Want to give your viewers a personalized video experience? Our [stitcher tool](/guide/video-personalization#create-a-session) lets you change the video order in real-time, so each viewer gets something unique.
+- Monetize your content
+  
+  In need of on the fly ad insertion? [Stitching]() lets you add ads at the perfect moment to earn revenue while keeping the viewer engaged.
+
+- Filter your playout
+
+  Want to limit playout? [Stitching]() filters quality and text tracks by language, enabling you to tailor a playout for a specific audience.
 
 - Client streaming library
 
-  Need an easy way to work with [HLS.js](https://github.com/video-dev/hls.js)? Our player's facade makes it super simple to integrate streaming into your project, without dealing with complex video library code. Just focus on your content, and let the player handle the rest.
-
-- Player
-
-  Want a beautiful, modern video player? Our React component offers an eye-catching design and smooth functionality, giving your viewers an amazing experience.
+  Need a simplified way to work with [HLS.js](https://github.com/video-dev/hls.js)? Our player facade makes it super simple to integrate streaming into your project, without dealing with complex video library code.
