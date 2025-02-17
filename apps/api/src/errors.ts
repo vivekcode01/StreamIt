@@ -1,14 +1,16 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 type ApiErrorCode =
-  | "USER_INVALID_CREDENTIALS"
+  | "ERR_AUTH_INVALID_CREDENTIALS"
+  | "ERR_AUTH_INVALID_ROLE"
   | "ERR_STORAGE_NO_FILE_PREVIEW"
   | "ERR_JOB_NOT_FOUND";
 
 export function apiError(code: ApiErrorCode) {
   let status: ContentfulStatusCode = 500;
   switch (code) {
-    case "USER_INVALID_CREDENTIALS":
+    case "ERR_AUTH_INVALID_CREDENTIALS":
+    case "ERR_AUTH_INVALID_ROLE":
       status = 401;
       break;
     case "ERR_STORAGE_NO_FILE_PREVIEW":

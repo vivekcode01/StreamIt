@@ -47,10 +47,11 @@ export const tokenApp = new Hono()
         credentials.password,
       );
       if (id === null) {
-        throw apiError("USER_INVALID_CREDENTIALS");
+        throw apiError("ERR_AUTH_INVALID_CREDENTIALS");
       }
       const token = await sign(
         {
+          role: "user",
           id,
         },
         env.SUPER_SECRET,

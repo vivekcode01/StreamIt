@@ -4,9 +4,16 @@ import type { Context, Next } from "hono";
 import type { JWTPayload } from "hono/utils/jwt/types";
 
 export interface AuthVariables {
-  user: {
-    id: number;
-  };
+  user:
+    | {
+        // Reflects a user.
+        role: "user";
+        id: number;
+      }
+    | {
+        // Reflects an external service, such as stitcher.
+        role: "service";
+      };
 }
 
 /**
@@ -42,6 +49,4 @@ export function auth() {
 
     await next();
   };
-
-  // TODO: Check x-api-key header
 }

@@ -1,4 +1,5 @@
 import { env as getEnv, getRuntimeKey } from "hono/adapter";
+import { sign } from "hono/jwt";
 import * as secureEncrypt from "secure-encrypt";
 import { assert } from "shared/assert";
 import { z } from "zod";
@@ -111,10 +112,10 @@ async function createApi(env: Env) {
 
   const { createClient } = await import("@superstreamer/api/client");
 
-  // TODO: We assert the secret here but use it for requests with the client later.
   assert(env.SUPER_SECRET);
+  const token = await sign({ role: "service" }, env.SUPER_SECRET);
 
-  return createClient(env.PUBLIC_API_ENDPOINT);
+  return createClient(env.PUBLIC_API_ENDPOINT, token);
 }
 
 function createCipher(env: Env): Cipher {
