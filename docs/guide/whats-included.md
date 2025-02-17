@@ -2,6 +2,12 @@
 
 Superstreamer is a monorepo, with multiple smaller projects inside. We'll provide a quick overview of the service, apps and libraries below to give you a sense of what each one does.
 
+## Building blocks
+
+Getting the bigger picture from a high-level perspective can be challenging, but we'll do our best to guide you through how the different building blocks come together. 
+
+Ideally, Superstreamer provides tools that cover everything from input source files, like an MP4, all the way to playback, such as a player embedded in a page. However, you're free to choose the tools that best fit your use case and extend them with Superstreamer's features as needed.
+
 ## Backend
 
 <div class="package">
@@ -80,3 +86,9 @@ Superstreamer is a monorepo, with multiple smaller projects inside. We'll provid
     </a>
   </div>
 </div>
+
+## References
+
+- [API reference](/reference/api)
+- [Stitcher reference](/reference/stitcher)
+- [Player reference](/reference/player)

@@ -51,7 +51,7 @@ export default defineConfig({
       },
       {
         text: "Reference",
-        link: "/reference/player",
+        link: "/reference/api",
         activeMatch: "/reference/",
       },
       {
@@ -123,6 +123,7 @@ function sidebarGuide() {
         },
         {
           text: "Media processing",
+          link: "media-processing",
           items: [
             {
               text: "Import video",
@@ -133,18 +134,20 @@ function sidebarGuide() {
               link: "media-transcode-package",
             },
             {
-              text: "Assets",
-              link: "media-assets",
+              text: "Storage",
+              link: "media-storage",
             },
           ],
         },
         {
-          text: "Manage assets",
-          link: "media-manage-assets",
-        },
-        {
           text: "Dashboard",
           link: "media-dashboard",
+          items: [
+            {
+              text: "Manage assets",
+              link: "media-manage-assets",
+            },
+          ],
         },
       ],
     },
@@ -154,6 +157,23 @@ function sidebarGuide() {
         {
           text: "Overview",
           link: "stitcher-overview",
+        },
+        {
+          text: "Features",
+          items: [
+            {
+              text: "Filtering",
+              link: "stitcher-filtering",
+            },
+            {
+              text: "HLS interstitials",
+              link: "stitcher-hls-interstitials",
+            },
+            {
+              text: "Ad insertion",
+              link: "stitcher-ad-insertion",
+            },
+          ],
         },
       ],
     },
@@ -179,8 +199,26 @@ function sidebarReference() {
       text: "Reference",
       items: [
         {
-          text: "Player",
-          link: "/player",
+          text: "Services",
+          items: [
+            {
+              text: "API",
+              link: "api",
+            },
+            {
+              text: "Stitcher",
+              link: "stitcher",
+            },
+          ],
+        },
+        {
+          text: "Packages",
+          items: [
+            {
+              text: "Player",
+              link: "player",
+            },
+          ],
         },
       ],
     },

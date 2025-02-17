@@ -53,6 +53,12 @@ curl -X POST
 
 :::
 
+::: tip
+
+Check the [API reference](/reference/api) for the different payload options.
+
+:::
+
 Under the hood, Superstreamer kicks off a transcode job to produce the output streams. Once completed, each job is assigned a unique UUID. For example, in this case, the UUID is `46169885-f274-43ad-ba59-a746d33304fd`.
 
 This request above will provide a response containing the jobId:
@@ -98,9 +104,15 @@ curl -X POST
 }
 ```
 
-When the job is done, we have an HLS playlist available on our S3 bucket.
+:::
+
+::: tip
+
+Check the [API reference](/reference/api) for the different payload options.
 
 :::
+
+When the job is done, we have an HLS playlist available on our S3 bucket.
 
 ```
 https://cdn.superstreamer.xyz/package/46169885-f274-43ad-ba59-a746d33304fd/hls/master.m3u8
@@ -120,3 +132,5 @@ https://cdn.superstreamer.xyz/package/46169885-f274-43ad-ba59-a746d33304fd/hls/m
 ## Pipeline
 
 Typically a package job is scheduled right after a transcode job. Superstreamer can do this for you with the `/jobs/pipeline` API.
+
+The pipeline job has sane defaults and is best used if you don't need to heavily customize your transcode and package profiles.
