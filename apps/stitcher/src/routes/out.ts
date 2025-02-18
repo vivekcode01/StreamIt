@@ -42,7 +42,7 @@ export const outApp = new Hono()
 
       c.header("Content-Type", "application/vnd.apple.mpegurl");
 
-      return c.text(playlist, 200);
+      return c.body(playlist, 200);
     },
   )
   .get(
@@ -73,7 +73,7 @@ export const outApp = new Hono()
 
       c.header("Content-Type", "application/vnd.apple.mpegurl");
 
-      return c.text(playlist, 200);
+      return c.body(playlist, 200);
     },
   )
   .get(
@@ -83,7 +83,7 @@ export const outApp = new Hono()
       z.object({
         dt: z.string(),
         sid: z.string(),
-        mdur: z.coerce.number().optional(),
+        dur: z.coerce.number().optional(),
         _HLS_primary_id: z.string().optional(),
         _HLS_start_offset: z.coerce.number().optional(),
       }),
@@ -101,7 +101,7 @@ export const outApp = new Hono()
         context,
         session,
         dateTime,
-        query.mdur,
+        query.dur,
       );
 
       return c.json(assetList, 200);

@@ -49,8 +49,14 @@ For live, with replacement (ad replacement)
 The interstitial structure is:
 
 - No DURATION
-- RESUME-OFFSET: 10 (equal to the duration)
+- No RESUME-OFFSET (must overlap the embedded break)
 - PLAYOUT-LIMIT: 10 (equal to the duration)
+- PLANNED-DURATION
+- No JUMP
+
+
+seekTo 25 -> ASSET-LIST -> yes -> play from start
+                        -> no -> continue playback at 20
 
 Extra:
 

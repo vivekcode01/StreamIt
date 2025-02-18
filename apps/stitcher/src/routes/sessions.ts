@@ -33,24 +33,24 @@ export const sessionsApp = new Hono().post(
       uri: z.string(),
       interstitials: z
         .array(
-          z.intersection(
-            z.object({
-              time: z.union([z.number(), z.string()]),
-              duration: z.number().optional(),
-            }),
-            z.discriminatedUnion("type", [
-              z.object({
-                type: z.literal("asset"),
-                uri: z.string(),
-              }),
-              z.object({
-                type: z.literal("vast"),
+          z.object({
+            time: z.union([z.number(), z.string()]),
+            duration: z.number().optional(),
+            assets: z
+              .array(
+                z.object({
+                  uri: z.string(),
+                }),
+              )
+              .optional(),
+            vast: z
+              .object({
                 url: z.string(),
-              }),
-            ]),
-          ),
+              })
+              .optional(),
+          }),
         )
-        .optional(),
+        .default([]),
       filter: z
         .object({
           resolution: z.string().optional(),
@@ -64,7 +64,7 @@ export const sessionsApp = new Hono().post(
         .optional(),
       vast: z
         .object({
-          url: z.string(),
+          url: z.string().optional(),
         })
         .optional(),
       expiry: z.number().default(60 * 60 * 12),

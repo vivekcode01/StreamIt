@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import * as uuid from "uuid";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
-import { fetchDuration } from "./playlist";
+import { fetchDuration, pushTimedEvent } from "./playlist";
 import type { AppContext } from "./app-context";
 import type { TimedEvent } from "./types";
 
@@ -23,33 +23,30 @@ export interface Session {
     url?: string;
   };
 
-  events: TimedEvent[];
+  timedEvents: TimedEvent[];
 }
 
-type InterstitialInput = {
+interface InterstitialInput {
   time: string | number;
   duration?: number;
-} & (
-  | {
-      type: "asset";
-      uri: string;
-    }
-  | {
-      type: "vast";
-      url: string;
-    }
-);
+  assets?: {
+    uri: string;
+  }[];
+  vast?: {
+    url: string;
+  };
+}
 
 interface CreateSessionParams {
   uri: string;
   expiry: number;
+  interstitials: InterstitialInput[];
   vmap?: {
     url: string;
   };
   vast?: {
     url?: string;
   };
-  interstitials?: InterstitialInput[];
 }
 
 export async function createSession(
@@ -67,16 +64,18 @@ export async function createSession(
     startTime,
     vmap: params.vmap,
     vast: params.vast,
-    events: [],
+    timedEvents: [],
   };
 
   if (params.interstitials) {
-    const events = await Promise.all(
-      params.interstitials.map((interstitial) =>
-        mapInterstitialToTimedEvent(context, startTime, interstitial),
-      ),
-    );
-    session.events.push(...events);
+    for (const interstitial of params.interstitials) {
+      const event = await mapInterstitialToTimedEvent(
+        context,
+        startTime,
+        interstitial,
+      );
+      pushTimedEvent(session.timedEvents, event);
+    }
   }
 
   const value = JSON.stringify(session);
@@ -103,28 +102,22 @@ export async function mapInterstitialToTimedEvent(
   startTime: DateTime,
   interstitial: InterstitialInput,
 ): Promise<TimedEvent> {
-  const dateTime = toDateTime(startTime, interstitial.time);
-
-  const event: TimedEvent = {
-    dateTime,
+  return {
+    dateTime: toDateTime(startTime, interstitial.time),
     duration: interstitial.duration,
+    assets: interstitial.assets
+      ? await Promise.all(
+          interstitial.assets.map(async (asset) => {
+            const url = resolveUri(context, asset.uri);
+            return {
+              url,
+              duration: await fetchDuration(url),
+            };
+          }),
+        )
+      : undefined,
+    vast: interstitial.vast,
   };
-
-  if (interstitial.type === "asset") {
-    const url = resolveUri(context, interstitial.uri);
-    event.asset = {
-      url,
-      duration: await fetchDuration(url),
-    };
-  }
-
-  if (interstitial.type === "vast") {
-    event.vast = {
-      url: interstitial.url,
-    };
-  }
-
-  return event;
 }
 
 function toDateTime(startTime: DateTime, time: string | number) {

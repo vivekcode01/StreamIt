@@ -7,6 +7,11 @@ import { useSeekbar } from "../hooks/useSeekbar";
 import type { ReactNode, RefObject } from "react";
 
 export function PlayerControls() {
+  const ready = usePlayerSelector((player) => player.ready);
+  if (!ready) {
+    return null;
+  }
+
   return (
     <div className="flex flex-col gap-4 overflow-hidden">
       <div className="flex justify-center items-center">
@@ -18,6 +23,7 @@ export function PlayerControls() {
       <div className="p-3 rounded-md bg-default-100">
         <Seekbar />
         <Time />
+        <Timeline />
       </div>
       <Tracks />
     </div>
@@ -89,7 +95,6 @@ function Seekbar() {
           }}
         />
       </div>
-      <CuePoints />
     </div>
   );
 }
@@ -134,40 +139,43 @@ function Tooltip({
   );
 }
 
-function CuePoints() {
-  const cuePoints = usePlayerSelector((player) => player.cuePoints);
+function Timeline() {
+  const timeline = usePlayerSelector((player) => player.timeline);
   const duration = usePlayerSelector((player) => player.duration);
   const seekableStart = usePlayerSelector((player) => player.seekableStart);
 
-  return (
-    <div className="relative h-4">
-      {cuePoints.map((cuePoint) => {
-        const left =
-          (cuePoint.time - seekableStart) / (duration - seekableStart);
+  const relativeDuration = duration - seekableStart;
 
-        let width = 0;
-        if (cuePoint.duration) {
-          const right =
-            (cuePoint.time + cuePoint.duration - seekableStart) /
-            (duration - seekableStart);
-          width = right - left;
-        }
+  return (
+    <div className="relative h-2 bg-default-200 mt-2">
+      {timeline.map((item) => {
+        const left = (item.start - seekableStart) / relativeDuration;
+        const width = item.duration ? item.duration / relativeDuration : 0;
+        const rangeWidth = item.rangeDuration
+          ? item.rangeDuration / relativeDuration
+          : 0;
 
         return (
-          <div
-            key={cuePoint.time}
-            style={{
-              left: `${((cuePoint.time - seekableStart) / (duration - seekableStart)) * 100}%`,
-              width: width ? `${width * 100}%` : undefined,
-            }}
-            className="absolute"
-          >
-            <div className="absolute left-0 -translate-x-1/2 flex items-center flex-col">
-              <div className="w-[2px] h-2 bg-yellow-500" />
-              <div className="w-2 h-2 rounded-full bg-yellow-500" />
-            </div>
-            <div className="absolute w-full h-[2px] top-3 bg-yellow-500" />
-          </div>
+          <>
+            {rangeWidth ? (
+              <div
+                key={`range${item.start}`}
+                style={{
+                  left: `${left * 100}%`,
+                  width: `${rangeWidth * 100}%`,
+                }}
+                className={cn("absolute inset-0 bg-blue-400")}
+              />
+            ) : null}
+            <div
+              key={item.start}
+              style={{
+                left: `${left * 100}%`,
+                width: width ? `${width * 100}%` : "3px",
+              }}
+              className={cn("absolute inset-0 bg-yellow-400")}
+            />
+          </>
         );
       })}
     </div>
@@ -181,7 +189,7 @@ function Time() {
   const live = usePlayerSelector((player) => player.live);
 
   return (
-    <div className="flex text-sm mb-2">
+    <div className="flex text-sm">
       {hms(currentTime)}
       <div className="grow" />
       {live ? `${hms(seekableStart)} - ${hms(duration)}` : `${hms(duration)}`}
