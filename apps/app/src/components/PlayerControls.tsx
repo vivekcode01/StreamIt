@@ -18,6 +18,7 @@ export function PlayerControls() {
       <div className="p-3 rounded-md bg-default-100">
         <Seekbar />
         <Time />
+        <Timeline />
       </div>
       <Tracks />
     </div>
@@ -89,7 +90,6 @@ function Seekbar() {
           }}
         />
       </div>
-      <CuePoints />
     </div>
   );
 }
@@ -134,13 +134,13 @@ function Tooltip({
   );
 }
 
-function CuePoints() {
+function Timeline() {
   const cuePoints = usePlayerSelector((player) => player.cuePoints);
   const duration = usePlayerSelector((player) => player.duration);
   const seekableStart = usePlayerSelector((player) => player.seekableStart);
 
   return (
-    <div className="relative h-4">
+    <div className="relative h-2 bg-default-200 mt-2">
       {cuePoints.map((cuePoint) => {
         const left =
           (cuePoint.time - seekableStart) / (duration - seekableStart);
@@ -158,16 +158,10 @@ function CuePoints() {
             key={cuePoint.time}
             style={{
               left: `${((cuePoint.time - seekableStart) / (duration - seekableStart)) * 100}%`,
-              width: width ? `${width * 100}%` : undefined,
+              width: width ? `${width * 100}%` : "3px",
             }}
-            className="absolute"
-          >
-            <div className="absolute left-0 -translate-x-1/2 flex items-center flex-col">
-              <div className="w-[2px] h-2 bg-yellow-500" />
-              <div className="w-2 h-2 rounded-full bg-yellow-500" />
-            </div>
-            <div className="absolute w-full h-[2px] top-3 bg-yellow-500" />
-          </div>
+            className={cn("absolute inset-0 bg-yellow-400")}
+          />
         );
       })}
     </div>
@@ -181,7 +175,7 @@ function Time() {
   const live = usePlayerSelector((player) => player.live);
 
   return (
-    <div className="flex text-sm mb-2">
+    <div className="flex text-sm">
       {hms(currentTime)}
       <div className="grow" />
       {live ? `${hms(seekableStart)} - ${hms(duration)}` : `${hms(duration)}`}
