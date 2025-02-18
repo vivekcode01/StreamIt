@@ -36,7 +36,8 @@ export function getStaticDateRanges(
       "ASSET-LIST": assetListUrl,
       "CONTENT-MAY-VARY": "YES",
       "TIMELINE-STYLE": "HIGHLIGHT",
-      "TIMELINE-OCCUPIES": timedEvent.duration ? "POINT" : "POINT",
+      // For live to vod, this must be a POINT.
+      "TIMELINE-OCCUPIES": timedEvent.duration ? "RANGE" : "POINT",
     };
 
     if (!isLive) {
