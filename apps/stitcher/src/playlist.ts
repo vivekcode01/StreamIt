@@ -213,9 +213,9 @@ async function initSessionOnMasterReq(context: AppContext, session: Session) {
     session.vmap.result = {};
 
     vmap.adBreaks.forEach((adBreak) => {
-      const event = mapAdBreakToTimedEvent(session.startTime, adBreak);
-      if (event) {
-        pushTimedEvent(session.events, event);
+      const timedEvent = mapAdBreakToTimedEvent(session.startTime, adBreak);
+      if (timedEvent) {
+        pushTimedEvent(session.timedEvents, timedEvent);
       }
     });
 

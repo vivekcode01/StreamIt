@@ -23,7 +23,7 @@ export interface Session {
     url?: string;
   };
 
-  events: TimedEvent[];
+  timedEvents: TimedEvent[];
 }
 
 type InterstitialAssetInput =
@@ -69,7 +69,7 @@ export async function createSession(
     startTime,
     vmap: params.vmap,
     vast: params.vast,
-    events: [],
+    timedEvents: [],
   };
 
   if (params.interstitials) {
@@ -79,7 +79,7 @@ export async function createSession(
         startTime,
         interstitial,
       );
-      pushTimedEvent(session.events, event);
+      pushTimedEvent(session.timedEvents, event);
     }
   }
 

@@ -15,43 +15,41 @@ export function getStaticDateRanges(
 ): DateRange[] {
   // Grab a copy of the events in the session, we might add events from
   // elsewhere later on.
-  const timedEvents = [...session.events];
+  const timedEvents = [...session.timedEvents];
 
   // Check if segments have event info (such as splice info) and push them
   // to the list of events.
   const segmentTimedEvents = getTimedEventsFromSegments(segments);
   segmentTimedEvents.forEach((event) => pushTimedEvent(timedEvents, event));
 
-  return timedEvents.map((event) => {
+  return timedEvents.map((timedEvent) => {
     const assetListUrl = createUrl(context, "out/asset-list.json", {
-      dt: event.dateTime.toISO(),
+      dt: timedEvent.dateTime.toISO(),
       sid: session.id,
-      mdur: event.duration,
+      mdur: timedEvent.duration,
     });
-
-    const show = !!event.assets.find((asset) => asset.vast);
 
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",
       "ASSET-LIST": assetListUrl,
       "CONTENT-MAY-VARY": "YES",
-      "TIMELINE-STYLE": show ? "HIGHLIGHT" : "PRIMARY",
-      "TIMELINE-OCCUPIES": event.duration ? "RANGE" : "POINT",
+      "TIMELINE-STYLE": "HIGHLIGHT",
+      "TIMELINE-OCCUPIES": timedEvent.duration ? "RANGE" : "POINT",
     };
 
     let duration: number | undefined;
 
     if (!isLive) {
-      clientAttributes["RESUME-OFFSET"] = event.duration ?? 0;
-      duration = event.duration;
+      clientAttributes["RESUME-OFFSET"] = timedEvent.duration ?? 0;
+      duration = timedEvent.duration;
     }
 
-    if (event.duration) {
-      clientAttributes["PLAYOUT-LIMIT"] = event.duration;
+    if (timedEvent.duration) {
+      clientAttributes["PLAYOUT-LIMIT"] = timedEvent.duration;
     }
 
     const cue: string[] = [];
-    if (event.dateTime.equals(session.startTime)) {
+    if (timedEvent.dateTime.equals(session.startTime)) {
       cue.push("ONCE", "PRE");
     }
 
@@ -61,8 +59,8 @@ export function getStaticDateRanges(
 
     return {
       classId: "com.apple.hls.interstitial",
-      id: `sprs.${event.dateTime.toMillis()}`,
-      startDate: event.dateTime,
+      id: `sprs.${timedEvent.dateTime.toMillis()}`,
+      startDate: timedEvent.dateTime,
       duration,
       clientAttributes,
     };
@@ -93,12 +91,14 @@ export async function getAssets(
   dateTime: DateTime,
   maxDuration?: number,
 ): Promise<Asset[]> {
-  const event = session.events.find((event) => event.dateTime.equals(dateTime));
+  const timedEvent = session.timedEvents.find((e) =>
+    e.dateTime.equals(dateTime),
+  );
 
   const assets: Asset[] = [];
 
-  if (event) {
-    for (const assetResolver of event.assets) {
+  if (timedEvent) {
+    for (const assetResolver of timedEvent.assets) {
       if (assetResolver.asset) {
         assets.push(assetResolver.asset);
       }
