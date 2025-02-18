@@ -3,13 +3,13 @@ import { DateTime } from "luxon";
 import { validator } from "shared/hono/middleware";
 import { z } from "zod";
 import { getAppContext } from "../app-context";
+import { filterQuerySchema } from "../filters";
 import {
   formatAssetList,
   formatMasterPlaylist,
   formatMediaPlaylist,
 } from "../playlist";
 import { getSession } from "../session";
-import type { Filter } from "../filters";
 
 export const outApp = new Hono()
   .get(
@@ -19,10 +19,7 @@ export const outApp = new Hono()
       z.object({
         eurl: z.string(),
         sid: z.string(),
-        fil: z
-          .string()
-          .transform<Filter>((value) => JSON.parse(atob(value)))
-          .optional(),
+        fil: filterQuerySchema,
       }),
     ),
     async (c) => {

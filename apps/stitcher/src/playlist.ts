@@ -114,6 +114,18 @@ export async function fetchDuration(url: string) {
   }, 0);
 }
 
+export function createOpaqueMasterUrl(
+  context: AppContext,
+  session: Session,
+  filter?: Filter,
+) {
+  const fil = formatFilterToQueryParam(filter);
+
+  return createUrl(context, `sessions/${session.id}/master.m3u8`, {
+    fil,
+  });
+}
+
 export function createMasterUrl(
   context: AppContext,
   session: Session,

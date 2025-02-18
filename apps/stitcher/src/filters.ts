@@ -1,9 +1,15 @@
+import { z } from "zod";
 import type { MasterPlaylist } from "./parser";
 
 export interface Filter {
   resolution?: string;
   audioLanguage?: string;
 }
+
+export const filterQuerySchema = z
+  .string()
+  .transform<Filter>((value) => JSON.parse(atob(value)))
+  .optional();
 
 export function formatFilterToQueryParam(filter?: Filter) {
   if (!filter) {
