@@ -1,6 +1,6 @@
 # Import video
 
-There's two ways to import your video material in Superstreamer.
+There's two ways to import your video material in Superstreamer. Once you uploaded your video _somewhere_, you have to reference it with the proper scheme in the upcoming API calls and we'll take care of the rest.
 
 ## From S3
 
