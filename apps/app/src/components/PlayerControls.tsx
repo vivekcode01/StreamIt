@@ -146,30 +146,31 @@ function Timeline() {
       {timeline.map((item) => {
         const left = (item.start - seekableStart) / relativeDuration;
         const width = item.duration ? item.duration / relativeDuration : 0;
-        const inlineWidth = item.inlineDuration
-          ? item.inlineDuration / relativeDuration
-          : 0;
+        const assetsWidth =
+          width && item.assetsDuration
+            ? item.assetsDuration / relativeDuration
+            : 0;
 
         return (
           <>
-            {inlineWidth ? (
-              <div
-                key={`inline${item.start}`}
-                style={{
-                  left: `${left * 100}%`,
-                  width: `${inlineWidth * 100}%`,
-                }}
-                className={cn("absolute inset-0 bg-blue-400")}
-              />
-            ) : null}
             <div
               key={item.start}
               style={{
                 left: `${left * 100}%`,
                 width: width ? `${width * 100}%` : "3px",
               }}
-              className={cn("absolute inset-0 bg-yellow-400")}
+              className={cn("absolute inset-0 bg-blue-400")}
             />
+            {assetsWidth ? (
+              <div
+                key={`inline${item.start}`}
+                style={{
+                  left: `${left * 100}%`,
+                  width: `${assetsWidth * 100}%`,
+                }}
+                className={cn("absolute inset-0 bg-blue-400")}
+              />
+            ) : null}
           </>
         );
       })}

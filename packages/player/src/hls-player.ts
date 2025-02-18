@@ -266,16 +266,10 @@ export class HlsPlayer {
           return acc;
         }
 
-        let inlineDuration: number | undefined =
-          item.event.dateRange.attr.decimalFloatingPoint("X-INLINE-DURATION");
-        if (Number.isNaN(inlineDuration)) {
-          inlineDuration = undefined;
-        }
-
         acc.push({
           start: item.integrated.start,
           duration: item.integrated.end - item.integrated.start,
-          inlineDuration,
+          assetsDuration: item.event.duration,
         });
 
         return acc;

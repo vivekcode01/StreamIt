@@ -29,7 +29,22 @@ export function getStaticDateRanges(
       mdur: timedEvent.duration,
     });
 
-    // TODO: THIS IS LIVE 2 VOD
+    /*
+    VOD replacement: 
+      TIMELINE-OCCUPIES: POINT
+      RESUME-OFFSET: duration // indicates the actual replacement
+      PLAYOUT-LIMIT: duration OR nothing
+
+    VOD insertion:
+        TIMELINE-OCCUPIES: POINT
+        RESUME-OFFSET: 0
+        PLAYOUT-LIMIT: duration OR nothing
+
+    LIVE replacement
+      TIMELINE-OCCUPIES: RANGE
+      RESUME-OFFSET: duration // indicates the actual replacement
+      PLAYOUT-LIMIT: duration
+    */
 
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",
@@ -37,7 +52,7 @@ export function getStaticDateRanges(
       "CONTENT-MAY-VARY": "YES",
       "TIMELINE-STYLE": "HIGHLIGHT",
       // For live to vod, this must be a POINT.
-      "TIMELINE-OCCUPIES": timedEvent.duration ? "RANGE" : "POINT",
+      "TIMELINE-OCCUPIES": timedEvent.duration ? "POINT" : "POINT",
     };
 
     if (!isLive) {
@@ -46,7 +61,6 @@ export function getStaticDateRanges(
 
     if (timedEvent.duration) {
       clientAttributes["PLAYOUT-LIMIT"] = timedEvent.duration;
-      clientAttributes["INLINE-DURATION"] = timedEvent.duration;
     }
 
     const cue: string[] = [];
@@ -62,7 +76,6 @@ export function getStaticDateRanges(
       classId: "com.apple.hls.interstitial",
       id: `sprs.${timedEvent.dateTime.toMillis()}`,
       startDate: timedEvent.dateTime,
-      duration: timedEvent.duration,
       clientAttributes,
     };
   });
