@@ -241,14 +241,10 @@ export function mapAdBreakToTimedEvent(
 
   return {
     dateTime,
-    assets: [
-      {
-        vast: {
-          url: adBreak.vastUrl,
-          data: adBreak.vastData,
-        },
-      },
-    ],
+    vast: {
+      url: adBreak.vastUrl,
+      data: adBreak.vastData,
+    },
   };
 }
 
@@ -257,8 +253,18 @@ export function pushTimedEvent(events: TimedEvent[], nextEvent: TimedEvent) {
     event.dateTime.equals(nextEvent.dateTime),
   );
   if (target) {
-    // Add new assets to the target event.
-    target.assets.push(...nextEvent.assets);
+    if (nextEvent.assets) {
+      if (!target.assets) {
+        target.assets = [];
+      }
+      target.assets.push(...nextEvent.assets);
+    }
+    if (nextEvent.vast) {
+      target.vast = nextEvent.vast;
+    }
+    if (nextEvent.duration) {
+      target.duration = nextEvent.duration;
+    }
   } else {
     events.push(nextEvent);
   }

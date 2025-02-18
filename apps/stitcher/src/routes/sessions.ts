@@ -38,18 +38,16 @@ export const sessionsApp = new Hono().post(
             duration: z.number().optional(),
             assets: z
               .array(
-                z.discriminatedUnion("type", [
-                  z.object({
-                    type: z.literal("asset"),
-                    uri: z.string(),
-                  }),
-                  z.object({
-                    type: z.literal("vast"),
-                    url: z.string(),
-                  }),
-                ]),
+                z.object({
+                  uri: z.string(),
+                }),
               )
-              .default([]),
+              .optional(),
+            vast: z
+              .object({
+                url: z.string(),
+              })
+              .optional(),
           }),
         )
         .default([]),

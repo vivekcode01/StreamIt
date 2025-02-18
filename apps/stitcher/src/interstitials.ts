@@ -98,21 +98,19 @@ export async function getAssets(
   const assets: Asset[] = [];
 
   if (timedEvent) {
-    for (const assetResolver of timedEvent.assets) {
-      if (assetResolver.asset) {
-        assets.push(assetResolver.asset);
-      }
+    if (timedEvent.vast) {
+      const vastAssets = await getAssetsFromVastParams(
+        context,
+        timedEvent.vast,
+        {
+          maxDuration,
+        },
+      );
+      assets.push(...vastAssets);
+    }
 
-      if (assetResolver.vast) {
-        const vastAssets = await getAssetsFromVastParams(
-          context,
-          assetResolver.vast,
-          {
-            maxDuration,
-          },
-        );
-        assets.push(...vastAssets);
-      }
+    if (timedEvent.assets) {
+      assets.push(...timedEvent.assets);
     }
   }
 

@@ -26,20 +26,15 @@ export interface Session {
   timedEvents: TimedEvent[];
 }
 
-type InterstitialAssetInput =
-  | {
-      type: "asset";
-      uri: string;
-    }
-  | {
-      type: "vast";
-      url: string;
-    };
-
 interface InterstitialInput {
   time: string | number;
   duration?: number;
-  assets: InterstitialAssetInput[];
+  assets?: {
+    uri: string;
+  }[];
+  vast?: {
+    url: string;
+  };
 }
 
 interface CreateSessionParams {
@@ -107,34 +102,21 @@ export async function mapInterstitialToTimedEvent(
   startTime: DateTime,
   interstitial: InterstitialInput,
 ): Promise<TimedEvent> {
-  const dateTime = toDateTime(startTime, interstitial.time);
-
-  const assetPromises = interstitial.assets.map(async (asset) => {
-    if (asset.type === "asset") {
-      const url = resolveUri(context, asset.uri);
-      return {
-        asset: {
-          url,
-          duration: await fetchDuration(url),
-        },
-      };
-    }
-
-    if (asset.type === "vast") {
-      return {
-        vast: {
-          url: asset.url,
-        },
-      };
-    }
-
-    throw new Error("Invalid asset type");
-  });
-
   return {
-    dateTime,
+    dateTime: toDateTime(startTime, interstitial.time),
     duration: interstitial.duration,
-    assets: await Promise.all(assetPromises),
+    assets: interstitial.assets
+      ? await Promise.all(
+          interstitial.assets.map(async (asset) => {
+            const url = resolveUri(context, asset.uri);
+            return {
+              url,
+              duration: await fetchDuration(url),
+            };
+          }),
+        )
+      : undefined,
+    vast: interstitial.vast,
   };
 }
 
