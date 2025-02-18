@@ -1,4 +1,12 @@
-import { Card, Modal, ModalBody, ModalContent, Tab, Tabs } from "@heroui/react";
+import {
+  Card,
+  Chip,
+  Modal,
+  ModalBody,
+  ModalContent,
+  Tab,
+  Tabs,
+} from "@heroui/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { CodeEditor } from "../../../components/CodeEditor";
@@ -89,13 +97,21 @@ function RouteComponent() {
           </Tabs>
         </div>
       </PlayerProvider>
-      <Card className="w-[420px] py-4">
-        <CodeEditor
-          schema={schema}
-          localStorageKey="stitcherEditor"
-          onSave={onSave}
-        />
-      </Card>
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2 items-center">
+          <Chip size="sm">POST</Chip>
+          <span className="text-sm">
+            {window.__ENV__.PUBLIC_STITCHER_ENDPOINT}/sessions
+          </span>
+        </div>
+        <Card className="w-[420px] py-4 grow">
+          <CodeEditor
+            schema={schema}
+            localStorageKey="stitcherEditor"
+            onSave={onSave}
+          />
+        </Card>
+      </div>
       <Modal
         isOpen={error !== null}
         onClose={() => setError(null)}
