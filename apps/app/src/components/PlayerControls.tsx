@@ -1,8 +1,9 @@
 import { Button } from "@heroui/react";
+import { Events } from "@superstreamer/player";
 import cn from "clsx";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Selection } from "./Selection";
-import { usePlayerSelector } from "../context/PlayerContext";
+import { usePlayer, usePlayerSelector } from "../context/PlayerContext";
 import { useSeekbar } from "../hooks/useSeekbar";
 import type { ReactNode, RefObject } from "react";
 
@@ -23,7 +24,10 @@ export function PlayerControls() {
       <div className="p-3 rounded-md bg-default-100">
         <Seekbar />
         <Time />
-        <Timeline />
+        <div>
+          <span className="text-xs">Timeline</span>
+          <Timeline />
+        </div>
       </div>
       <Tracks />
     </div>
@@ -49,15 +53,19 @@ function Seekbar() {
   const duration = usePlayerSelector((player) => player.duration);
   const seekTo = usePlayerSelector((player) => player.seekTo);
 
+  const { seekTargetTime, setSeekTargetTime } = useSeekTargetTime();
+
   const seekbar = useSeekbar({
     min: seekableStart,
     max: duration,
     onSeeked: (time) => {
       seekTo(time);
+      setSeekTargetTime(time);
     },
   });
 
-  let percentage = getPercentage(currentTime, duration, seekableStart);
+  const fakeTime = seekTargetTime ?? currentTime;
+  let percentage = getPercentage(fakeTime, duration, seekableStart);
   if (seekbar.seeking) {
     percentage = seekbar.x;
   }
@@ -155,6 +163,17 @@ function Timeline() {
           ? item.rangeDuration / relativeDuration
           : 0;
 
+        if (!width) {
+          // It's a point
+          return (
+            <div
+              className="absolute inset-0 w-[3px] bg-amber-500 origin-center"
+              style={{ left: `${left * 100}%` }}
+            />
+          );
+        }
+
+        // It's a range
         return (
           <>
             {rangeWidth ? (
@@ -164,16 +183,16 @@ function Timeline() {
                   left: `${left * 100}%`,
                   width: `${rangeWidth * 100}%`,
                 }}
-                className={cn("absolute inset-0 bg-blue-400")}
+                className="absolute inset-0 bg-blue-400"
               />
             ) : null}
             <div
               key={item.start}
               style={{
                 left: `${left * 100}%`,
-                width: width ? `${width * 100}%` : "3px",
+                width: `${width * 100}%`,
               }}
-              className={cn("absolute inset-0 bg-yellow-400")}
+              className="absolute inset-0 bg-amber-500"
             />
           </>
         );
@@ -282,4 +301,23 @@ function getPercentage(time: number, duration: number, seekableStart: number) {
   const percentage = timeRel / durationRel;
 
   return percentage;
+}
+
+function useSeekTargetTime() {
+  const [seekTargetTime, setSeekTargetTime] = useState<number | null>(null);
+  const { player } = usePlayer();
+
+  useEffect(() => {
+    if (!player) {
+      return;
+    }
+
+    player.on(Events.SEEKING_CHANGE, () => {
+      if (!player.seeking) {
+        setSeekTargetTime(null);
+      }
+    });
+  }, [player]);
+
+  return { seekTargetTime, setSeekTargetTime };
 }

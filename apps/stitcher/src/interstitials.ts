@@ -37,15 +37,11 @@ export function getStaticDateRanges(
       "TIMELINE-STYLE": "HIGHLIGHT",
     };
 
-    let plannedDuration: number | undefined;
-
     if (isLive) {
       assert(timedEvent.duration);
 
       clientAttributes["TIMELINE-OCCUPIES"] = "RANGE";
       clientAttributes["PLAYOUT-LIMIT"] = timedEvent.duration;
-
-      plannedDuration = timedEvent.duration;
     } else {
       clientAttributes["TIMELINE-OCCUPIES"] = "POINT";
       clientAttributes["RESUME-OFFSET"] = timedEvent.duration ?? 0;
@@ -64,7 +60,10 @@ export function getStaticDateRanges(
       classId: "com.apple.hls.interstitial",
       id: `sprs.${timedEvent.dateTime.toMillis()}`,
       startDate: timedEvent.dateTime,
-      plannedDuration,
+      plannedDuration:
+        clientAttributes["TIMELINE-OCCUPIES"] === "RANGE" && timedEvent.duration
+          ? timedEvent.duration
+          : undefined,
       clientAttributes,
     };
   });

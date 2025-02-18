@@ -277,6 +277,10 @@ export class HlsPlayer {
       this.state_?.setTimeline(timeline);
     });
 
+    listen(Hls.Events.INTERSTITIAL_STARTED, () => {
+      this.state_?.setSeeking(false);
+    });
+
     return hls;
   }
 
