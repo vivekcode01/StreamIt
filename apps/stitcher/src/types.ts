@@ -6,17 +6,22 @@ export interface Asset {
 }
 
 export interface VastParams {
-  data?: string;
   url?: string;
+  data?: string;
 }
 
-export interface VmapParams {
-  url: string;
+export interface AssetResolver {
+  asset?: Asset;
+  vast?: VastParams;
 }
 
 export interface TimedEvent {
   dateTime: DateTime;
-  vast?: VastParams;
-  asset?: Asset;
   duration?: number;
+  assets?: Asset[];
+  vast?: VastParams;
+}
+
+export interface VmapParams {
+  url: string;
 }

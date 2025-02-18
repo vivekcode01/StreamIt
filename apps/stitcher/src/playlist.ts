@@ -54,7 +54,13 @@ export async function formatMediaPlaylist(
 
   // Apply dateRanges to each video playlist.
   if (type === "video") {
-    media.dateRanges = getStaticDateRanges(context, session, media.segments);
+    const isLive = !media.endlist;
+    media.dateRanges = getStaticDateRanges(
+      context,
+      session,
+      media.segments,
+      isLive,
+    );
   }
 
   rewriteSpliceInfoSegments(media);
@@ -207,9 +213,9 @@ async function initSessionOnMasterReq(context: AppContext, session: Session) {
     session.vmap.result = {};
 
     vmap.adBreaks.forEach((adBreak) => {
-      const event = mapAdBreakToTimedEvent(session.startTime, adBreak);
-      if (event) {
-        session.events.push(event);
+      const timedEvent = mapAdBreakToTimedEvent(session.startTime, adBreak);
+      if (timedEvent) {
+        pushTimedEvent(session.timedEvents, timedEvent);
       }
     });
 
@@ -240,4 +246,26 @@ export function mapAdBreakToTimedEvent(
       data: adBreak.vastData,
     },
   };
+}
+
+export function pushTimedEvent(events: TimedEvent[], nextEvent: TimedEvent) {
+  const target = events.find((event) =>
+    event.dateTime.equals(nextEvent.dateTime),
+  );
+  if (target) {
+    if (nextEvent.assets) {
+      if (!target.assets) {
+        target.assets = [];
+      }
+      target.assets.push(...nextEvent.assets);
+    }
+    if (nextEvent.vast) {
+      target.vast = nextEvent.vast;
+    }
+    if (nextEvent.duration) {
+      target.duration = nextEvent.duration;
+    }
+  } else {
+    events.push(nextEvent);
+  }
 }

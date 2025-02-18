@@ -247,6 +247,9 @@ function parseLine(line: string): Tag | null {
           case "DURATION":
             attrs.duration = Number.parseFloat(value);
             break;
+          case "PLANNED-DURATION":
+            attrs.plannedDuration = Number.parseFloat(value);
+            break;
           default: {
             if (!key.startsWith("X-")) {
               break;

@@ -65,5 +65,6 @@ export interface DateRange {
   classId: string;
   startDate: DateTime;
   duration?: number;
+  plannedDuration?: number;
   clientAttributes?: Record<string, string | number>;
 }
