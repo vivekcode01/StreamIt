@@ -21,10 +21,10 @@ function LayoutComponent() {
 
   return (
     <div className="w-screen h-screen flex">
-      <div className="p-4 border-r max-w-[160px] w-full">
+      <div className="p-4 border-r border-default-100 max-w-[160px] w-full">
         <Sidebar />
       </div>
-      <div className="grow basis-0 overflow-auto h-screen bg-gray-50">
+      <div className="grow basis-0 overflow-auto h-screen">
         <Outlet />
       </div>
     </div>

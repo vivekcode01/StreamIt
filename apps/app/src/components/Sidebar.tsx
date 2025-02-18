@@ -101,7 +101,7 @@ function ActiveLink({
       className="w-full flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
       key={to}
       to={to}
-      activeProps={{ className: "bg-gray-200" }}
+      activeProps={{ className: "bg-default-100 shadow-small" }}
     >
       {icon}
       {name}
