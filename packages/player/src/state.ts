@@ -2,10 +2,10 @@ import { preciseFloat } from "./helpers";
 import { Events } from "./types";
 import type {
   AudioTrack,
-  CuePoint,
   Playhead,
   Quality,
   SubtitleTrack,
+  TimelineItem,
 } from "./types";
 
 interface Timing {
@@ -32,8 +32,8 @@ interface StateProperties {
   subtitleTracks: SubtitleTrack[];
   volume: number;
   seeking: boolean;
-  cuePoints: CuePoint[];
   live: boolean;
+  timeline: TimelineItem[];
 }
 
 const noState: StateProperties = {
@@ -49,8 +49,8 @@ const noState: StateProperties = {
   subtitleTracks: [],
   volume: 1,
   seeking: false,
-  cuePoints: [],
   live: false,
+  timeline: [],
 };
 
 export class State implements StateProperties {
@@ -146,10 +146,9 @@ export class State implements StateProperties {
     this.params_.onEvent(Events.SEEKING_CHANGE);
   }
 
-  setCuePoints(cuePoints: CuePoint[]) {
-    this.cuePoints = cuePoints;
-    this.requestTimingSync();
-    this.params_.onEvent(Events.CUEPOINTS_CHANGE);
+  setTimeline(timeline: TimelineItem[]) {
+    this.timeline = timeline;
+    this.params_.onEvent(Events.TIMELINE_CHANGE);
   }
 
   requestTimingSync() {
@@ -194,8 +193,8 @@ export class State implements StateProperties {
   subtitleTracks = noState.subtitleTracks;
   volume = noState.volume;
   seeking = noState.seeking;
-  cuePoints = noState.cuePoints;
   live = noState.live;
+  timeline = noState.timeline;
 }
 
 export function getState<N extends keyof StateProperties>(

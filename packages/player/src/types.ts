@@ -14,7 +14,7 @@ export enum Events {
   SUBTITLE_TRACKS_CHANGE = "subtitleTracksChange",
   AUTO_QUALITY_CHANGE = "autoQualityChange",
   SEEKING_CHANGE = "seekingChange",
-  CUEPOINTS_CHANGE = "cuePointsChange",
+  TIMELINE_CHANGE = "timelineChange",
 }
 
 export type HlsPlayerEventMap = {
@@ -29,7 +29,7 @@ export type HlsPlayerEventMap = {
   [Events.SUBTITLE_TRACKS_CHANGE]: () => void;
   [Events.AUTO_QUALITY_CHANGE]: () => void;
   [Events.SEEKING_CHANGE]: () => void;
-  [Events.CUEPOINTS_CHANGE]: () => void;
+  [Events.TIMELINE_CHANGE]: () => void;
 } & {
   "*": (event: Events) => void;
 };
@@ -54,7 +54,8 @@ export interface SubtitleTrack {
   track: MediaPlaylist;
 }
 
-export interface CuePoint {
-  time: number;
+export interface TimelineItem {
+  start: number;
   duration: number;
+  inlineDuration?: number;
 }

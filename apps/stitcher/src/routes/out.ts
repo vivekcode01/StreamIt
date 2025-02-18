@@ -42,7 +42,7 @@ export const outApp = new Hono()
 
       c.header("Content-Type", "application/vnd.apple.mpegurl");
 
-      return c.text(playlist, 200);
+      return c.body(playlist, 200);
     },
   )
   .get(
@@ -73,7 +73,7 @@ export const outApp = new Hono()
 
       c.header("Content-Type", "application/vnd.apple.mpegurl");
 
-      return c.text(playlist, 200);
+      return c.body(playlist, 200);
     },
   )
   .get(

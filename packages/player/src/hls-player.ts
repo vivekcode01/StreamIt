@@ -7,10 +7,10 @@ import { getState, State } from "./state";
 import { Events } from "./types";
 import type {
   AudioTrack,
-  CuePoint,
   HlsPlayerEventMap,
   Quality,
   SubtitleTrack,
+  TimelineItem,
 } from "./types";
 import type { Level } from "hls.js";
 
@@ -221,8 +221,8 @@ export class HlsPlayer {
     return getState(this.state_, "live");
   }
 
-  get cuePoints() {
-    return getState(this.state_, "cuePoints");
+  get timeline() {
+    return getState(this.state_, "timeline");
   }
 
   private createHls_() {
@@ -261,16 +261,26 @@ export class HlsPlayer {
     });
 
     listen(Hls.Events.INTERSTITIALS_UPDATED, (_, data) => {
-      const cuePoints = data.schedule.reduce<CuePoint[]>((acc, item) => {
-        if (item.event) {
-          acc.push({
-            time: item.start,
-            duration: item.integrated.end - item.integrated.start,
-          });
+      const timeline = data.schedule.reduce<TimelineItem[]>((acc, item) => {
+        if (!item.event) {
+          return acc;
         }
+
+        let inlineDuration: number | undefined =
+          item.event.dateRange.attr.decimalFloatingPoint("X-INLINE-DURATION");
+        if (Number.isNaN(inlineDuration)) {
+          inlineDuration = undefined;
+        }
+
+        acc.push({
+          start: item.integrated.start,
+          duration: item.integrated.end - item.integrated.start,
+          inlineDuration,
+        });
+
         return acc;
       }, []);
-      this.state_?.setCuePoints(cuePoints);
+      this.state_?.setTimeline(timeline);
     });
 
     return hls;

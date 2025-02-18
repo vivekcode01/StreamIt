@@ -151,6 +151,9 @@ export function stringifyMediaPlaylist(playlist: MediaPlaylist) {
     if (dateRange.duration) {
       attrs.push(`DURATION=${dateRange.duration}`);
     }
+    if (dateRange.plannedDuration) {
+      attrs.push(`PLANNED-DURATION=${dateRange.plannedDuration}`);
+    }
 
     if (dateRange.clientAttributes) {
       const entries = Object.entries(dateRange.clientAttributes);

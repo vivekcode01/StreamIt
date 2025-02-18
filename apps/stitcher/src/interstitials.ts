@@ -29,23 +29,23 @@ export function getStaticDateRanges(
       mdur: timedEvent.duration,
     });
 
+    // TODO: THIS IS LIVE 2 VOD
+
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",
       "ASSET-LIST": assetListUrl,
       "CONTENT-MAY-VARY": "YES",
       "TIMELINE-STYLE": "HIGHLIGHT",
-      "TIMELINE-OCCUPIES": timedEvent.duration ? "RANGE" : "POINT",
+      "TIMELINE-OCCUPIES": timedEvent.duration ? "POINT" : "POINT",
     };
-
-    let duration: number | undefined;
 
     if (!isLive) {
       clientAttributes["RESUME-OFFSET"] = timedEvent.duration ?? 0;
-      duration = timedEvent.duration;
     }
 
     if (timedEvent.duration) {
       clientAttributes["PLAYOUT-LIMIT"] = timedEvent.duration;
+      clientAttributes["INLINE-DURATION"] = timedEvent.duration;
     }
 
     const cue: string[] = [];
@@ -61,7 +61,7 @@ export function getStaticDateRanges(
       classId: "com.apple.hls.interstitial",
       id: `sprs.${timedEvent.dateTime.toMillis()}`,
       startDate: timedEvent.dateTime,
-      duration,
+      duration: timedEvent.duration,
       clientAttributes,
     };
   });

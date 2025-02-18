@@ -135,33 +135,42 @@ function Tooltip({
 }
 
 function Timeline() {
-  const cuePoints = usePlayerSelector((player) => player.cuePoints);
+  const timeline = usePlayerSelector((player) => player.timeline);
   const duration = usePlayerSelector((player) => player.duration);
   const seekableStart = usePlayerSelector((player) => player.seekableStart);
 
+  const relativeDuration = duration - seekableStart;
+
   return (
     <div className="relative h-2 bg-default-200 mt-2">
-      {cuePoints.map((cuePoint) => {
-        const left =
-          (cuePoint.time - seekableStart) / (duration - seekableStart);
-
-        let width = 0;
-        if (cuePoint.duration) {
-          const right =
-            (cuePoint.time + cuePoint.duration - seekableStart) /
-            (duration - seekableStart);
-          width = right - left;
-        }
+      {timeline.map((item) => {
+        const left = (item.start - seekableStart) / relativeDuration;
+        const width = item.duration ? item.duration / relativeDuration : 0;
+        const inlineWidth = item.inlineDuration
+          ? item.inlineDuration / relativeDuration
+          : 0;
 
         return (
-          <div
-            key={cuePoint.time}
-            style={{
-              left: `${((cuePoint.time - seekableStart) / (duration - seekableStart)) * 100}%`,
-              width: width ? `${width * 100}%` : "3px",
-            }}
-            className={cn("absolute inset-0 bg-yellow-400")}
-          />
+          <>
+            {inlineWidth ? (
+              <div
+                key={`inline${item.start}`}
+                style={{
+                  left: `${left * 100}%`,
+                  width: `${inlineWidth * 100}%`,
+                }}
+                className={cn("absolute inset-0 bg-blue-400")}
+              />
+            ) : null}
+            <div
+              key={item.start}
+              style={{
+                left: `${left * 100}%`,
+                width: width ? `${width * 100}%` : "3px",
+              }}
+              className={cn("absolute inset-0 bg-yellow-400")}
+            />
+          </>
         );
       })}
     </div>
