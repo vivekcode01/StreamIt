@@ -1,3 +1,4 @@
+import { assert } from "shared/assert";
 import { createUrl } from "./lib/url";
 import { pushTimedEvent } from "./playlist";
 import { getAssetsFromVastParams } from "./vast";
@@ -26,41 +27,28 @@ export function getStaticDateRanges(
     const assetListUrl = createUrl(context, "out/asset-list.json", {
       dt: timedEvent.dateTime.toISO(),
       sid: session.id,
-      mdur: timedEvent.duration,
+      dur: timedEvent.duration,
     });
-
-    /*
-    VOD replacement: 
-      TIMELINE-OCCUPIES: POINT
-      RESUME-OFFSET: duration // indicates the actual replacement
-      PLAYOUT-LIMIT: duration OR nothing
-
-    VOD insertion:
-        TIMELINE-OCCUPIES: POINT
-        RESUME-OFFSET: 0
-        PLAYOUT-LIMIT: duration OR nothing
-
-    LIVE replacement
-      TIMELINE-OCCUPIES: RANGE
-      RESUME-OFFSET: duration // indicates the actual replacement
-      PLAYOUT-LIMIT: duration
-    */
 
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",
       "ASSET-LIST": assetListUrl,
       "CONTENT-MAY-VARY": "YES",
       "TIMELINE-STYLE": "HIGHLIGHT",
-      // For live to vod, this must be a POINT.
-      "TIMELINE-OCCUPIES": timedEvent.duration ? "POINT" : "POINT",
     };
 
-    if (!isLive) {
-      clientAttributes["RESUME-OFFSET"] = timedEvent.duration ?? 0;
-    }
+    let plannedDuration: number | undefined;
 
-    if (timedEvent.duration) {
+    if (isLive) {
+      assert(timedEvent.duration);
+
+      clientAttributes["TIMELINE-OCCUPIES"] = "RANGE";
       clientAttributes["PLAYOUT-LIMIT"] = timedEvent.duration;
+
+      plannedDuration = timedEvent.duration;
+    } else {
+      clientAttributes["TIMELINE-OCCUPIES"] = "POINT";
+      clientAttributes["RESUME-OFFSET"] = timedEvent.duration ?? 0;
     }
 
     const cue: string[] = [];
@@ -76,6 +64,7 @@ export function getStaticDateRanges(
       classId: "com.apple.hls.interstitial",
       id: `sprs.${timedEvent.dateTime.toMillis()}`,
       startDate: timedEvent.dateTime,
+      plannedDuration,
       clientAttributes,
     };
   });

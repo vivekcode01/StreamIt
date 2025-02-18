@@ -57,5 +57,5 @@ export interface SubtitleTrack {
 export interface TimelineItem {
   start: number;
   duration: number;
-  assetsDuration?: number;
+  rangeDuration?: number;
 }

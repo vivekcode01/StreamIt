@@ -269,7 +269,7 @@ export class HlsPlayer {
         acc.push({
           start: item.integrated.start,
           duration: item.integrated.end - item.integrated.start,
-          assetsDuration: item.event.duration,
+          rangeDuration: item.event.dateRange.plannedDuration ?? undefined,
         });
 
         return acc;

@@ -7,6 +7,11 @@ import { useSeekbar } from "../hooks/useSeekbar";
 import type { ReactNode, RefObject } from "react";
 
 export function PlayerControls() {
+  const ready = usePlayerSelector((player) => player.ready);
+  if (!ready) {
+    return null;
+  }
+
   return (
     <div className="flex flex-col gap-4 overflow-hidden">
       <div className="flex justify-center items-center">
@@ -146,31 +151,30 @@ function Timeline() {
       {timeline.map((item) => {
         const left = (item.start - seekableStart) / relativeDuration;
         const width = item.duration ? item.duration / relativeDuration : 0;
-        const assetsWidth =
-          width && item.assetsDuration
-            ? item.assetsDuration / relativeDuration
-            : 0;
+        const rangeWidth = item.rangeDuration
+          ? item.rangeDuration / relativeDuration
+          : 0;
 
         return (
           <>
+            {rangeWidth ? (
+              <div
+                key={`range${item.start}`}
+                style={{
+                  left: `${left * 100}%`,
+                  width: `${rangeWidth * 100}%`,
+                }}
+                className={cn("absolute inset-0 bg-blue-400")}
+              />
+            ) : null}
             <div
               key={item.start}
               style={{
                 left: `${left * 100}%`,
                 width: width ? `${width * 100}%` : "3px",
               }}
-              className={cn("absolute inset-0 bg-blue-400")}
+              className={cn("absolute inset-0 bg-yellow-400")}
             />
-            {assetsWidth ? (
-              <div
-                key={`inline${item.start}`}
-                style={{
-                  left: `${left * 100}%`,
-                  width: `${assetsWidth * 100}%`,
-                }}
-                className={cn("absolute inset-0 bg-blue-400")}
-              />
-            ) : null}
           </>
         );
       })}
