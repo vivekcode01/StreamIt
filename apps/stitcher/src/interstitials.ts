@@ -1,5 +1,5 @@
 import { createUrl } from "./lib/url";
-import { mergeTimedEvents } from "./playlist";
+import { pushTimedEvent } from "./playlist";
 import { getAssetsFromVastParams } from "./vast";
 import type { AppContext } from "./app-context";
 import type { DateRange, Segment } from "./parser";
@@ -13,12 +13,16 @@ export function getStaticDateRanges(
   segments: Segment[],
   isLive: boolean,
 ): DateRange[] {
-  const events = mergeTimedEvents([
-    session.events,
-    getTimedEventsFromSegments(segments),
-  ]);
+  // Grab a copy of the events in the session, we might add events from
+  // elsewhere later on.
+  const timedEvents = [...session.events];
 
-  return events.map((event) => {
+  // Check if segments have event info (such as splice info) and push them
+  // to the list of events.
+  const segmentTimedEvents = getTimedEventsFromSegments(segments);
+  segmentTimedEvents.forEach((event) => pushTimedEvent(timedEvents, event));
+
+  return timedEvents.map((event) => {
     const assetListUrl = createUrl(context, "out/asset-list.json", {
       dt: event.dateTime.toISO(),
       sid: session.id,

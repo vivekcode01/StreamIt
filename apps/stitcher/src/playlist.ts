@@ -252,22 +252,14 @@ export function mapAdBreakToTimedEvent(
   };
 }
 
-export function pushTimedEvent(events: TimedEvent[], event: TimedEvent) {
-  const target = events.find((event) => event.dateTime.equals(event.dateTime));
+export function pushTimedEvent(events: TimedEvent[], nextEvent: TimedEvent) {
+  const target = events.find((event) =>
+    event.dateTime.equals(nextEvent.dateTime),
+  );
   if (target) {
     // Add new assets to the target event.
-    target.assets.push(...event.assets);
+    target.assets.push(...nextEvent.assets);
   } else {
-    events.push(event);
+    events.push(nextEvent);
   }
-}
-
-export function mergeTimedEvents(value: TimedEvent[][]) {
-  const result: TimedEvent[] = [];
-  value.forEach((events) => {
-    events.forEach((event) => {
-      pushTimedEvent(result, event);
-    });
-  });
-  return result;
 }
