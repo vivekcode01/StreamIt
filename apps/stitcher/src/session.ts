@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import * as uuid from "uuid";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
-import { fetchDuration } from "./playlist";
+import { fetchDuration, pushTimedEvent } from "./playlist";
 import type { AppContext } from "./app-context";
 import type { TimedEvent } from "./types";
 
@@ -26,10 +26,7 @@ export interface Session {
   events: TimedEvent[];
 }
 
-type InterstitialInput = {
-  time: string | number;
-  duration?: number;
-} & (
+type InterstitialAssetInput =
   | {
       type: "asset";
       uri: string;
@@ -37,19 +34,24 @@ type InterstitialInput = {
   | {
       type: "vast";
       url: string;
-    }
-);
+    };
+
+interface InterstitialInput {
+  time: string | number;
+  duration?: number;
+  assets: InterstitialAssetInput[];
+}
 
 interface CreateSessionParams {
   uri: string;
   expiry: number;
+  interstitials: InterstitialInput[];
   vmap?: {
     url: string;
   };
   vast?: {
     url?: string;
   };
-  interstitials?: InterstitialInput[];
 }
 
 export async function createSession(
@@ -71,12 +73,14 @@ export async function createSession(
   };
 
   if (params.interstitials) {
-    const events = await Promise.all(
-      params.interstitials.map((interstitial) =>
-        mapInterstitialToTimedEvent(context, startTime, interstitial),
-      ),
-    );
-    session.events.push(...events);
+    for (const interstitial of params.interstitials) {
+      const event = await mapInterstitialToTimedEvent(
+        context,
+        startTime,
+        interstitial,
+      );
+      pushTimedEvent(session.events, event);
+    }
   }
 
   const value = JSON.stringify(session);
@@ -105,26 +109,33 @@ export async function mapInterstitialToTimedEvent(
 ): Promise<TimedEvent> {
   const dateTime = toDateTime(startTime, interstitial.time);
 
-  const event: TimedEvent = {
+  const assetPromises = interstitial.assets.map(async (asset) => {
+    if (asset.type === "asset") {
+      const url = resolveUri(context, asset.uri);
+      return {
+        asset: {
+          url,
+          duration: await fetchDuration(url),
+        },
+      };
+    }
+
+    if (asset.type === "vast") {
+      return {
+        vast: {
+          url: asset.url,
+        },
+      };
+    }
+
+    throw new Error("Invalid asset type");
+  });
+
+  return {
     dateTime,
     duration: interstitial.duration,
+    assets: await Promise.all(assetPromises),
   };
-
-  if (interstitial.type === "asset") {
-    const url = resolveUri(context, interstitial.uri);
-    event.asset = {
-      url,
-      duration: await fetchDuration(url),
-    };
-  }
-
-  if (interstitial.type === "vast") {
-    event.vast = {
-      url: interstitial.url,
-    };
-  }
-
-  return event;
 }
 
 function toDateTime(startTime: DateTime, time: string | number) {

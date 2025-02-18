@@ -54,7 +54,13 @@ export async function formatMediaPlaylist(
 
   // Apply dateRanges to each video playlist.
   if (type === "video") {
-    media.dateRanges = getStaticDateRanges(context, session, media.segments);
+    const isLive = !media.endlist;
+    media.dateRanges = getStaticDateRanges(
+      context,
+      session,
+      media.segments,
+      isLive,
+    );
   }
 
   rewriteSpliceInfoSegments(media);
@@ -209,7 +215,7 @@ async function initSessionOnMasterReq(context: AppContext, session: Session) {
     vmap.adBreaks.forEach((adBreak) => {
       const event = mapAdBreakToTimedEvent(session.startTime, adBreak);
       if (event) {
-        session.events.push(event);
+        pushTimedEvent(session.events, event);
       }
     });
 
@@ -235,9 +241,33 @@ export function mapAdBreakToTimedEvent(
 
   return {
     dateTime,
-    vast: {
-      url: adBreak.vastUrl,
-      data: adBreak.vastData,
-    },
+    assets: [
+      {
+        vast: {
+          url: adBreak.vastUrl,
+          data: adBreak.vastData,
+        },
+      },
+    ],
   };
+}
+
+export function pushTimedEvent(events: TimedEvent[], event: TimedEvent) {
+  const target = events.find((event) => event.dateTime.equals(event.dateTime));
+  if (target) {
+    // Add new assets to the target event.
+    target.assets.push(...event.assets);
+  } else {
+    events.push(event);
+  }
+}
+
+export function mergeTimedEvents(value: TimedEvent[][]) {
+  const result: TimedEvent[] = [];
+  value.forEach((events) => {
+    events.forEach((event) => {
+      pushTimedEvent(result, event);
+    });
+  });
+  return result;
 }

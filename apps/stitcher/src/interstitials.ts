@@ -1,98 +1,68 @@
-import { DateTime } from "luxon";
 import { createUrl } from "./lib/url";
+import { mergeTimedEvents } from "./playlist";
 import { getAssetsFromVastParams } from "./vast";
 import type { AppContext } from "./app-context";
 import type { DateRange, Segment } from "./parser";
 import type { Session } from "./session";
 import type { Asset, TimedEvent } from "./types";
-
-interface Group {
-  showTimeline: boolean;
-  duration?: number;
-}
+import type { DateTime } from "luxon";
 
 export function getStaticDateRanges(
   context: AppContext,
   session: Session,
   segments: Segment[],
-) {
-  const groups = new Map<number, Group>();
+  isLive: boolean,
+): DateRange[] {
+  const events = mergeTimedEvents([
+    session.events,
+    getTimedEventsFromSegments(segments),
+  ]);
 
-  for (const event of session.events) {
-    groupEvent(groups, event);
-  }
-
-  const derivedEvents = getTimedEventsFromSegments(segments);
-
-  for (const event of derivedEvents) {
-    groupEvent(groups, event);
-  }
-
-  const dateRanges: DateRange[] = [];
-
-  Array.from(groups.entries()).forEach(([ts, group]) => {
-    const dateTime = DateTime.fromMillis(ts);
-
+  return events.map((event) => {
     const assetListUrl = createUrl(context, "out/asset-list.json", {
-      dt: dateTime.toISO(),
+      dt: event.dateTime.toISO(),
       sid: session.id,
-      mdur: group.duration,
+      mdur: event.duration,
     });
+
+    const show = !!event.assets.find((asset) => asset.vast);
 
     const clientAttributes: Record<string, number | string> = {
       RESTRICT: "SKIP,JUMP",
       "ASSET-LIST": assetListUrl,
       "CONTENT-MAY-VARY": "YES",
-      "TIMELINE-STYLE": group.showTimeline ? "HIGHLIGHT" : "PRIMARY",
-      "TIMELINE-OCCUPIES": group.duration ? "RANGE" : "POINT",
-      "RESUME-OFFSET": group.duration ?? 0,
+      "TIMELINE-STYLE": show ? "HIGHLIGHT" : "PRIMARY",
+      "TIMELINE-OCCUPIES": event.duration ? "RANGE" : "POINT",
     };
 
-    if (group.duration) {
-      clientAttributes["PLAYOUT-LIMIT"] = group.duration;
+    let duration: number | undefined;
+
+    if (!isLive) {
+      clientAttributes["RESUME-OFFSET"] = event.duration ?? 0;
+      duration = event.duration;
+    }
+
+    if (event.duration) {
+      clientAttributes["PLAYOUT-LIMIT"] = event.duration;
     }
 
     const cue: string[] = [];
-    if (dateTime.equals(session.startTime)) {
-      cue.push("PRE");
+    if (event.dateTime.equals(session.startTime)) {
+      cue.push("ONCE", "PRE");
     }
 
     if (cue.length) {
       clientAttributes["CUE"] = cue.join(",");
     }
 
-    dateRanges.push({
+    return {
       classId: "com.apple.hls.interstitial",
-      id: `sprs.${dateTime.toMillis()}`,
-      startDate: dateTime,
-      duration: group.duration,
+      id: `sprs.${event.dateTime.toMillis()}`,
+      startDate: event.dateTime,
+      duration,
       clientAttributes,
-    });
-  });
-
-  return dateRanges;
-}
-
-function groupEvent(groups: Map<number, Group>, event: TimedEvent) {
-  const ts = event.dateTime.toMillis();
-
-  let group = groups.get(ts);
-  if (!group) {
-    group = {
-      showTimeline: false,
     };
-    groups.set(ts, group);
-  }
-
-  // If we have another event with a duration, we'll take the largest one to cover
-  // the entire interstitial.
-  if (event.duration && (!group.duration || event.duration > group.duration)) {
-    group.duration = event.duration;
-  }
-
-  if (event.vast) {
-    group.showTimeline = true;
-  }
+  });
 }
 
 function getTimedEventsFromSegments(segments: Segment[]) {
@@ -106,6 +76,7 @@ function getTimedEventsFromSegments(segments: Segment[]) {
     events.push({
       dateTime: segment.programDateTime,
       duration: segment.spliceInfo.duration,
+      assets: [],
     });
   }
 
@@ -118,26 +89,26 @@ export async function getAssets(
   dateTime: DateTime,
   maxDuration?: number,
 ): Promise<Asset[]> {
-  // Filter all events for a particular dateTime, we'll need to transform these to
-  // a list of assets.
-  const events = session.events.filter((event) =>
-    event.dateTime.equals(dateTime),
-  );
+  const event = session.events.find((event) => event.dateTime.equals(dateTime));
 
   const assets: Asset[] = [];
 
-  for (const event of events) {
-    // The event contains VAST params, let's resolve them.
-    if (event.vast) {
-      const vastAssets = await getAssetsFromVastParams(context, event.vast, {
-        maxDuration,
-      });
-      assets.push(...vastAssets);
-    }
+  if (event) {
+    for (const assetResolver of event.assets) {
+      if (assetResolver.asset) {
+        assets.push(assetResolver.asset);
+      }
 
-    // The event contains a list of assets, explicitly defined.
-    if (event.asset) {
-      assets.push(event.asset);
+      if (assetResolver.vast) {
+        const vastAssets = await getAssetsFromVastParams(
+          context,
+          assetResolver.vast,
+          {
+            maxDuration,
+          },
+        );
+        assets.push(...vastAssets);
+      }
     }
   }
 
