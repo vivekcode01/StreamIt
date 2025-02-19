@@ -76,6 +76,8 @@ app.onError((error, c) => {
     );
   }
 
+  console.error(error);
+
   return c.json(
     {
       message:

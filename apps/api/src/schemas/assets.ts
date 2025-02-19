@@ -19,6 +19,7 @@ export const assetsPaginatedSchema = z.object({
     perPage: z.number(),
     sortKey: z.enum(["name", "playables", "groupId", "createdAt"]),
     sortDir: z.enum(["asc", "desc"]),
+    query: z.string(),
   }),
   items: z.array(assetSchema),
   totalPages: z.number(),

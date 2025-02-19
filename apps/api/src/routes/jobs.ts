@@ -230,6 +230,7 @@ export const jobsApp = new Hono()
         perPage: z.coerce.number().default(20),
         sortKey: z.enum(["name", "duration", "createdAt"]).default("createdAt"),
         sortDir: z.enum(["asc", "desc"]).default("desc"),
+        query: z.string().default(""),
       }),
     ),
     async (c) => {

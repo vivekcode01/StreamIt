@@ -32,6 +32,7 @@ export const Route = createFileRoute("/(dashboard)/_layout/assets")({
         .enum(["name", "playables", "groupId", "createdAt"])
         .default("createdAt"),
       sortDir: z.enum(["asc", "desc"]).default("desc"),
+      query: z.string().default(""),
     }),
   ),
   loaderDeps: ({ search }) => ({ ...search }),
@@ -177,6 +178,7 @@ function EditAssetDrawer({
                 await router.invalidate();
                 onClose();
               }}
+              submit="Save"
             />
           </DrawerBody>
         ) : null}

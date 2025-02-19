@@ -57,6 +57,7 @@ interface JobsFilter {
   perPage: number;
   sortKey: "name" | "duration" | "createdAt";
   sortDir: "asc" | "desc";
+  query: string;
 }
 
 interface Job {
@@ -111,6 +112,12 @@ export async function getJobs(filter: JobsFilter) {
 
   if (filter.sortDir === "desc") {
     items = items.reverse();
+  }
+
+  if (filter.query) {
+    items = items.filter((item) => {
+      return item.name.includes(filter.query) || item.id.includes(filter.query);
+    });
   }
 
   const totalPages = Math.ceil(items.length / filter.perPage);

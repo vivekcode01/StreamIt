@@ -23,7 +23,6 @@ function Index() {
       <CardHeader className="font-bold text-lg">Sign in</CardHeader>
       <CardBody>
         <Form
-          submit="Sign in"
           fields={{
             username: {
               label: "Username",
@@ -46,6 +45,7 @@ function Index() {
             await router.invalidate();
             await navigate({ to: "/" });
           }}
+          submit="Sign in"
         />
       </CardBody>
     </Card>

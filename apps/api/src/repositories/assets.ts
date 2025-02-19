@@ -1,3 +1,4 @@
+import { sql } from "kysely";
 import { db } from "../db";
 import type { AssetInsert, AssetUpdate, PlayableInsert } from "../db/types";
 
@@ -25,10 +26,14 @@ export async function updateAsset(id: string, fields: AssetUpdate) {
 }
 
 interface AssetsFilter {
+  // Pagination
   page: number;
   perPage: number;
+  // Sorting
   sortKey: "name" | "playables" | "groupId" | "createdAt";
   sortDir: "asc" | "desc";
+  // Filtering
+  query: string;
 }
 
 /**
@@ -55,6 +60,14 @@ export async function getAssets(filter: AssetsFilter) {
       fn.count<number>("playables.assetId").as("playables"),
     ])
     .groupBy("assets.id")
+    .$if(!!filter.query, (qb) =>
+      qb.where((eb) =>
+        eb.or([
+          eb("assets.name", "like", `%${filter.query}%`),
+          eb(sql`assets.id::text`, "like", `%${filter.query}%`),
+        ]),
+      ),
+    )
     .limit(filter.perPage)
     .offset((filter.page - 1) * filter.perPage)
     .orderBy(orderBy, filter.sortDir)
@@ -63,6 +76,14 @@ export async function getAssets(filter: AssetsFilter) {
   const { count } = await db
     .selectFrom("assets")
     .select((eb) => eb.fn.count<number>("id").as("count"))
+    .$if(!!filter.query, (qb) =>
+      qb.where((eb) =>
+        eb.or([
+          eb("assets.name", "like", `%${filter.query}%`),
+          eb(sql`assets.id::text`, "like", `%${filter.query}%`),
+        ]),
+      ),
+    )
     .executeTakeFirstOrThrow();
 
   const totalPages = Math.ceil(count / filter.perPage);
