@@ -57,7 +57,9 @@ export const packageCallback: WorkerCallback<
 async function handleStepInitial(job: Job<PackageData>, dir: WorkerDir) {
   const inDir = await dir.createTempDir();
 
-  await s3DownloadFolder(`transcode/${job.data.assetId}`, inDir);
+  await s3DownloadFolder(`transcode/${job.data.assetId}`, inDir, {
+    concurrency: job.data.concurrency,
+  });
 
   job.log(`Synced folder in ${inDir}`);
 
@@ -146,7 +148,10 @@ async function handleStepInitial(job: Job<PackageData>, dir: WorkerDir) {
   const s3Dir = `package/${job.data.assetId}/${job.data.name}`;
   job.log(`Uploading to ${s3Dir}`);
 
-  await s3UploadFolder(outDir, s3Dir, job.data.public);
+  await s3UploadFolder(outDir, s3Dir, {
+    public: job.data.public,
+    concurrency: job.data.concurrency,
+  });
 }
 
 async function handleJobOutcome(job: Job<PackageData>) {

@@ -32,7 +32,9 @@ const client = new S3({
 export async function s3UploadFile(
   localPath: string,
   remotePath: string,
-  aclPublic: boolean,
+  options: {
+    public: boolean;
+  },
 ) {
   const upload = new Upload({
     client,
@@ -41,7 +43,7 @@ export async function s3UploadFile(
       ContentType: lookup(localPath) || "binary/octet-stream",
       Bucket: env.S3_BUCKET,
       Key: remotePath,
-      ACL: aclPublic ? "public-read" : "private",
+      ACL: options.public ? "public-read" : "private",
     },
   });
   await upload.done();
@@ -59,7 +61,14 @@ async function s3DownloadFile(remotePath: string, localPath: string) {
   await writeFile(localPath, Body.transformToWebStream());
 }
 
-export async function s3DownloadFolder(remotePath: string, localPath: string) {
+export async function s3DownloadFolder(
+  remotePath: string,
+  localPath: string,
+  // @ts-expect-error We do not use this for now
+  options: {
+    concurrency: number;
+  },
+) {
   const paginatedListObjects = paginateListObjectsV2(
     { client },
     {
@@ -97,7 +106,10 @@ export async function s3DownloadFolder(remotePath: string, localPath: string) {
 export async function s3UploadFolder(
   localPath: string,
   remotePath: string,
-  aclPublic: boolean,
+  options: {
+    public: boolean;
+    concurrency: number;
+  },
 ) {
   await s3DeleteFolder(remotePath);
 
@@ -109,11 +121,9 @@ export async function s3UploadFolder(
   }
 
   for (const file of files) {
-    await s3UploadFile(
-      `${localPath}/${file}`,
-      `${remotePath}/${file}`,
-      aclPublic,
-    );
+    await s3UploadFile(`${localPath}/${file}`, `${remotePath}/${file}`, {
+      public: options.public,
+    });
   }
 }
 

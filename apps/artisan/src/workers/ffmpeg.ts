@@ -58,7 +58,7 @@ export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
   await s3UploadFile(
     `${outDir}/${name}`,
     `transcode/${job.data.assetId}/${name}`,
-    false,
+    { public: false },
   );
 
   return {
