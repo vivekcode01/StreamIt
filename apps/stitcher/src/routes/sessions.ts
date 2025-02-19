@@ -9,6 +9,9 @@ import { createMasterUrl, createOpaqueMasterUrl } from "../playlist";
 import { createSession, getSession } from "../session";
 
 export const sessionsApp = new Hono()
+  /**
+   * Create a session.
+   */
   .post(
     "/",
     describeRoute({
@@ -85,6 +88,10 @@ export const sessionsApp = new Hono()
       return c.json({ url }, 200);
     },
   )
+
+  /**
+   * Redirects a particular session to the master URL.
+   */
   .get(
     "/:sessionId/master.m3u8",
     validator(

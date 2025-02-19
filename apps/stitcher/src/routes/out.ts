@@ -12,6 +12,9 @@ import {
 import { getSession } from "../session";
 
 export const outApp = new Hono()
+  /**
+   * Get master playlist.
+   */
   .get(
     "/master.m3u8",
     validator(
@@ -42,6 +45,10 @@ export const outApp = new Hono()
       return c.body(playlist, 200);
     },
   )
+
+  /**
+   * Get media playlist.
+   */
   .get(
     "/playlist.m3u8",
     validator(
@@ -73,6 +80,10 @@ export const outApp = new Hono()
       return c.body(playlist, 200);
     },
   )
+
+  /**
+   * Get asset list.
+   */
   .get(
     "asset-list.json",
     validator(
