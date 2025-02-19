@@ -17,6 +17,7 @@
   <p align="center">
     <a href="https://superstreamer.xyz">Documentation</a> · 
     <a href="https://superstreamer.xyz/guide/getting-started.html">Getting Started</a>
+    <a href="#contributing">Contributing</a>
   </p>
 
 [<img src="./public/button-buy-me-a-coffee.png" width="150" alt="Buy me a coffee button"/>](https://www.buymeacoffee.com/matvp91)
@@ -29,9 +30,8 @@ Superstreamer is a self hostable platform that aims to simplify the complexities
 - Transcode your video file into separate quality tracks (eg; 1080p, 720p, 480p).
 - Write `HLS CMAF` playlists directly to S3, ready for playback!
 - Want to insert a bumper like Netflix? Stitch it as an HLS interstitial on the fly.
-- Insert linear ads as interstitials by providing a simple VMAP.
-- Use our facade to interact with HLS.js, a heavily simplified wrapper that makes sense for player builders.
-- Awesome React components to start building your own player.
+- Insert linear ads as interstitials by providing a simple VMAP, or schedule VAST manually.
+- Use our player facade, a simplified API alongside [HLS.js](https://github.com/video-dev/hls.js), tailored for developers building a player UI.
 
 Give us a ⭐ if you like our work. Much appreciated!
 
@@ -40,13 +40,25 @@ Give us a ⭐ if you like our work. Much appreciated!
 ```shell
 # We have prebuilt containers, see docker/docker-compose.yml
 cd docker
-# Copy the example config
-cp ../config.env.example config.env
-# Open config.env and change the variables.
+# Copy the example .env
+cp .env.example .env
+# Configure the .env
 docker compose up -d
 ```
 
-Dive into the [Documentation](https://superstreamer.xyz) and do not hesitate to ask questions on [Discord](https://discord.gg/4hXgz9EsF4).
+Self-hosting can be challenging, but we aim to make hosting Superstreamer as easy as possible. Check out the [Getting Started](https://superstreamer.xyz/guide/getting-started.html) section for more information. It should get you started in minutes.
+
+## Contributing
+
+We love our contributors! Here's how you can contribute:
+
+- [Open an issue](https://github.com/superstreamerapp/superstreamer/issues) if you believe you've encountered a bug.
+- Follow the [local development guide](https://superstreamer.xyz/guide/getting-started.html) to set up your local dev environment.
+- Make a [pull request](https://github.com/superstreamerapp/superstreamer/pull) to add new features or fix bugs.
+
+<a href="https://github.com/superstreamerapp/superstreamer/graphs/contributors">
+  <img width="200" src="https://contrib.rocks/image?repo=superstreamerapp/superstreamer" />
+</a>
 
 ## Support
 
