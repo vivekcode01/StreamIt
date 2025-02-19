@@ -48,6 +48,7 @@ export const assetsApp = new Hono()
           .enum(["name", "playables", "groupId", "createdAt"])
           .default("createdAt"),
         sortDir: z.enum(["asc", "desc"]).default("desc"),
+        query: z.string().default(""),
       }),
     ),
     async (c) => {

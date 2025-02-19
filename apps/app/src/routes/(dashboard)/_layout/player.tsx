@@ -70,7 +70,6 @@ function RouteComponent() {
             <Tab key="config" title="Config">
               <ScrollCard>
                 <Form
-                  submit="Load"
                   fields={{
                     url: {
                       label: "URL",
@@ -81,6 +80,7 @@ function RouteComponent() {
                   onSubmit={async (values) => {
                     setUrl(values.url);
                   }}
+                  submit="Load"
                 />
               </ScrollCard>
             </Tab>

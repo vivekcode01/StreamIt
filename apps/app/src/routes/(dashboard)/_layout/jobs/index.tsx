@@ -15,6 +15,7 @@ export const Route = createFileRoute("/(dashboard)/_layout/jobs/")({
       perPage: z.coerce.number().default(20),
       sortKey: z.enum(["name", "duration", "createdAt"]).default("createdAt"),
       sortDir: z.enum(["asc", "desc"]).default("desc"),
+      query: z.string().default(""),
     }),
   ),
   loaderDeps: ({ search }) => ({ ...search }),

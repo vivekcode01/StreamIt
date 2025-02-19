@@ -41,6 +41,7 @@ export const jobsPaginatedSchema = z.object({
     perPage: z.number(),
     sortKey: z.enum(["name", "duration", "createdAt"]),
     sortDir: z.enum(["asc", "desc"]),
+    query: z.string(),
   }),
   items: z.array(jobSchema),
   totalPages: z.number(),

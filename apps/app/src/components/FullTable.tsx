@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/react";
+import { Form } from "./Form";
 import type { SortDescriptor } from "@heroui/react";
 import type { ReactNode } from "react";
 
@@ -17,6 +18,7 @@ export interface FullTableFilter {
   perPage: number;
   sortKey: string;
   sortDir: "asc" | "desc";
+  query: string;
 }
 
 export interface FullTableColumn {
@@ -54,6 +56,42 @@ export function FullTable<T, F extends FullTableFilter>({
 
   return (
     <>
+      <div className="mb-2 flex gap-2">
+        <div className="min-w-96">
+          <Form
+            fields={{
+              query: {
+                type: "string",
+                label: "Search",
+                value: filter.query,
+                size: "sm",
+              },
+            }}
+            onSubmit={(values) => {
+              updateFilter({
+                ...values,
+                page: 1,
+              });
+            }}
+          />
+        </div>
+        <div className="grow" />
+        <Select
+          label="Rows per page"
+          className="max-w-[140px]"
+          selectionMode="single"
+          size="sm"
+          selectedKeys={[filter.perPage.toString()]}
+          onSelectionChange={(values) => {
+            if (values.currentKey) {
+              updateFilter({ perPage: +values.currentKey });
+            }
+          }}
+          items={[{ key: "10" }, { key: "20" }, { key: "30" }]}
+        >
+          {(item) => <SelectItem key={item.key}>{item.key}</SelectItem>}
+        </Select>
+      </div>
       <Table
         aria-label="table"
         sortDescriptor={sortDescriptor}
@@ -88,25 +126,10 @@ export function FullTable<T, F extends FullTableFilter>({
           })}
         </TableBody>
       </Table>
-      <div className="flex items-center gap-4 mt-4">
-        <Select
-          label="Rows per page"
-          className="max-w-[140px]"
-          selectionMode="single"
-          size="sm"
-          selectedKeys={[filter.perPage.toString()]}
-          onSelectionChange={(values) => {
-            if (values.currentKey) {
-              updateFilter({ perPage: +values.currentKey });
-            }
-          }}
-          items={[{ key: "10" }, { key: "20" }, { key: "30" }]}
-        >
-          {(item) => <SelectItem key={item.key}>{item.key}</SelectItem>}
-        </Select>
+      <div className="flex mt-4 justify-center">
         <Pagination
           total={totalPages}
-          initialPage={filter.page}
+          page={filter.page}
           onChange={(page) => {
             updateFilter({ page });
           }}

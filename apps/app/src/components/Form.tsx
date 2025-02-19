@@ -13,9 +13,13 @@ interface FormProps<T extends FieldRecord> {
   submit?: string;
 }
 
-type Field =
-  | { type: "string"; label: string; value: string; format?: "password" }
-  | { type: "number"; label: string; value: number };
+type Field = (
+  | { type: "string"; value: string; format?: "password" }
+  | { type: "number"; value: number }
+) & {
+  label: string;
+  size?: "sm" | "md" | "lg";
+};
 
 type FieldRecord = Record<string, Field>;
 
@@ -79,15 +83,18 @@ export function Form<T extends FieldRecord>({
               control={control}
               label={field.label}
               type={type}
+              size={field.size}
             />
           </div>
         );
       })}
-      <div>
-        <Button isLoading={loading} type="submit">
-          {submit ?? "Submit"}
-        </Button>
-      </div>
+      {submit ? (
+        <div>
+          <Button isLoading={loading} type="submit">
+            {submit}
+          </Button>
+        </div>
+      ) : null}
     </form>
   );
 }
