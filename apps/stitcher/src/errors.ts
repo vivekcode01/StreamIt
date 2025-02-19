@@ -1,6 +1,6 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-type ApiErrorCode = never;
+type ApiErrorCode = "ERR_SESSION_NOT_FOUND";
 
 export function apiError(code: ApiErrorCode) {
   const status: ContentfulStatusCode = 500;

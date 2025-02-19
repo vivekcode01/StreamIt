@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import * as uuid from "uuid";
+import { apiError } from "./errors";
 import { JSON } from "./lib/json";
 import { resolveUri } from "./lib/url";
 import { fetchDuration, pushTimedEvent } from "./playlist";
@@ -88,9 +89,18 @@ export async function createSession(
 export async function getSession(context: AppContext, id: string) {
   const data = await context.kv.get(`session:${id}`);
   if (!data) {
-    throw new Error(`No session found for id ${id}`);
+    throw apiError("ERR_SESSION_NOT_FOUND");
   }
-  return JSON.parse<Session>(data);
+
+  const session = JSON.parse<Session>(data);
+
+  // Check if the session is expired, we might still have it in kv.
+  const expiryDate = session.startTime.plus({ seconds: session.expiry });
+  if (DateTime.now() > expiryDate) {
+    throw apiError("ERR_SESSION_NOT_FOUND");
+  }
+
+  return session;
 }
 
 export async function updateSession(context: AppContext, session: Session) {
