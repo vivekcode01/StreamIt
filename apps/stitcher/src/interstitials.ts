@@ -114,6 +114,13 @@ export async function getAssets(
     if (timedEvent.assets) {
       assets.push(...timedEvent.assets);
     }
+
+    if (timedEvent.delay) {
+      // When we have a delay on purpose, wait it out.
+      await new Promise((resolve) => {
+        setTimeout(resolve, timedEvent.delay);
+      });
+    }
   }
 
   // If we have a generic vast config on our session, use that one to resolve (eg; for live streams)

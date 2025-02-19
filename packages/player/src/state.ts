@@ -1,7 +1,9 @@
+import { assert } from "shared/assert";
 import { preciseFloat } from "./helpers";
 import { Events } from "./types";
 import type {
   AudioTrack,
+  Interstitial,
   Playhead,
   Quality,
   SubtitleTrack,
@@ -16,7 +18,8 @@ interface Timing {
 
 interface StateParams {
   onEvent(event: Events): void;
-  getTiming(): undefined | Timing;
+  getTiming(): undefined | Timing | null;
+  getInterstitialTiming(): undefined | Omit<Timing, "seekableStart"> | null;
 }
 
 interface StateProperties {
@@ -34,6 +37,7 @@ interface StateProperties {
   seeking: boolean;
   live: boolean;
   timeline: TimelineItem[];
+  interstitial: Interstitial | null;
 }
 
 const noState: StateProperties = {
@@ -51,6 +55,7 @@ const noState: StateProperties = {
   seeking: false,
   live: false,
   timeline: [],
+  interstitial: null,
 };
 
 export class State implements StateProperties {
@@ -121,7 +126,8 @@ export class State implements StateProperties {
 
     if (
       // TODO: Come up with a generic logical check.
-      (!this.subtitleTracks.length && subtitleTracks.length) ||
+      !this.subtitleTracks.length ||
+      subtitleTracks.length ||
       diff(this.subtitleTracks) !== diff(subtitleTracks)
     ) {
       this.subtitleTracks = subtitleTracks;
@@ -151,34 +157,73 @@ export class State implements StateProperties {
     this.params_.onEvent(Events.TIMELINE_CHANGE);
   }
 
-  requestTimingSync() {
+  setInterstitial(
+    interstitial: Omit<Interstitial, "currentTime" | "duration"> | null,
+  ) {
+    if (interstitial) {
+      this.setSeeking(false);
+    }
+
+    this.interstitial = interstitial
+      ? {
+          ...interstitial,
+          currentTime: 0,
+          duration: NaN,
+        }
+      : null;
+
+    this.requestTimingSync(/* skipEvent= */ true);
+
+    this.params_.onEvent(Events.INTERSTITIAL_CHANGE);
+  }
+
+  requestTimingSync(skipEvent?: boolean) {
     clearTimeout(this.timerId_);
     this.timerId_ = window.setTimeout(() => {
       this.requestTimingSync();
     }, 250);
+    let emitEvent = false;
 
     const timing = this.params_.getTiming();
-    if (!timing) {
-      return;
+    if (timing) {
+      const currentTime = preciseFloat(timing.currentTime);
+      const duration = preciseFloat(timing.duration);
+      const seekableStart = preciseFloat(timing.seekableStart);
+
+      if (
+        currentTime !== this.currentTime ||
+        duration !== this.duration ||
+        seekableStart !== this.seekableStart
+      ) {
+        emitEvent = true;
+      }
+
+      this.currentTime = currentTime;
+      this.duration = duration;
+      this.seekableStart = seekableStart;
     }
 
-    const currentTime = preciseFloat(timing.currentTime);
-    const duration = preciseFloat(timing.duration);
-    const seekableStart = preciseFloat(timing.seekableStart);
+    const interstitialTiming = this.params_.getInterstitialTiming();
+    if (interstitialTiming) {
+      assert(this.interstitial);
 
-    if (
-      currentTime === this.currentTime &&
-      duration === this.duration &&
-      seekableStart === this.seekableStart
-    ) {
-      return;
+      const currentTime = preciseFloat(interstitialTiming.currentTime);
+      const duration = preciseFloat(interstitialTiming.duration);
+
+      if (
+        currentTime !== this.interstitial.currentTime ||
+        duration !== this.interstitial.duration
+      ) {
+        emitEvent = true;
+      }
+
+      this.interstitial.currentTime = currentTime;
+      this.interstitial.duration = duration;
     }
 
-    this.currentTime = currentTime;
-    this.duration = duration;
-    this.seekableStart = seekableStart;
-
-    this.params_.onEvent(Events.TIME_CHANGE);
+    if (!skipEvent && emitEvent) {
+      this.params_.onEvent(Events.TIME_CHANGE);
+    }
   }
 
   ready = noState.ready;
@@ -195,6 +240,7 @@ export class State implements StateProperties {
   seeking = noState.seeking;
   live = noState.live;
   timeline = noState.timeline;
+  interstitial = noState.interstitial;
 }
 
 export function getState<N extends keyof StateProperties>(

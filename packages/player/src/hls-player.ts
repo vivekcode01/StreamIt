@@ -50,6 +50,7 @@ export class HlsPlayer {
     this.state_ = new State({
       onEvent: (event: Events) => this.emit_(event),
       getTiming: () => hls.interstitialsManager?.integrated,
+      getInterstitialTiming: () => hls.interstitialsManager?.bufferingPlayer,
     });
 
     hls.attachMedia(this.media_);
@@ -225,6 +226,10 @@ export class HlsPlayer {
     return getState(this.state_, "timeline");
   }
 
+  get interstitial() {
+    return getState(this.state_, "interstitial");
+  }
+
   private createHls_() {
     const hls = new Hls();
 
@@ -269,7 +274,7 @@ export class HlsPlayer {
         acc.push({
           start: item.integrated.start,
           duration: item.integrated.end - item.integrated.start,
-          rangeDuration: item.event.dateRange.plannedDuration ?? undefined,
+          plannedDuration: item.event.dateRange.plannedDuration ?? undefined,
         });
 
         return acc;
@@ -278,7 +283,11 @@ export class HlsPlayer {
     });
 
     listen(Hls.Events.INTERSTITIAL_STARTED, () => {
-      this.state_?.setSeeking(false);
+      this.state_?.setInterstitial({});
+    });
+
+    listen(Hls.Events.INTERSTITIAL_ENDED, () => {
+      this.state_?.setInterstitial(null);
     });
 
     return hls;

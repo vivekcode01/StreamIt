@@ -29,6 +29,7 @@ export interface Session {
 interface InterstitialInput {
   time: string | number;
   duration?: number;
+  delay?: number;
   assets?: {
     uri: string;
   }[];
@@ -105,6 +106,7 @@ export async function mapInterstitialToTimedEvent(
   return {
     dateTime: toDateTime(startTime, interstitial.time),
     duration: interstitial.duration,
+    delay: interstitial.delay,
     assets: interstitial.assets
       ? await Promise.all(
           interstitial.assets.map(async (asset) => {

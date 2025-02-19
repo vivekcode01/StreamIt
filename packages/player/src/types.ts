@@ -15,6 +15,7 @@ export enum Events {
   AUTO_QUALITY_CHANGE = "autoQualityChange",
   SEEKING_CHANGE = "seekingChange",
   TIMELINE_CHANGE = "timelineChange",
+  INTERSTITIAL_CHANGE = "interstitialChange",
 }
 
 export type HlsPlayerEventMap = {
@@ -30,6 +31,7 @@ export type HlsPlayerEventMap = {
   [Events.AUTO_QUALITY_CHANGE]: () => void;
   [Events.SEEKING_CHANGE]: () => void;
   [Events.TIMELINE_CHANGE]: () => void;
+  [Events.INTERSTITIAL_CHANGE]: () => void;
 } & {
   "*": (event: Events) => void;
 };
@@ -57,5 +59,10 @@ export interface SubtitleTrack {
 export interface TimelineItem {
   start: number;
   duration: number;
-  rangeDuration?: number;
+  plannedDuration?: number;
+}
+
+export interface Interstitial {
+  currentTime: number;
+  duration: number;
 }

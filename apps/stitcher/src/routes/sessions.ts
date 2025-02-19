@@ -38,6 +38,7 @@ export const sessionsApp = new Hono()
             z.object({
               time: z.union([z.number(), z.string()]),
               duration: z.number().optional(),
+              delay: z.number().optional(),
               assets: z
                 .array(
                   z.object({

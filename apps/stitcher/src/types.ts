@@ -18,6 +18,7 @@ export interface AssetResolver {
 export interface TimedEvent {
   dateTime: DateTime;
   duration?: number;
+  delay?: number;
   assets?: Asset[];
   vast?: VastParams;
 }
