@@ -159,8 +159,8 @@ function Timeline() {
       {timeline.map((item) => {
         const left = (item.start - seekableStart) / relativeDuration;
         const width = item.duration ? item.duration / relativeDuration : 0;
-        const rangeWidth = item.rangeDuration
-          ? item.rangeDuration / relativeDuration
+        const rangeWidth = item.plannedDuration
+          ? item.plannedDuration / relativeDuration
           : 0;
 
         if (!width) {
