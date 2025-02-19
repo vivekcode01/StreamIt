@@ -1,15 +1,23 @@
-import { createReadStream } from "node:fs";
-import { GetObjectCommand, S3 } from "@aws-sdk/client-s3";
+import { exists, mkdir, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  paginateListObjectsV2,
+  S3,
+} from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { ConfiguredRetryStrategy } from "@smithy/util-retry";
+import { Glob } from "bun";
 import { lookup } from "mime-types";
-import { S3SyncClient } from "s3-sync-client";
+import { assert } from "shared/assert";
 import { env } from "../env";
-import type { PutObjectCommandInput } from "@aws-sdk/client-s3";
-import type { CommandInput } from "s3-sync-client";
 
-const retryStrategy = new ConfiguredRetryStrategy(5, 60_000);
+const retryStrategy = new ConfiguredRetryStrategy(
+  5,
+  (attempt) => attempt ** 2 * 1000,
+);
 
 const client = new S3({
   endpoint: env.S3_ENDPOINT,
@@ -18,88 +26,136 @@ const client = new S3({
     accessKeyId: env.S3_ACCESS_KEY,
     secretAccessKey: env.S3_SECRET_KEY,
   },
-  logger: console,
   retryStrategy,
 });
 
-const { sync } = new S3SyncClient({ client, retryStrategy });
-
-export async function syncFromS3(remotePath: string, localPath: string) {
-  await sync(`s3://${env.S3_BUCKET}/${remotePath}`, localPath);
-}
-
-export async function syncToS3(
+export async function s3UploadFile(
   localPath: string,
   remotePath: string,
-  options?: {
-    del?: boolean;
-    public?: boolean;
-    concurrency?: number;
-  },
+  aclPublic: boolean,
 ) {
-  const commandInput: CommandInput<PutObjectCommandInput> = (input) => {
-    let contentType: string | undefined;
-    if (input.Key) {
-      contentType = lookup(input.Key) || "binary/octet-stream";
-    }
-    return {
-      ContentType: contentType,
-      ACL: options?.public ? "public-read" : "private",
-    };
-  };
-
-  await sync(localPath, `s3://${env.S3_BUCKET}/${remotePath}`, {
-    del: options?.del,
-    commandInput,
-    maxConcurrentTransfers: options?.concurrency,
-  });
-}
-
-type UploadToS3File =
-  | { type: "json"; data: object }
-  | { type: "local"; path: string };
-
-export async function uploadToS3(
-  remoteFilePath: string,
-  file: UploadToS3File,
-  onProgress?: (value: number) => void,
-) {
-  let params: Omit<PutObjectCommandInput, "Bucket" | "Key"> | undefined;
-
-  switch (file.type) {
-    case "json":
-      params = {
-        Body: JSON.stringify(file.data, null, 2),
-        ContentType: "application/json",
-      };
-      break;
-    case "local":
-      params = {
-        Body: createReadStream(file.path),
-      };
-      break;
-    default:
-      return;
-  }
-
   const upload = new Upload({
     client,
     params: {
-      ...params,
+      Body: Bun.file(localPath).stream(),
+      ContentType: lookup(localPath) || "binary/octet-stream",
       Bucket: env.S3_BUCKET,
-      Key: remoteFilePath,
+      Key: remotePath,
+      ACL: aclPublic ? "public-read" : "private",
     },
   });
+  await upload.done();
+}
 
-  upload.on("httpUploadProgress", (event) => {
-    if (event.loaded === undefined || event.total === undefined) {
-      return;
-    }
-    const value = Math.round((event.loaded / event.total) * 100);
-    onProgress?.(value);
+async function s3DownloadFile(remotePath: string, localPath: string) {
+  const command = new GetObjectCommand({
+    Bucket: env.S3_BUCKET,
+    Key: remotePath,
   });
 
+  const { Body } = await client.send(command);
+  assert(Body);
+
+  await writeFile(localPath, Body.transformToWebStream());
+}
+
+export async function s3DownloadFolder(remotePath: string, localPath: string) {
+  const paginatedListObjects = paginateListObjectsV2(
+    { client },
+    {
+      Bucket: env.S3_BUCKET,
+      Prefix: remotePath,
+    },
+  );
+
+  const filePaths: string[] = [];
+
+  for await (const data of paginatedListObjects) {
+    data.Contents?.forEach((content) => {
+      if (content.Key) {
+        filePaths.push(content.Key);
+      }
+    });
+  }
+
+  for (const filePath of filePaths) {
+    const localFilePath = join(
+      localPath,
+      filePath.substring(remotePath.length + 1),
+    );
+
+    const localFilePathDir = dirname(localFilePath);
+    const folderExists = await exists(localFilePathDir);
+    if (!folderExists) {
+      await mkdir(localFilePathDir, { recursive: true });
+    }
+
+    await s3DownloadFile(filePath, localFilePath);
+  }
+}
+
+export async function s3UploadFolder(
+  localPath: string,
+  remotePath: string,
+  aclPublic: boolean,
+) {
+  await s3DeleteFolder(remotePath);
+
+  const glob = new Glob("**/*");
+
+  const files: string[] = [];
+  for await (const file of glob.scan(localPath)) {
+    files.push(file);
+  }
+
+  for (const file of files) {
+    await s3UploadFile(
+      `${localPath}/${file}`,
+      `${remotePath}/${file}`,
+      aclPublic,
+    );
+  }
+}
+
+export async function s3UploadJson(data: object, remotePath: string) {
+  const upload = new Upload({
+    client,
+    params: {
+      Body: JSON.stringify(data, null, 2),
+      ContentType: "application/json",
+      Bucket: env.S3_BUCKET,
+      Key: remotePath,
+    },
+  });
   await upload.done();
+}
+
+async function s3DeleteFolder(remotePath: string) {
+  const paginatedListObjects = paginateListObjectsV2(
+    { client },
+    {
+      Bucket: env.S3_BUCKET,
+      Prefix: remotePath,
+    },
+  );
+
+  const filePaths: string[] = [];
+
+  for await (const data of paginatedListObjects) {
+    data.Contents?.forEach((content) => {
+      if (content.Key) {
+        filePaths.push(content.Key);
+      }
+    });
+  }
+
+  for (const filePath of filePaths) {
+    const command = new DeleteObjectCommand({
+      Bucket: env.S3_BUCKET,
+      Key: filePath,
+    });
+    await client.send(command);
+  }
 }
 
 export async function getS3SignedUrl(
@@ -110,8 +166,6 @@ export async function getS3SignedUrl(
     Bucket: env.S3_BUCKET,
     Key: remoteFilePath,
   });
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore https://github.com/aws/aws-sdk-js-v3/issues/4451
   const url = await getSignedUrl(client, command, {
     expiresIn,
   });

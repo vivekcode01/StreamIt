@@ -2,7 +2,7 @@ import { addToQueue, outcomeQueue } from "bolt";
 import { execa } from "execa";
 import parseFilePath from "parse-filepath";
 import { getBinaryPath, getMetaStruct } from "../lib/file-helpers";
-import { syncFromS3, syncToS3 } from "../lib/s3";
+import { s3DownloadFolder, s3UploadFolder } from "../lib/s3";
 import type {
   PackageData,
   PackageResult,
@@ -57,7 +57,7 @@ export const packageCallback: WorkerCallback<
 async function handleStepInitial(job: Job<PackageData>, dir: WorkerDir) {
   const inDir = await dir.createTempDir();
 
-  await syncFromS3(`transcode/${job.data.assetId}`, inDir);
+  await s3DownloadFolder(`transcode/${job.data.assetId}`, inDir);
 
   job.log(`Synced folder in ${inDir}`);
 
@@ -146,10 +146,7 @@ async function handleStepInitial(job: Job<PackageData>, dir: WorkerDir) {
   const s3Dir = `package/${job.data.assetId}/${job.data.name}`;
   job.log(`Uploading to ${s3Dir}`);
 
-  await syncToS3(outDir, s3Dir, {
-    del: true,
-    concurrency: job.data.concurrency,
-  });
+  await s3UploadFolder(outDir, s3Dir, job.data.public);
 }
 
 async function handleJobOutcome(job: Job<PackageData>) {
