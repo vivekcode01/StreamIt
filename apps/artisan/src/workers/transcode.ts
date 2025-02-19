@@ -12,7 +12,7 @@ import {
   getDefaultAudioBitrate,
   getDefaultVideoBitrate,
 } from "../lib/default-values";
-import { uploadToS3 } from "../lib/s3";
+import { s3UploadJson } from "../lib/s3";
 import type { MetaStruct } from "../lib/file-helpers";
 import type {
   FfmpegResult,
@@ -162,10 +162,7 @@ async function handleStepMeta(job: Job<TranscodeData>, token?: string) {
 
   await job.log(`Writing meta.json (${JSON.stringify(meta)})`);
 
-  await uploadToS3(`transcode/${job.data.assetId}/meta.json`, {
-    type: "json",
-    data: meta,
-  });
+  await s3UploadJson(meta, `transcode/${job.data.assetId}/meta.json`);
 }
 
 async function handleStepOutcome(job: Job<TranscodeData>) {

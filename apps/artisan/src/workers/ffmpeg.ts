@@ -1,6 +1,6 @@
 import { ffmpeg } from "../lib/ffmpeg";
 import { mapInputToPublicUrl } from "../lib/file-helpers";
-import { uploadToS3 } from "../lib/s3";
+import { s3UploadFile } from "../lib/s3";
 import type { FfmpegData, FfmpegResult, Stream, WorkerCallback } from "bolt";
 
 export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
@@ -55,15 +55,10 @@ export const ffmpegCallback: WorkerCallback<FfmpegData, FfmpegResult> = async ({
     `Uploading ${outDir}/${name} to transcode/${job.data.assetId}/${name}`,
   );
 
-  await uploadToS3(
+  await s3UploadFile(
+    `${outDir}/${name}`,
     `transcode/${job.data.assetId}/${name}`,
-    {
-      type: "local",
-      path: `${outDir}/${name}`,
-    },
-    (value) => {
-      progressTracker.set("upload", value);
-    },
+    false,
   );
 
   return {
