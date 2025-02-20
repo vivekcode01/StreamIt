@@ -9,6 +9,7 @@ import { useApi } from "../../../api";
 import { FilePreview } from "../../../components/FilePreview";
 import { Format } from "../../../components/Format";
 import { FullTableScroll } from "../../../components/FullTableScroll";
+import { PageTitle } from "../../../components/PageTitle";
 import { useInfinite } from "../../../hooks/useInfinite";
 import type { ApiClient, StorageItem } from "@superstreamer/api/client";
 

@@ -19,6 +19,7 @@ import { useApi } from "../../../api";
 import { Form } from "../../../components/Form";
 import { Format } from "../../../components/Format";
 import { FullTable } from "../../../components/FullTable";
+import { PageTitle } from "../../../components/PageTitle";
 import { Uniqolor } from "../../../components/Uniqolor";
 import type { Asset, Group } from "@superstreamer/api/client";
 
@@ -58,8 +59,12 @@ function RouteComponent() {
 
   return (
     <div className="p-8">
-      <h2 className="mb-4 font-medium">Assets</h2>
+      <PageTitle
+        title="Assets"
+        description="Manage your assets and playables here."
+      />
       <FullTable
+        title="All assets"
         columns={[
           {
             id: "name",

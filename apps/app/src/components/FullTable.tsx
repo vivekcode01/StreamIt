@@ -29,6 +29,7 @@ export interface FullTableColumn {
 }
 
 interface FullTableProps<T, F extends FullTableFilter> {
+  title: string;
   columns: FullTableColumn[];
   items: T[];
   mapRow(props: T): { key: string; cells: ReactNode[] };
@@ -38,6 +39,7 @@ interface FullTableProps<T, F extends FullTableFilter> {
 }
 
 export function FullTable<T, F extends FullTableFilter>({
+  title,
   columns,
   items,
   mapRow,
@@ -56,26 +58,26 @@ export function FullTable<T, F extends FullTableFilter>({
 
   return (
     <>
-      <div className="mb-2 flex gap-2">
-        <div className="min-w-96">
-          <Form
-            fields={{
-              query: {
-                type: "string",
-                label: "Search",
-                value: filter.query,
-                size: "sm",
-              },
-            }}
-            onSubmit={(values) => {
-              updateFilter({
-                ...values,
-                page: 1,
-              });
-            }}
-          />
-        </div>
+      <div className="mb-4 flex items-center gap-2">
+        <span className="font-medium">{title}</span>
         <div className="grow" />
+        <Form
+          className="min-w-96"
+          fields={{
+            query: {
+              type: "string",
+              label: "Search",
+              value: filter.query,
+              size: "sm",
+            },
+          }}
+          onSubmit={(values) => {
+            updateFilter({
+              ...values,
+              page: 1,
+            });
+          }}
+        />
         <Select
           label="Rows per page"
           className="max-w-[140px]"

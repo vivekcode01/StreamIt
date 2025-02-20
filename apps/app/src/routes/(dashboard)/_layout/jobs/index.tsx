@@ -6,6 +6,7 @@ import { AutoRefresh } from "../../../../components/AutoRefresh";
 import { Format } from "../../../../components/Format";
 import { FullTable } from "../../../../components/FullTable";
 import { JobState } from "../../../../components/JobState";
+import { PageTitle } from "../../../../components/PageTitle";
 
 export const Route = createFileRoute("/(dashboard)/_layout/jobs/")({
   component: RouteComponent,
@@ -34,11 +35,13 @@ function RouteComponent() {
 
   return (
     <div className="p-8">
-      <div className="mb-4 flex gap-4">
-        <h2 className="font-medium">Jobs</h2>
-        <AutoRefresh interval={5} defaultEnabled />
-      </div>
+      <PageTitle
+        title="Jobs"
+        description="Manage your running, pending and scheduled jobs here."
+        sideComponent={<AutoRefresh interval={5} defaultEnabled />}
+      />
       <FullTable
+        title="All jobs"
         columns={[
           {
             id: "state",
