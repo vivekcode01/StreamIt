@@ -86,15 +86,12 @@ export class State implements StateProperties {
       this.requestTimingSync();
     }
 
-    this.params_.onEvent(Events.PLAYHEAD_CHANGE);
-  }
-
-  setStarted() {
-    if (this.started) {
-      return;
+    if (playhead === "playing" && !this.started) {
+      this.started = true;
+      this.params_.onEvent(Events.STARTED);
     }
-    this.started = true;
-    this.params_.onEvent(Events.STARTED);
+
+    this.params_.onEvent(Events.PLAYHEAD_CHANGE);
   }
 
   setQualities(qualities: Quality[], autoQuality: boolean) {
@@ -182,6 +179,7 @@ export class State implements StateProperties {
     this.timerId_ = window.setTimeout(() => {
       this.requestTimingSync();
     }, 250);
+
     let emitEvent = false;
 
     const timing = this.params_.getTiming();

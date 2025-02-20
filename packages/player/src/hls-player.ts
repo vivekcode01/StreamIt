@@ -4,6 +4,7 @@ import { EventEmitter } from "tseep/lib/ee-safe";
 import { EventManager } from "./event-manager";
 import { getLangCode } from "./helpers";
 import { getState, State } from "./state";
+import { TextTrackRenderer } from "./text-track-renderer";
 import { Events } from "./types";
 import type {
   AudioTrack,
@@ -24,6 +25,8 @@ export class HlsPlayer {
   private state_: State | null = null;
 
   private emitter_ = new EventEmitter<HlsPlayerEventMap>();
+
+  private textTrackRenderer_: TextTrackRenderer | null = null;
 
   constructor(public container: HTMLDivElement) {
     this.media_ = this.createMedia_();
@@ -47,7 +50,7 @@ export class HlsPlayer {
     this.bindMediaListeners_();
     const hls = this.createHls_();
 
-    this.state_ = new State({
+    const state = new State({
       onEvent: (event: Events) => this.emit_(event),
       getTiming: () => hls.interstitialsManager?.integrated,
       getInterstitialTiming: () => hls.interstitialsManager?.bufferingPlayer,
@@ -56,7 +59,10 @@ export class HlsPlayer {
     hls.attachMedia(this.media_);
     hls.loadSource(url);
 
+    this.textTrackRenderer_ = new TextTrackRenderer(hls, this.container);
+
     this.hls_ = hls;
+    this.state_ = state;
   }
 
   unload() {
@@ -66,6 +72,11 @@ export class HlsPlayer {
     if (this.hls_) {
       this.hls_.destroy();
       this.hls_ = null;
+    }
+
+    if (this.textTrackRenderer_) {
+      this.textTrackRenderer_.destroy();
+      this.textTrackRenderer_ = null;
     }
 
     this.emit_(Events.RESET);
@@ -164,10 +175,6 @@ export class HlsPlayer {
     this.media_.volume = volume;
     this.media_.muted = volume === 0;
     this.state_?.setVolume(volume);
-  }
-
-  get unstable_hlsjsVersion() {
-    return Hls.version;
   }
 
   get ready() {
@@ -382,8 +389,6 @@ export class HlsPlayer {
     });
 
     listen("playing", () => {
-      this.state_?.setStarted();
-
       this.state_?.setPlayhead("playing");
     });
 
