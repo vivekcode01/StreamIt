@@ -3,6 +3,7 @@ version: "3"
 volumes:
   superstreamer_redis_data:
   superstreamer_postgres_data:
+  superstreamer_localstack_data:
 
 services:
   superstreamer-redis:
@@ -19,7 +20,7 @@ services:
     restart: always
     stop_signal: SIGINT
     ports:
-      - "5432:5432"
+      - 5432:5432
     volumes:
       - superstreamer_postgres_data:/var/lib/postgresql/data
     environment:
@@ -27,18 +28,17 @@ services:
       - POSTGRES_DB=sprs
       - POSTGRES_PASSWORD=sprs
 
-  localstack:
-    image: gresau/localstack-persist:4 # instead of localstack/localstack:4
+  superstreamer-localstack:
+    image: gresau/localstack-persist:4
     ports:
-      - "127.0.0.1:4566:4566"            # LocalStack Gateway
-      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+      - 127.0.0.1:4566:4566
+      - 127.0.0.1:4510-4559:4510-4559
     volumes:
-      - "./sprs-localstack-data:/persisted-data"
-      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - superstreamer_localstack_data:/persisted-data
+      - ${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
       - ./aws:/etc/localstack/init/ready.d
     environment:
-      # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
       - DEBUG=${DEBUG:-0}
       - PERSIST_DEFAULT=0
       - SERVICES=s3
