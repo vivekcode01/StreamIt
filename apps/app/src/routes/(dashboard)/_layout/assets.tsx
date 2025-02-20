@@ -58,7 +58,7 @@ function RouteComponent() {
   const [editAsset, setEditAsset] = useState<Asset | null>(null);
 
   return (
-    <div className="p-8">
+    <div className="p-6">
       <PageTitle
         title="Assets"
         description="Manage your assets and playables here."

@@ -7,7 +7,7 @@ interface LogsProps {
 
 export function Logs({ lines }: LogsProps) {
   if (!lines.length) {
-    return <div className="text-xs">No logs available</div>;
+    return "No logs available";
   }
   return (
     <ul className="flex flex-col gap-2">

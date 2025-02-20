@@ -34,7 +34,7 @@ function RouteComponent() {
   const { jobs } = Route.useLoaderData();
 
   return (
-    <div className="p-8">
+    <div className="p-6">
       <PageTitle
         title="Jobs"
         description="Manage your running, pending and scheduled jobs here."

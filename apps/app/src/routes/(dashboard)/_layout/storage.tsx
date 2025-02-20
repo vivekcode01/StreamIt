@@ -2,6 +2,7 @@ import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
 import { toParams } from "@superstreamer/api/client";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
+import cn from "clsx";
 import { File, Folder } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
@@ -40,14 +41,21 @@ function RouteComponent() {
   const breadcrumbs = parseBreadcrumbs(deps.path);
 
   return (
-    <div className="flex flex-col h-full p-8">
+    <div className="flex flex-col h-full p-6">
+      <PageTitle
+        title="Storage"
+        description="View and preview your S3 files here."
+      />
       <div className="flex items-center mb-4">
         <Link
-          className="font-medium"
+          className={cn(
+            "text-sm",
+            breadcrumbs.length > 1 && "text-foreground/50",
+          )}
           to={Route.fullPath}
           search={{ path: "/" }}
         >
-          Storage
+          main
         </Link>
         <Breadcrumbs className="flex items-center">
           {breadcrumbs.map(({ name, path }) => (

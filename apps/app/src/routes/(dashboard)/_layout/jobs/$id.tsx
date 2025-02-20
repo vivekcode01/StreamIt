@@ -31,12 +31,12 @@ function RouteComponent() {
 
   return (
     <div className="flex h-screen">
-      <div className="max-w-[220px] w-full h-full bg-white border-r p-4 flex flex-col">
+      <div className="max-w-[220px] w-full h-full bg-white border-r px-4 py-6 flex flex-col">
         <JobTree activeJob={job} jobs={[rootJob]} />
         <div className="grow" />
         <AutoRefresh interval={5} defaultEnabled />
       </div>
-      <div className="grow h-full basis-0 overflow-y-auto">
+      <div className="grow h-full basis-0 overflow-y-auto px-4 py-6">
         <JobPage job={job} logs={logs} />
       </div>
     </div>

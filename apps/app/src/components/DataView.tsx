@@ -15,8 +15,8 @@ export function DataView({ data, redacted }: DataViewProps) {
   }
 
   return (
-    <div className="text-xs font-mono">
-      <Value name="" parent="" value={data} redacted={redacted} />
+    <div className="text-xs font-mono -ml-3">
+      <Value name="" parent="" value={data} redacted={redacted} depth={0} />
     </div>
   );
 }
@@ -26,11 +26,13 @@ function Value({
   value,
   parent,
   redacted,
+  depth,
 }: {
   name: string;
   value: Value | Value[];
   parent: string;
   redacted?: string[];
+  depth: number;
 }) {
   const path = [parent, name].filter((item) => !!item).join(".");
 
@@ -46,6 +48,7 @@ function Value({
         parent={path}
         redacted={redacted}
         isArray
+        depth={depth}
       />
     );
   }
@@ -60,12 +63,13 @@ function Value({
         values={values}
         parent={path}
         redacted={redacted}
+        depth={depth}
       />
     );
   }
   if (value !== Object(value)) {
     return (
-      <div className="ml-2" data-key={path}>
+      <div className="ml-3" data-key={path}>
         {name}: <Primitive value={value} />
       </div>
     );
@@ -79,15 +83,17 @@ function IteratedValue({
   parent,
   isArray,
   redacted,
+  depth,
 }: {
   name: string;
   values: [string, Value][];
   parent: string;
   isArray?: boolean;
   redacted?: string[];
+  depth: number;
 }) {
   return (
-    <div className="ml-2">
+    <div className="ml-3">
       {name ? `${name}: ` : ""}{" "}
       {isArray ? (
         <span className="text-lime-700">{"["}</span>
@@ -102,6 +108,7 @@ function IteratedValue({
             value={child}
             parent={parent}
             redacted={redacted}
+            depth={depth}
           />
         );
       })}
