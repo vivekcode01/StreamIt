@@ -9,6 +9,7 @@ import { Events } from "./types";
 import type {
   AudioTrack,
   HlsPlayerEventMap,
+  LoadOptions,
   Quality,
   SubtitleTrack,
   TimelineItem,
@@ -44,7 +45,7 @@ export class HlsPlayer {
     return media;
   }
 
-  load(url: string) {
+  load(url: string, options?: LoadOptions) {
     this.unload();
 
     this.bindMediaListeners_();
@@ -59,7 +60,11 @@ export class HlsPlayer {
     hls.attachMedia(this.media_);
     hls.loadSource(url);
 
-    this.textTrackRenderer_ = new TextTrackRenderer(hls, this.container);
+    this.textTrackRenderer_ = new TextTrackRenderer(
+      hls,
+      this.container,
+      options?.subtitleStyles,
+    );
 
     this.hls_ = hls;
     this.state_ = state;
@@ -238,7 +243,9 @@ export class HlsPlayer {
   }
 
   private createHls_() {
-    const hls = new Hls();
+    const hls = new Hls({
+      renderTextTracksNatively: false,
+    });
 
     const listen = this.eventManager_.listen(hls);
 

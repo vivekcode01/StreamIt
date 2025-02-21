@@ -66,3 +66,14 @@ export interface Interstitial {
   currentTime: number;
   duration: number;
 }
+
+export interface SubtitleStyles {
+  fontWeight?: number;
+  fontFamily?: string;
+  cueBgColor?: string;
+  cueTextShadow?: string;
+}
+
+export interface LoadOptions {
+  subtitleStyles?: SubtitleStyles;
+}

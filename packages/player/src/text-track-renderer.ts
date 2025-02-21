@@ -2,6 +2,8 @@ import Hls from "hls.js";
 import { CaptionsRenderer } from "media-captions";
 import { assert } from "shared/assert";
 import { EventManager } from "./event-manager";
+import { MultiMap } from "./multi-map";
+import type { SubtitleStyles } from "./types";
 import "media-captions/styles/captions.css";
 import "media-captions/styles/regions.css";
 
@@ -15,23 +17,22 @@ export class TextTrackRenderer {
 
   private renderer_: CaptionsRenderer;
 
-  private cache_ = new Map<number, Map<string, VTTCue>>();
+  private cache_ = new MultiMap<VTTCue, number>();
 
   constructor(
     private hls_: Hls,
     root: HTMLDivElement,
+    styles?: SubtitleStyles,
   ) {
-    hls_.config.renderTextTracksNatively = false;
-
     const container = document.createElement("div");
-    container.style.fontWeight = "700";
-    container.style.setProperty("--cue-bg-color", "rgba(0, 0, 0, 0)");
-    container.style.setProperty(
-      "--cue-text-shadow",
-      "rgb(0, 0, 0) 0px 0px 7px",
-    );
     root.appendChild(container);
     this.renderer_ = new CaptionsRenderer(container);
+
+    if (styles) {
+      // If we have default styles, we'll pass them on after we
+      // created the renderer.
+      this.setStyles(styles);
+    }
 
     this.bindHlsListeners_();
     this.bindMediaListeners_();
@@ -40,36 +41,22 @@ export class TextTrackRenderer {
   private bindHlsListeners_() {
     const listen = this.eventManager_.listen(this.hls_);
 
-    listen(Hls.Events.NON_NATIVE_TEXT_TRACKS_FOUND, (_, data) => {
-      for (const track of data.tracks) {
-        if (!track.subtitleTrack) {
-          continue;
-        }
-        this.cache_.set(track.subtitleTrack.id, new Map());
-      }
-    });
-
     listen(Hls.Events.CUES_PARSED, (_, data) => {
       for (const cue of data.cues) {
         defaultCueProperties(cue);
-        const map = this.cache_.get(this.hls_.subtitleTrack);
-        if (!map || map.has(cue.id)) {
-          continue;
+
+        const id = this.hls_.subtitleTrack;
+        if (!this.cache_.has(id, cue.id)) {
+          this.cache_.add(id, cue.id, cue);
+          this.renderer_.addCue(cue);
         }
-        map.set(cue.id, cue);
-        this.renderer_.addCue(cue);
       }
     });
 
     listen(Hls.Events.SUBTITLE_TRACK_SWITCH, (_, data) => {
       this.renderer_.reset();
 
-      const map = this.cache_.get(data.id);
-      if (!map) {
-        return;
-      }
-
-      map.values().forEach((cue) => {
+      this.cache_.values(data.id).forEach((cue) => {
         this.renderer_.addCue(cue);
       });
     });
@@ -82,6 +69,25 @@ export class TextTrackRenderer {
 
     listen("timeupdate", () => {
       this.renderer_.currentTime = media.currentTime;
+    });
+  }
+
+  setStyles(styles: SubtitleStyles) {
+    const { overlay } = this.renderer_;
+
+    const lookupMap: Partial<Record<keyof SubtitleStyles, string>> = {
+      cueBgColor: "--cue-bg-color",
+      cueTextShadow: "--cue-text-shadow",
+    };
+
+    Object.entries(styles).forEach(([key, value]) => {
+      // @ts-expect-error Lookup
+      const prop = lookupMap[key];
+      if (prop?.startsWith("--")) {
+        overlay.style.setProperty(prop, value);
+      } else {
+        overlay.style[prop ?? key] = value.toString();
+      }
     });
   }
 

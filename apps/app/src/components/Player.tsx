@@ -24,7 +24,13 @@ export function Player({ url }: PlayerProps) {
     if (!player || !url) {
       return;
     }
-    player.load(url);
+    player.load(url, {
+      subtitleStyles: {
+        fontWeight: 600,
+        cueBgColor: "transparent",
+        cueTextShadow: "rgb(0, 0, 0) 0px 0px 7px",
+      },
+    });
     return () => {
       player.unload();
     };
