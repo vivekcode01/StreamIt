@@ -52,13 +52,13 @@ Self-hosting can be challenging, but we aim to make hosting Superstreamer as eas
 
 <div align="center">
   <a href="https://github.com/superstreamerapp/superstreamer/blob/main/docs/public/dashboard-stitcher.png" target="_blank">
-    <img height="190" alt="Dashboard assets" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-stitcher.png" />
+    <img height="150" alt="Dashboard assets" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-stitcher.png" />
   </a>
   <a href="https://github.com/superstreamerapp/superstreamer/blob/main/docs/public/dashboard-assets.png" target="_blank">
-    <img height="190" alt="Dashboard assets" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-assets.png" />
+    <img height="150" alt="Dashboard assets" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-assets.png" />
   </a>
   <a href="https://github.com/superstreamerapp/superstreamer/blob/main/docs/public/dashboard-job.png" target="_blank">
-    <img height="190" alt="Dashboard assets" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-job.png" />
+    <img height="150" alt="Dashboard assets" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-job.png" />
   </a>
 </div>
 
