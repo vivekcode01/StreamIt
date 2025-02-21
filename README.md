@@ -48,6 +48,20 @@ docker compose up -d
 
 Self-hosting can be challenging, but we aim to make hosting Superstreamer as easy as possible. Check out the [Getting Started](https://superstreamer.xyz/guide/getting-started.html) section for more information. It should get you started in minutes.
 
+## Screenshots
+
+<div align="center">
+  <a href="https://github.com/superstreamerapp/superstreamer/blob/main/docs/public/dashboard-stitcher.png" target="_blank">
+    <img height="190" alt="Dashboard assets" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-stitcher.png" />
+  </a>
+  <a href="https://github.com/superstreamerapp/superstreamer/blob/main/docs/public/dashboard-assets.png" target="_blank">
+    <img height="190" alt="Dashboard assets" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-assets.png" />
+  </a>
+  <a href="https://github.com/superstreamerapp/superstreamer/blob/main/docs/public/dashboard-job.png" target="_blank">
+    <img height="190" alt="Dashboard assets" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-job.png" />
+  </a>
+</div>
+
 ## Contributing
 
 We love our contributors! Here's how you can contribute:
