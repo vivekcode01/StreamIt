@@ -176,6 +176,15 @@ function sidebarGuide() {
       ],
     },
     {
+      text: "Player",
+      items: [
+        {
+          text: "Overview",
+          link: "player-overview",
+        },
+      ],
+    },
+    {
       text: "Miscellaneous",
       items: [
         {

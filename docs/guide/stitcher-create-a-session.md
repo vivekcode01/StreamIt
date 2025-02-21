@@ -4,13 +4,8 @@ Think of a session as a single playback session for an individual viewer. This r
 
 Providing input for the stitcher happens in the form of a `uri`. The support uri schemas are:
 
-- **asset://**
-
-  We want to greatly simplify how you stitch playlists together. If you use the asset scheme, Superstreamer will know that you mean a package result from within the platform.
-
-- **https://{url}/master.m3u8**
-
-  In case you want to use HLS playlists hosted elsewhere, you can use the http(s) scheme.
+- **asset://**: we want to greatly simplify how you stitch playlists together. If you use the asset scheme, Superstreamer will know that you mean a package result from within the platform.
+- **https://{url}/master.m3u8**: in case you want to use HLS playlists hosted elsewhere, you can use the http(s) scheme.
 
 ```sh
 curl -X POST
