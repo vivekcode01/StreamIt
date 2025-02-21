@@ -36,8 +36,8 @@ features:
     icon: 
       src: /icon-stitcher.svg
       width: 54
-  - title: Player
-    details: A unified API and React components that seamlessly integrate into your player.
+  - title: Playback
+    details: A streamlined API over HLS.js, designed specifically for player developers.
     icon: 
       src: /icon-player.svg
       width: 37

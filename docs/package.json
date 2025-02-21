@@ -6,7 +6,7 @@
     "build": "vitepress build"
   },
   "dependencies": {
-    "vitepress": "^1.4.1",
-    "vitepress-openapi": "^0.0.3-alpha.62"
+    "@scalar/api-reference": "^1.25.122",
+    "vitepress": "^1.4.1"
   }
 }

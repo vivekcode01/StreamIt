@@ -1,9 +1,18 @@
 ---
-aside: false
+layout: api-docs
 ---
 
-<script setup>
-import spec from "../public/api-openapi.json"
+<script setup  lang="ts">
+import { ApiReference } from "@scalar/api-reference";
+import "@scalar/api-reference/style.css";
 </script>
 
-<OASpec :spec="spec" hide-branding />
+
+<ApiReference
+  :configuration="{
+    spec: {
+      url: '/openapi/api.json'
+    },
+    hideTestRequestButton: true
+  }" 
+/>

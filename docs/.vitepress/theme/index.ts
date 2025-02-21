@@ -1,13 +1,11 @@
 import DefaultTheme from "vitepress/theme";
-import { theme } from "vitepress-openapi/client";
-import "vitepress-openapi/dist/style.css";
+import ApiDocs from "./components/ApiDocs.vue";
 import "./custom.css";
 import type { Theme } from "vitepress";
 
 export default {
   extends: DefaultTheme,
-  async enhanceApp({ app }) {
-    // @ts-ignore
-    theme.enhanceApp({ app });
+  enhanceApp({ app }) {
+    app.component("api-docs", ApiDocs);
   },
 } satisfies Theme;
