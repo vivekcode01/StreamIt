@@ -11,7 +11,7 @@ import "@scalar/api-reference/style.css";
 <ApiReference
   :configuration="{
     spec: {
-      content: 'https://cdn.superstreamer.xyz/openapi-api.json'
+      content: 'https://superstreamer.xyz/openapi-api.json'
     },
     hideTestRequestButton: true
   }" 

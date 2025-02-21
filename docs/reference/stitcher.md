@@ -11,7 +11,7 @@ import "@scalar/api-reference/style.css";
 <ApiReference
   :configuration="{
     spec: {
-      url: 'https://cdn.superstreamer.xyz/openapi-stitcher.json'
+      url: 'https://superstreamer.xyz/openapi-stitcher.json'
     },
     hideTestRequestButton: true
   }" 
