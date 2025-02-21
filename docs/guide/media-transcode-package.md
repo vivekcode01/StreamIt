@@ -8,7 +8,7 @@ This page covers key video terminology. We keep it simple, but if you want to di
 
 ## Transcode
 
-We'll begin by sending a `POST` request to the `/jobs/transcode` endpoint of our API. In this request, we'll specify the source files (our available inputs) and define the desired outputs — specifically, HD and Full HD video tracks, along with English audio.
+We'll begin by sending a `POST` request to the `/jobs/transcode` endpoint of our API. In this request, we'll specify the source files (our available inputs) and define the desired outputs — specifically, HD and Full HD video tracks, along with English audio. Check the [API reference](/reference/api) for the different payload options.
 
 ```sh
 curl -X POST
@@ -53,12 +53,6 @@ curl -X POST
 
 :::
 
-::: tip
-
-Check the [API reference](/reference/api) for the different payload options.
-
-:::
-
 Under the hood, Superstreamer kicks off a transcode job to produce the output streams. Once completed, each job is assigned a unique UUID. For example, in this case, the UUID is `46169885-f274-43ad-ba59-a746d33304fd`.
 
 This request above will provide a response containing the jobId:
@@ -70,6 +64,8 @@ This request above will provide a response containing the jobId:
   "jobId": "transcode_46169885-f274-43ad-ba59-a746d33304fd"
 }
 ```
+
+:::
 
 This UUID serves as a reference for the asset across all interactions with the Superstreamer API.
 
@@ -89,7 +85,7 @@ When the job is done, we have separate video tracks in various quality levels an
 
 Our video and audio tracks are stored as separate files. Let's package them into an HLS playlist, which players will use to determine what to load and at which resolution.
 
-We'll send a `POST` request to the `/jobs/package` endpoint of our API, and all we'll have to do is provide the assetId returned by our transcode job.
+We'll send a `POST` request to the `/jobs/package` endpoint of our API, and all we'll have to do is provide the assetId returned by our transcode job. Check the [API reference](/reference/api) for the different payload options.
 
 ```sh
 curl -X POST
@@ -106,19 +102,11 @@ curl -X POST
 
 :::
 
-::: tip
-
-Check the [API reference](/reference/api) for the different payload options.
-
-:::
-
 When the job is done, we have an HLS playlist available on our S3 bucket.
 
 ```
 https://cdn.superstreamer.xyz/package/46169885-f274-43ad-ba59-a746d33304fd/hls/master.m3u8
 ```
-
-
 
 ### How it works
 
@@ -131,6 +119,48 @@ https://cdn.superstreamer.xyz/package/46169885-f274-43ad-ba59-a746d33304fd/hls/m
 
 ## Pipeline
 
-Typically a package job is scheduled right after a transcode job. Superstreamer can do this for you with the `/jobs/pipeline` API.
+Typically a package job is scheduled right after a transcode job. Superstreamer can do this for you with the `/jobs/pipeline` API. Check the [API reference](/reference/api) for the different payload options.
 
 The pipeline job has sane defaults and is best used if you don't need to heavily customize your transcode and package profiles.
+
+```sh
+curl -X POST
+  "https://api.superstreamer.xyz/jobs/pipeline"
+```
+
+::: code-group
+
+```json [Request]
+{
+  "inputs": [
+    {
+      "type": "video",
+      "path": "s3://input.mp4"
+    },
+    {
+      "type": "audio",
+      "path": "s3://input.mp4",
+      "language": "eng"
+    }
+  ],
+  "streams": [
+    {
+      "type": "video",
+      "codec": "h264",
+      "height": 1080
+    },
+    {
+      "type": "video",
+      "codec": "h264",
+      "height": 720
+    },
+    {
+      "type": "audio",
+      "codec": "aac",
+      "language": "eng"
+    }
+  ]
+}
+```
+
+:::

@@ -142,12 +142,6 @@ function sidebarGuide() {
         {
           text: "Dashboard",
           link: "media-dashboard",
-          items: [
-            {
-              text: "Manage assets",
-              link: "media-manage-assets",
-            },
-          ],
         },
       ],
     },
@@ -157,6 +151,10 @@ function sidebarGuide() {
         {
           text: "Overview",
           link: "stitcher-overview",
+        },
+        {
+          text: "Create a session",
+          link: "stitcher-create-a-session",
         },
         {
           text: "Features",
