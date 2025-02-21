@@ -11,7 +11,7 @@ import "@scalar/api-reference/style.css";
 <ApiReference
   :configuration="{
     spec: {
-      url: '/openapi/api.json'
+      content: '/openapi/api.json'
     },
     hideTestRequestButton: true
   }" 

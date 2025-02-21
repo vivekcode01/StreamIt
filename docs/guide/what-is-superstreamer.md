@@ -38,24 +38,24 @@ To users, video seems simple – it just plays, right? But delivering a smooth e
 
 - Optimize for speed and quality
 
-  Need your videos to load faster and look great? Superstreamer makes sure your videos play quickly and at the best quality, no matter the device. Do your viewers have unpredictable or slow internet? [Transcoding](/guide/video-processing#start-a-transcode) can adjust the video quality so it still plays smoothly without buffering.
+  Need your videos to load faster and look great? Superstreamer makes sure your videos play quickly and at the best quality, no matter the device. Do your viewers have unpredictable or slow internet? [Transcoding](/guide/media-transcode-package#transcode) can adjust the video quality so it still plays smoothly without buffering.
 
 - Convert to different formats
 
-  Want to play your video on any device? [Transcoding](/guide/video-processing#start-a-transcode) changes your video to the right format so everyone can watch it, in different qualities depending on the viewer' bandwidth.
+  Want to play your video on any device? [Transcoding](/guide/media-transcode-package#transcode) changes your video to the right format so everyone can watch it, in different qualities depending on the viewer' bandwidth.
 
 - Package for streaming
 
-  Ready to show your video online? [Package](/guide/video-processing#start-a-package) your video so it streams smoothly to your viewers, no matter where they are.
+  Ready to show your video online? [Package](/guide/media-transcode-package#package) your video so it streams smoothly to your viewers, no matter where they are.
 
 
 - Monetize your content
   
-  In need of on the fly ad insertion? [Stitching]() lets you add ads at the perfect moment to earn revenue while keeping the viewer engaged.
+  In need of on the fly ad insertion? [Stitching](/guide/stitcher-overview) lets you add ads at the perfect moment to earn revenue while keeping the viewer engaged.
 
 - Filter your playout
 
-  Want to limit playout? [Stitching]() filters quality and text tracks by language, enabling you to tailor a playout for a specific audience.
+  Want to limit playout? [Stitching](/guide/stitcher-overview) filters quality and text tracks by language, enabling you to tailor a playout for a specific audience.
 
 - Client streaming library
 
