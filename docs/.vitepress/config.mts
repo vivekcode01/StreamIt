@@ -51,7 +51,7 @@ export default defineConfig({
       },
       {
         text: "Reference",
-        link: "/reference/player",
+        link: "/reference/api",
         activeMatch: "/reference/",
       },
       {
@@ -108,46 +108,80 @@ function sidebarGuide() {
           text: "Getting Started",
           link: "getting-started",
         },
-      ],
-    },
-    {
-      text: "Project",
-      items: [
         {
           text: "What's included",
           link: "whats-included",
         },
+      ],
+    },
+    {
+      text: "Manage media",
+      items: [
         {
-          text: "Building blocks",
-          link: "building-blocks",
+          text: "Overview",
+          link: "media-overview",
+        },
+        {
+          text: "Media processing",
+          link: "media-processing",
           items: [
             {
-              text: "Video processing",
-              link: "video-processing",
+              text: "Import video",
+              link: "media-import-video",
             },
             {
-              text: "Video personalization",
-              link: "video-personalization",
+              text: "Transcode & package",
+              link: "media-transcode-package",
             },
             {
-              text: "Player",
-              link: "player",
+              text: "Storage",
+              link: "media-storage",
             },
           ],
         },
         {
-          text: "Tutorials",
+          text: "Dashboard",
+          link: "media-dashboard",
+        },
+      ],
+    },
+    {
+      text: "Stitcher",
+      items: [
+        {
+          text: "Overview",
+          link: "stitcher-overview",
+        },
+        {
+          text: "Create a session",
+          link: "stitcher-create-a-session",
+        },
+        {
+          text: "Features",
           items: [
             {
-              text: "Play adaptive video",
-              link: "tutorials/play-adaptive-video"
+              text: "Filtering",
+              link: "stitcher-filtering",
             },
             {
-              text: "Add bumper like Netflix",
-              link: "tutorials/add-bumper-like-netflix"
-            }
-          ]
-        }
+              text: "HLS interstitials",
+              link: "stitcher-hls-interstitials",
+            },
+            {
+              text: "Ad insertion",
+              link: "stitcher-ad-insertion",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      text: "Player",
+      items: [
+        {
+          text: "Overview",
+          link: "player-overview",
+        },
       ],
     },
     {
@@ -172,8 +206,26 @@ function sidebarReference() {
       text: "Reference",
       items: [
         {
-          text: "Player",
-          link: "/player",
+          text: "Services",
+          items: [
+            {
+              text: "API",
+              link: "api",
+            },
+            {
+              text: "Stitcher",
+              link: "stitcher",
+            },
+          ],
+        },
+        {
+          text: "Packages",
+          items: [
+            {
+              text: "Player",
+              link: "player",
+            },
+          ],
         },
       ],
     },

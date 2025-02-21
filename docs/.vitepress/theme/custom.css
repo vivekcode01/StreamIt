@@ -30,15 +30,6 @@
   }
 }
 
-.hidden {
-  display: none;
-}
-
-.iframe {
-  width: 100%;
-  border: none;
-}
-
 .VPHomeHero .VPImage {
   max-width: 160px;
 }
@@ -47,8 +38,10 @@
   margin: 4em 0;
 }
 
-.framed {
+.image {
+  margin: 1.5rem 0;
   border-radius: 1rem;
+  border: 2px solid rgba(0, 0, 0, .85);
 }
 
 .package {
@@ -77,37 +70,4 @@
 
 .package div {
   margin-left: 2rem;
-}
-
-.video {
-  border-radius: 1rem;
-  width: 100%;
-}
-
-.number {
-  width: 1.5rem;
-  height: 1.5rem;
-  font-size: 0.85rem;
-  color: #ffffff;
-  background-color: #000000;
-  border-radius: 100%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 0.5rem;
-  text-align: center;
-  font-weight: bold;
-}
-
-h1,
-h2,
-h3 {
-  display: flex;
-  align-items: center;
-}
-
-.image-rounded {
-  border-radius: 1rem;
-  width: 100%;
-  border: 2px solid #f1f1f1;
 }

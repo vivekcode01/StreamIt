@@ -20,48 +20,51 @@ volumes:
   superstreamer_postgres_data:
 
 services:
-  superstreamer-app:
-    image: "superstreamerapp/app:latest"
-    ports:
-      - 52000:52000
-    environment:
-      - PUBLIC_API_ENDPOINT=http://localhost:52001
-      - PUBLIC_STITCHER_ENDPOINT=http://localhost:52002
-
   superstreamer-api:
-    image: "superstreamerapp/api:latest"
+    image: "superstreamerapp/api:alpha"
     restart: always
     ports:
-      - 52001:52001
+      - 52001:3000
     depends_on:
       - superstreamer-postgres
       - superstreamer-redis
-    env_file: config.env
+    env_file: .env
     environment:
       - REDIS_HOST=superstreamer-redis
+      - REDIS_PORT=6379
       - DATABASE_URI=postgresql://postgres:sprs@superstreamer-postgres/sprs
 
-  superstreamer-stitcher:
-    image: "superstreamerapp/stitcher:latest"
-    restart: always
+  superstreamer-app:
+    image: "superstreamerapp/app:alpha"
     ports:
-      - 52002:52002
-    depends_on:
-      - superstreamer-redis
-    env_file: config.env
+      - 52000:3000
     environment:
-      - REDIS_HOST=superstreamer-redis
       - PUBLIC_API_ENDPOINT=http://localhost:52001
       - PUBLIC_STITCHER_ENDPOINT=http://localhost:52002
 
   superstreamer-artisan:
-    image: "superstreamerapp/artisan:latest"
+    image: "superstreamerapp/artisan:alpha"
     restart: always
     depends_on:
       - superstreamer-redis
-    env_file: config.env
+    env_file: .env
     environment:
       - REDIS_HOST=superstreamer-redis
+      - REDIS_PORT=6379
+
+  superstreamer-stitcher:
+    image: "superstreamerapp/stitcher:alpha"
+    restart: always
+    ports:
+      - 52002:3000
+    depends_on:
+      - superstreamer-redis
+    env_file: .env
+    environment:
+      - REDIS_PORT=6379
+      - REDIS_HOST=superstreamer-redis
+      - PUBLIC_API_ENDPOINT=http://localhost:52001
+      - PUBLIC_STITCHER_ENDPOINT=http://localhost:52002
 
   superstreamer-redis:
     image: redis/redis-stack-server:7.2.0-v6
@@ -88,11 +91,11 @@ services:
 
 :::
 
-Create a `config.env` file in the same folder.
+Create a `.env` file in the same folder. Make sure to configure it properly for your setup.
 
 ::: code-group
 
-```sh [config.env]
+```sh [.env]
 S3_ENDPOINT=
 S3_REGION=us-east-1
 S3_ACCESS_KEY=
@@ -122,35 +125,28 @@ In a scalable architecture, you probably do not want to run the ffmpeg and trans
 
 :::
 
-::: tip
+## Without Docker
 
-If you'd like to change the port of each service individually, provide the `PORT` environment variable for each service individually.
+We're committed to making it easy to run Superstreamer on your setup of choice. Docker is not required, although it greatly simplifies the setup. The project is organized as a monorepo, and each service or app comes with its own `build` script. You can build the entire project and all its packages with just a single command. The backend services use [Bun](https://bun.sh/), while the frontend app and player are built with [Vite](https://vite.dev/). 
 
-- [AWS S3](https://aws.amazon.com/s3/)
-
-- [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/)
-
-:::
-
-### Use S3
-
-Superstreamer supports any S3 compliant service. Just add the appropriate credentials to your `config.env` file, and you're all set.
-
-### Use local
-
-If you'd like to emulate or provide S3-like object storage environments locally, we'd suggest you pick one of the following projects:
-
-- [MinIO](https://min.io/)
-- [LocalStack](https://www.localstack.cloud/)
-
-## Local builds
-
-One of our main goals is to help you get up and running locally with minimal hassle. Superstreamer is organized as a monorepo, and each service or app comes with its own `build` script. You can build the entire project and all its packages with just a single command. The backend services use Bun, while the frontend app and player are built with Vite. Superstreamer relies on a unified environment variable setup, the `config.env` file at the root of the project.
+Know that each service or app requires a separate `.env` file, you'll have to configure these individually. We'll guide you through the setup.
 
 ### Prerequisites
 
 - Redis, we suggest [Redis Stack](https://redis.io/docs/latest/operate/oss_and_stack/install/install-stack/).
-- [Bun](https://bun.sh/) v1.1.30 or above.
+- [Bun](https://bun.sh/) v1.2.2 or above.
+- A [PostgreSQL](https://www.postgresql.org/) database.
+
+### Get source from GitHub
+
+::: code-group
+
+```sh [Terminal]
+git clone git@github.com:superstreamerapp/superstreamer.git
+cd superstreamer
+```
+
+:::
 
 ### Install dependencies
 
@@ -163,27 +159,84 @@ First, we're going to install a couple of dependencies. Run the following comman
 $ bun install
 # Install binary dependencies, such as ffmpeg
 $ bun run install-bin
-
 ```
 
 :::
 
-### Build packages
+### Configure environment variables
 
-Before we build, we're going to configure a few environment variables first.
+As we mentioned earlier, each service or app requires a separate `.env` file. Make sure you have the env variables properly configured.
+
+::: warning
+
+The SUPER_SECRET env variable shall never be shared. It is used to encrypt and decrypt information, such as authentication tokens.
+
+:::
+
+First, we're going to configure the API. Create a `.env` file in **apps/api**.
 
 ::: code-group
 
-```sh [Terminal]
-$ cp config.env.example config.env
-# Edit config.env with your own variables
+```sh [.env]
+PORT=52001
+REDIS_URI=redis://localhost:6379
+S3_ENDPOINT=
+S3_REGION=
+S3_ACCESS_KEY=
+S3_SECRET_KEY=
+S3_BUCKET=
+DATABASE_URI=
+SUPER_SECRET=secret
 ```
-
-If you'd like to use a local S3 setup, we recommend [LocalStack](https://www.localstack.cloud/), a fully functional local AWS cloud stack that enables developers to test and develop cloud applications offline. While we definitely don't need an entire AWS-like setup, we can use the S3 part.
 
 :::
 
-Next up, we're going to build the different packages into their single Javascript files. The bundling for services happens under the hood with Bun, and each client package is built with Vite. The build files are created in the `dist` folder of each package respectively.
+Now, we're going to configure the app. This is a dashboard that visualizes the API. Create a `.env` file in **apps/app**.
+
+::: code-group
+
+```sh [.env]
+PUBLIC_STITCHER_ENDPOINT=http://localhost:52002
+PUBLIC_API_ENDPOINT=http://localhost:52001
+```
+
+:::
+
+Next, create a `.env` file in **apps/artisan**. The same configuration must be used as the API.
+
+::: code-group
+
+```sh [.env]
+REDIS_URI=redis://localhost:6379
+S3_ENDPOINT=
+S3_REGION=
+S3_ACCESS_KEY=
+S3_SECRET_KEY=
+S3_BUCKET=
+```
+
+:::
+
+Finally, we're going to configure the stitcher. Create a `.env` file in **apps/stitcher**.
+
+::: code-group
+
+```sh [.env]
+PORT=52002
+REDIS_URI=redis://localhost:6379
+PUBLIC_S3_ENDPOINT=
+PUBLIC_STITCHER_ENDPOINT=http://localhost:52002
+PUBLIC_API_ENDPOINT=http://localhost:52001
+SUPER_SECRET=secret
+```
+
+:::
+
+### Build services or app
+
+We're going to build the different apps into their single Javascript files. The bundling for services happens under the hood with Bun, and each client package is built with Vite. The build files are created in the `dist` folder of each package respectively.
+
+Run the following command at the root of the project:
 
 ::: code-group
 
@@ -193,40 +246,37 @@ $ bun run build
 
 :::
 
-### Up and Running
+### Start services or app
 
-Now that we have each package build, let's run them locally.
-
-::: code-group
-
-```sh [Terminal]
-# Run the api, default port is 52001
-$ bun run packages/api/dist/index.js
-
-# Run artisan, the job runner
-$ bun run packages/artisan/dist/index.js
-
-# Run the stitcher, default port is 52002
-$ bun run packages/stitcher/dist/index.js
-```
-
-:::
-
-If you'd like to interact with the API, or with Stitcher, run the app. It's a single page application (SPA), you can host it statically everywhere you like. When the app is build, it'll read the `PUBLIC_` environment variables from the config file at the root of the project and include these into the Javascript bundles. If you'd like to run the app locally, you can use our dev script.
+Now that we have each service built, let's run them locally. In the example below, we'll start the **apps/api**. Know that each service can be started this way.
 
 ::: code-group
 
 ```sh [Terminal]
-$ bun run --filter=\"@superstreamer/app\" dev
+$ cd apps/api
+$ bun run dist/index.js
 ```
 
 :::
 
-If you'd like to host the app elsewhere, all files can be found in `packages/app/dist`.
+You're currently running the different backend services locally. If you'd like to interact with the API, or with the Stitcher, we suggest you run the dashboard app. It's a single page application (SPA), you can host it statically everywhere you like. When the app is build, it'll read the `PUBLIC_` environment variables from the config file at the root of the project and include these into the Javascript bundles.
 
-### Development
+::: code-group
 
-We've already covered how to build Superstreamer locally, and we've also made it easy to start developing on the project. Just run `bun run dev` from the root of the project, and it will launch all the services, including the app. Head over to `http://localhost:52000`, and you'll be welcomed by the app!
+```sh [Terminal]
+$ cd apps/app
+$ npx serve dist
+```
+
+:::
+
+If you'd like to host the app elsewhere, all files can be found in `apps/app/dist`.
+
+## Development
+
+We've already covered how to build Superstreamer locally, and we've also made it easy to start developing on the project. Before you start, make sure you have the `.env` files properly configured [here](#configure-environment-variables).
+
+Just run `bun run dev` from the root of the project, and it will launch all the services, including the app. Head over to `http://localhost:52000`, and you'll be welcomed by the app!
 
 ::: code-group
 
@@ -236,65 +286,19 @@ $ bun run dev
 
 :::
 
-### Quick Development Environment Setup
+## S3
 
-We have also created a `docker-compose-dev.yml` so you can setup your development environment faster and start getting hands on!
+Superstreamer supports any S3 compliant service. Just add the appropriate credentials to your `.env` file, and you're all set.
 
-::: code-group
+We've tested the following providers:
 
-```sh [Terminal]
-# We have prebuilt development containers, see docker/docker-compose-dev.yml
-cd docker
-docker-compose -f docker-compose-dev.yml up
-```
+- [AWS S3](https://aws.amazon.com/s3/)
+- [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/)
+- [Backblaze B2](https://www.backblaze.com/cloud-storage)
 
-:::
+### Local S3
 
-You can create a file named `config.env.development` for a quick setup. Here is a sample that should work out of the box if default configuration is used:
+If you'd like to emulate or provide S3-like object storage environments locally, we'd suggest you pick one of the following projects:
 
-::: code-group
-
-```sh [config.env.development]
-S3_ENDPOINT=http://s3.localhost.localstack.cloud:4566/
-S3_REGION=us-east-1
-S3_ACCESS_KEY=test
-S3_SECRET_KEY=test
-S3_BUCKET=sprs-bucket
-
-# With Docker, use "redis", use "localhost" when you
-# run Redis on your own device.
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# These are public, they'll end up in client JS.
-PUBLIC_API_ENDPOINT=http://localhost:52001
-PUBLIC_STITCHER_ENDPOINT=http://localhost:52002
-PUBLIC_S3_ENDPOINT=http://s3.localhost.localstack.cloud:4566/sprs-bucket
-
-# Shared secret
-# *** Never EVER expose this publicly, auth tokens are signed with this secret.
-SUPER_SECRET=abc
-
-# Database
-# Provide a PostgreSQL connection string
-DATABASE_URI=postgresql://postgres:sprs@localhost:5432/sprs
-```
-
-:::
-
-Run it with:
-
-::: code-group
-
-```sh [Terminal]
-# Install dependencies
-bun install
-
-# Install binary dependencies, such as ffmpeg
-bun run install-bin
-
-# RUN!
-bun run dev
-```
-
-:::
+- [MinIO](https://min.io/)
+- [LocalStack](https://www.localstack.cloud/)

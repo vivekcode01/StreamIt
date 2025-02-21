@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: Superstreamer
-  text: Deliver video
+  text: Video streaming
   tagline: Building blocks for video streaming that's smooth, simple, and scales like a champ!
   actions:
     - theme: brand
@@ -36,8 +36,8 @@ features:
     icon: 
       src: /icon-stitcher.svg
       width: 54
-  - title: Player
-    details: A unified API and React components that seamlessly integrate into your player.
+  - title: Playback
+    details: A streamlined API over HLS.js, designed specifically for player developers.
     icon: 
       src: /icon-player.svg
       width: 37
