@@ -1,4 +1,4 @@
-name: Lint
+name: "[all] lint"
 
 on:
   push:

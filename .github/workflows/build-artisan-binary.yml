@@ -1,4 +1,4 @@
-name: "[artisan] - standalone"
+name: "[artisan] standalone"
 
 on:
   push:
