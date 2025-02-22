@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "bun --watch ./src/index.ts",
     "build": "bun build ./src/index.ts --target=bun --outdir=./dist",
+    "build:binary": "bun build ./src/index.ts --compile --outfile ./dist/artisan",
     "test": "bun test",
     "lint": "tsc && eslint",
     "install-bin": "./scripts/install-bin.sh"
