@@ -16,7 +16,7 @@
 
   <p align="center">
     <a href="https://superstreamer.xyz">Documentation</a> · 
-    <a href="https://superstreamer.xyz/guide/getting-started.html">Getting Started</a>
+    <a href="https://superstreamer.xyz/guide/getting-started.html">Getting Started</a> · 
     <a href="#contributing">Contributing</a>
   </p>
 
