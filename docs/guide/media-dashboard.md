@@ -2,6 +2,12 @@
 
 The dashboard is a client side app where you can manage your assets, interact with the API or use the Stitcher playground. The same API is used as if you would integrate Superstreamer into your own project and workflows.
 
+## API
+
+Our API is nicely documented, the dashboard comes with a client that makes it easy for you to interact with the API.
+
+![Dashboard API](/dashboard-api.png)
+
 ## Manage assets
 
 Edit, search or filter the assets in Superstreamer.
