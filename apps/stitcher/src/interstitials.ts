@@ -8,6 +8,14 @@ import type { Session } from "./session";
 import type { Asset, TimedEvent } from "./types";
 import type { DateTime } from "luxon";
 
+/**
+ * Create dateranges for a session.
+ * @param context
+ * @param session
+ * @param segments
+ * @param isLive
+ * @returns
+ */
 export function getStaticDateRanges(
   context: AppContext,
   session: Session,
@@ -69,6 +77,12 @@ export function getStaticDateRanges(
   });
 }
 
+/**
+ * Find signaling in a list of segments and map them to events. These events
+ * can then be used to insert interstitials.
+ * @param segments
+ * @returns
+ */
 function getTimedEventsFromSegments(segments: Segment[]) {
   const events: TimedEvent[] = [];
 
@@ -87,6 +101,15 @@ function getTimedEventsFromSegments(segments: Segment[]) {
   return events;
 }
 
+/**
+ * Get a list of assets for a request. This will be used in an ASSET-LIST tag
+ * to resolve the interstitial to one or multiple assets.
+ * @param context
+ * @param session
+ * @param dateTime
+ * @param maxDuration
+ * @returns
+ */
 export async function getAssets(
   context: AppContext,
   session: Session,

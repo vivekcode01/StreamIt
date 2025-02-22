@@ -1,0 +1,117 @@
+// Bun Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`parse master should parse basic 1`] = `
+{
+  "independentSegments": false,
+  "renditions": [],
+  "variants": [
+    {
+      "audio": undefined,
+      "bandwidth": 240000,
+      "codecs": undefined,
+      "resolution": {
+        "height": 720,
+        "width": 1080,
+      },
+      "subtitles": undefined,
+      "uri": "media1.m3u8",
+    },
+    {
+      "audio": undefined,
+      "bandwidth": 440000,
+      "codecs": undefined,
+      "resolution": {
+        "height": 480,
+        "width": 854,
+      },
+      "subtitles": undefined,
+      "uri": "media2.m3u8",
+    },
+  ],
+}
+`;
+
+exports[`parse master should parse with groups 1`] = `
+{
+  "independentSegments": false,
+  "renditions": [
+    {
+      "channels": undefined,
+      "groupId": "aud1",
+      "language": "eng",
+      "name": "English",
+      "type": "AUDIO",
+      "uri": "a1.m3u8",
+    },
+    {
+      "channels": undefined,
+      "groupId": "aud2",
+      "language": "nld",
+      "name": "Nederlands",
+      "type": "AUDIO",
+      "uri": "a2.m3u8",
+    },
+    {
+      "channels": undefined,
+      "groupId": "sub1",
+      "language": "eng",
+      "name": "English",
+      "type": "SUBTITLES",
+      "uri": "s1.m3u8",
+    },
+  ],
+  "variants": [
+    {
+      "audio": "aud1",
+      "bandwidth": 4682666,
+      "codecs": "avc1.64002a,mp4a.40.2",
+      "resolution": {
+        "height": 1080,
+        "width": 1920,
+      },
+      "subtitles": "sub1",
+      "uri": "media1.m3u8",
+    },
+    {
+      "audio": "aud2",
+      "bandwidth": 3170746,
+      "codecs": "avc1.640020,mp4a.40.2",
+      "resolution": {
+        "height": 720,
+        "width": 1280,
+      },
+      "subtitles": "sub1",
+      "uri": "media2.m3u8",
+    },
+  ],
+}
+`;
+
+exports[`parse master should parse with audio channels 1`] = `
+{
+  "independentSegments": false,
+  "renditions": [
+    {
+      "channels": "6",
+      "groupId": "aud1",
+      "language": "eng",
+      "name": "English",
+      "type": "AUDIO",
+      "uri": "a1.m3u8",
+    },
+  ],
+  "variants": [
+    {
+      "audio": "aud1",
+      "bandwidth": 4682666,
+      "codecs": "avc1.64002a,mp4a.40.2",
+      "resolution": {
+        "height": 1080,
+        "width": 1920,
+      },
+      "subtitles": undefined,
+      "uri": "media1.m3u8",
+    },
+  ],
+}
+`;

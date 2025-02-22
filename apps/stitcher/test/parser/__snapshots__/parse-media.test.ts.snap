@@ -1,0 +1,79 @@
+// Bun Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`parse media should parse basic 1`] = `
+{
+  "dateRanges": [],
+  "discontinuitySequenceBase": undefined,
+  "endlist": true,
+  "independentSegments": false,
+  "mediaSequenceBase": undefined,
+  "playlistType": "VOD",
+  "segments": [
+    {
+      "discontinuity": undefined,
+      "duration": 10,
+      "map": undefined,
+      "programDateTime": undefined,
+      "spliceInfo": undefined,
+      "uri": "1.m4s",
+    },
+    {
+      "discontinuity": undefined,
+      "duration": 10,
+      "map": undefined,
+      "programDateTime": undefined,
+      "spliceInfo": undefined,
+      "uri": "2.m4s",
+    },
+    {
+      "discontinuity": undefined,
+      "duration": 4.5,
+      "map": undefined,
+      "programDateTime": undefined,
+      "spliceInfo": undefined,
+      "uri": "3.m4s",
+    },
+  ],
+  "targetDuration": 10,
+}
+`;
+
+exports[`parse media should parse program datetime 1`] = `
+DateTime {
+  "_zone": SystemZone {},
+  "c": {
+    "day": 22,
+    "hour": 13,
+    "millisecond": 166,
+    "minute": 20,
+    "month": 6,
+    "second": 26,
+    "year": 2025,
+  },
+  "invalid": null,
+  "isLuxonDateTime": true,
+  "loc": Locale {
+    "eraCache": {},
+    "fastNumbersCached": null,
+    "intl": "en-US",
+    "locale": "en-US",
+    "meridiemCache": null,
+    "monthsCache": {
+      "format": {},
+      "standalone": {},
+    },
+    "numberingSystem": null,
+    "outputCalendar": null,
+    "specifiedLocale": null,
+    "weekSettings": null,
+    "weekdaysCache": {
+      "format": {},
+      "standalone": {},
+    },
+  },
+  "localWeekData": null,
+  "o": -0,
+  "ts": 1750598426166,
+  "weekData": null,
+}
+`;
