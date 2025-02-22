@@ -54,7 +54,7 @@ function RouteComponent() {
       </div>
       <iframe
         className="grow"
-        src={`/scalar.html?params=${encodeURIComponent(JSON.stringify(params))}`}
+        src={`https://superstreamer.xyz/scalar.html?params=${encodeURIComponent(JSON.stringify(params))}`}
       />
     </div>
   );
