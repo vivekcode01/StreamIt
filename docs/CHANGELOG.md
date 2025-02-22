@@ -1,5 +1,11 @@
 # docs
 
+## 1.2.0
+
+### Minor Changes
+
+- Release of v1.2.0, the fundamentals are now in place to build upon!
+
 ## 1.1.0
 
 ### Minor Changes
