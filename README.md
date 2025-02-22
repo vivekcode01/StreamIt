@@ -51,14 +51,17 @@ Self-hosting can be challenging, but we aim to make hosting Superstreamer as eas
 ## Screenshots
 
 <div align="center">
-  <a href="https://github.com/superstreamerapp/superstreamer/blob/main/docs/public/dashboard-stitcher.png" target="_blank">
-    <img height="150" alt="Dashboard assets" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-stitcher.png" />
+  <a href="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-stitcher.png" target="_blank">
+    <img width="500" alt="Dashboard stitcher" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-stitcher.png" />
   </a>
-  <a href="https://github.com/superstreamerapp/superstreamer/blob/main/docs/public/dashboard-assets.png" target="_blank">
-    <img height="150" alt="Dashboard assets" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-assets.png" />
+  <a href="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-api.png" target="_blank">
+    <img width="500" alt="Dashboard stitcher" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-api.png" />
   </a>
-  <a href="https://github.com/superstreamerapp/superstreamer/blob/main/docs/public/dashboard-job.png" target="_blank">
-    <img height="150" alt="Dashboard assets" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-job.png" />
+  <a href="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-assets.png" target="_blank">
+    <img width="500" alt="Dashboard assets" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-assets.png" />
+  </a>
+  <a href="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-job.png" target="_blank">
+    <img width="500" alt="Dashboard job" src="https://raw.githubusercontent.com/superstreamerapp/superstreamer/main/docs/public/dashboard-job.png" />
   </a>
 </div>
 
