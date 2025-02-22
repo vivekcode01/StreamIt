@@ -1,4 +1,4 @@
-name: Build Artisan binary
+name: [artisan] - standalone
 
 on:
   push:
