@@ -14,7 +14,8 @@ export const storageItemSchema = z
   ])
   .openapi({
     ref: "StorageItem",
-    description: "An item in your S3 storage.",
+    description:
+      "An item in your S3 storage, typically a folder or a file reference.",
   });
 
 export const storageItemsPaginatedSchema = z.object({

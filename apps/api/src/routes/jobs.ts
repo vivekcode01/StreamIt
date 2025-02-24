@@ -13,11 +13,11 @@ import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { validator } from "shared/hono/middleware";
-import { z } from "zod";
 import { apiError } from "../errors";
 import { auth } from "../middleware";
 import { getJob, getJobLogs, getJobs } from "../repositories/jobs";
 import { jobSchema, jobsPaginatedSchema } from "../schemas/jobs";
+import { z } from "../utils/zod";
 
 const inputSchema = z.discriminatedUnion("type", [
   z.object({
@@ -28,15 +28,24 @@ const inputSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("audio"),
     path: z.string(),
-    language: z.string().optional(),
+    language: z.string().optional().openapi({
+      description: "ISO 639 - 3 characters, language",
+    }),
     channels: z.number().optional(),
   }),
   z.object({
     type: z.literal("text"),
     path: z.string(),
-    language: z.string(),
+    language: z.string().openapi({
+      description: "ISO 639 - 3 characters, language",
+    }),
   }),
 ]);
+
+const inputsSchema = z.array(inputSchema).openapi({
+  description:
+    "The source media files, optional fields will be extracted from the source if possible.",
+});
 
 const streamSchema = z.discriminatedUnion("type", [
   z.object({
@@ -50,14 +59,23 @@ const streamSchema = z.discriminatedUnion("type", [
     type: z.literal("audio"),
     codec: z.enum(["aac", "ac3", "eac3"]),
     bitrate: z.number().optional(),
-    language: z.string().optional(),
+    language: z.string().optional().openapi({
+      description: "ISO 639 - 3 characters, language",
+    }),
     channels: z.number().optional(),
   }),
   z.object({
     type: z.literal("text"),
-    language: z.string(),
+    language: z.string().openapi({
+      description: "ISO 639 - 3 characters, language",
+    }),
   }),
 ]);
+
+const streamsSchema = z.array(streamSchema).openapi({
+  description:
+    "Output streams, will try to find the best suitable input for the configured output.",
+});
 
 export const jobsApp = new Hono()
   .use(auth())
@@ -90,13 +108,21 @@ export const jobsApp = new Hono()
     validator(
       "json",
       z.object({
-        assetId: z.string().uuid().default(randomUUID),
-        inputs: z.array(inputSchema),
-        streams: z.array(streamSchema),
+        assetId: z.string().uuid().default(randomUUID).openapi({
+          default: "Randomly generated assetId",
+          description:
+            "Only provide when re-running this job, leave empty for auto generated id, which is advised.",
+        }),
+        inputs: inputsSchema,
+        streams: streamsSchema,
         group: z.string().optional(),
-        language: z.string().optional(),
+        language: z.string().optional().openapi({
+          description: "ISO 639 - 3 characters, language",
+        }),
         concurrency: z.number().default(DEFAULT_CONCURRENCY),
-        public: z.boolean().default(DEFAULT_PUBLIC),
+        public: z.boolean().default(DEFAULT_PUBLIC).openapi({
+          description: "S3 with public-read or private ACL",
+        }),
       }),
     ),
     async (c) => {
@@ -139,10 +165,14 @@ export const jobsApp = new Hono()
     validator(
       "json",
       z.object({
-        assetId: z.string().uuid().default(randomUUID),
+        assetId: z.string().uuid().default(randomUUID).openapi({
+          default: "Randomly generated assetId",
+          description:
+            "Only provide when re-running this job, leave empty for auto generated id, which is advised.",
+        }),
         segmentSize: z.number().default(DEFAULT_SEGMENT_SIZE),
-        inputs: z.array(inputSchema),
-        streams: z.array(streamSchema),
+        inputs: inputsSchema,
+        streams: streamsSchema,
         group: z.string().optional(),
       }),
     ),
@@ -187,9 +217,13 @@ export const jobsApp = new Hono()
         assetId: z.string().uuid().default(randomUUID),
         segmentSize: z.number().default(DEFAULT_SEGMENT_SIZE),
         name: z.string().default(DEFAULT_PACKAGE_NAME),
-        language: z.string().optional(),
+        language: z.string().optional().openapi({
+          description: "ISO 639 - 3 characters, language",
+        }),
         concurrency: z.number().default(DEFAULT_CONCURRENCY),
-        public: z.boolean().default(DEFAULT_PUBLIC),
+        public: z.boolean().default(DEFAULT_PUBLIC).openapi({
+          description: "S3 with public-read or private ACL",
+        }),
       }),
     ),
     async (c) => {

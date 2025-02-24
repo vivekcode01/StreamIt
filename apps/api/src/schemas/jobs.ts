@@ -26,7 +26,7 @@ export const jobSchema: z.ZodType<Job> = baseJobSchema
       .openapi({
         type: "array",
         items: {
-          $ref: "Job",
+          $ref: "#/components/schemas/Job",
         },
       }),
   })

@@ -20,6 +20,12 @@ app.get(
         description:
           "Realtime playlist manipulator. Can be used for ad, bumper or other HLS interstitials insertion on-the-fly. Can apply filters to playlists.",
       },
+      tags: [
+        {
+          name: "Sessions",
+          description: "A session is an individual playout session per viewer.",
+        },
+      ],
     },
   }),
 );
@@ -33,6 +39,8 @@ app.onError((error, c) => {
       error.status,
     );
   }
+
+  console.error(error);
 
   return c.json(
     {
