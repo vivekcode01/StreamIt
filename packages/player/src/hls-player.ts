@@ -382,8 +382,6 @@ export class HlsPlayer {
     });
 
     listen("playing", () => {
-      this.state_?.setStarted();
-
       this.state_?.setPlayhead("playing");
     });
 
