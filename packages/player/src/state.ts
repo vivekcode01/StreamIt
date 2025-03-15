@@ -159,15 +159,14 @@ export class State implements StateProperties {
   ) {
     if (interstitial) {
       this.setSeeking(false);
+      this.interstitial = {
+        ...interstitial,
+        currentTime: 0,
+        duration: NaN,
+      };
+    } else {
+      this.interstitial = null;
     }
-
-    this.interstitial = interstitial
-      ? {
-          ...interstitial,
-          currentTime: 0,
-          duration: NaN,
-        }
-      : null;
 
     this.requestTimingSync(/* skipEvent= */ true);
 
@@ -200,9 +199,9 @@ export class State implements StateProperties {
       this.seekableStart = seekableStart;
     }
 
-    const interstitialTiming = this.params_.getInterstitialTiming();
-    if (interstitialTiming) {
-      assert(this.interstitial);
+    if (this.interstitial) {
+      const interstitialTiming = this.params_.getInterstitialTiming();
+      assert(interstitialTiming);
 
       const currentTime = preciseFloat(interstitialTiming.currentTime);
       const duration = preciseFloat(interstitialTiming.duration);

@@ -50,7 +50,7 @@ export class HlsPlayer {
     this.state_ = new State({
       onEvent: (event: Events) => this.emit_(event),
       getTiming: () => hls.interstitialsManager?.integrated,
-      getInterstitialTiming: () => hls.interstitialsManager?.bufferingPlayer,
+      getInterstitialTiming: () => hls.interstitialsManager?.interstitialPlayer,
     });
 
     hls.attachMedia(this.media_);
@@ -95,8 +95,10 @@ export class HlsPlayer {
 
   seekTo(time: number) {
     assert(this.hls_);
-
-    this.hls_.interstitialsManager?.integrated.seekTo(time);
+    const integrated = this.hls_.interstitialsManager?.integrated;
+    if (integrated) {
+      integrated.currentTime = time;
+    }
   }
 
   setQuality(height: number | null) {
@@ -109,11 +111,10 @@ export class HlsPlayer {
       assert(loadLevel, "No level found for loadLevel index");
 
       const idx = this.hls_.levels.findIndex((level) => {
-        return (
-          level.height === height &&
+        const equalAudioCodec =
           level.audioCodec?.substring(0, 4) ===
-            loadLevel.audioCodec?.substring(0, 4)
-        );
+          loadLevel.audioCodec?.substring(0, 4);
+        return level.height === height && equalAudioCodec;
       });
 
       if (idx < 0) {
