@@ -1,8 +1,9 @@
 import { DateTime } from "luxon";
 import { assert } from "shared/assert";
-import { mapAttributes, partOf } from "./helpers";
+import { hexToByteSequence, mapAttributes, partOf } from "./helpers";
 import type {
   DateRange,
+  Key,
   MediaInitializationSection,
   PlaylistType,
   Resolution,
@@ -42,7 +43,8 @@ export type Tag =
   | ["EXT-X-MEDIA", Media]
   | ["EXT-X-MAP", MediaInitializationSection]
   | ["EXT-X-DATERANGE", DateRange]
-  | ["EXT-X-CUE-OUT", CueOut];
+  | ["EXT-X-CUE-OUT", CueOut]
+  | ["EXT-X-KEY", Key];
 
 export interface ExtInf {
   duration: number;
@@ -311,9 +313,51 @@ function parseLine(line: string): Tag | null {
       ];
     }
 
+    case "EXT-X-KEY": {
+      assert(param, "EXT-X-KEY: no param");
+
+      const attrs: Partial<Key> = {};
+
+      mapAttributes(param, (key, value) => {
+        switch (key) {
+          case "METHOD":
+          case "URI":
+          case "KEYFORMAT":
+          case "KEYFORMATVERSION":
+            attrs.method = value;
+            break;
+
+          case "IV":
+            attrs.iv = parseIV(value);
+            break;
+        }
+      });
+
+      assert(attrs.method, "EXT-X-KEY: no method");
+
+      return [
+        name,
+        {
+          method: attrs.method,
+          uri: attrs.uri,
+          iv: attrs.iv,
+          format: attrs.format,
+          formatVersion: attrs.formatVersion,
+        },
+      ];
+    }
+
     default:
       return null;
   }
+}
+
+function parseIV(value: string) {
+  const iv = hexToByteSequence(value);
+  if (iv.length !== 16) {
+    throw new Error("IV must be a 128-bit unsigned integer");
+  }
+  return iv;
 }
 
 function splitLine(line: string): [string, string | null] {

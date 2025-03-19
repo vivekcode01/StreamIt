@@ -1,4 +1,6 @@
+import { byteSequenceToHex } from "./helpers";
 import type {
+  Key,
   MasterPlaylist,
   MediaInitializationSection,
   MediaPlaylist,
@@ -99,6 +101,7 @@ export function stringifyMediaPlaylist(playlist: MediaPlaylist) {
   }
 
   let lastMap: MediaInitializationSection | undefined;
+  let lastKey: Key | undefined;
 
   playlist.segments.forEach((segment) => {
     // See https://datatracker.ietf.org/doc/html/draft-pantos-hls-rfc8216bis-16#section-4.4.4.5
@@ -110,6 +113,25 @@ export function stringifyMediaPlaylist(playlist: MediaPlaylist) {
         lines.push(`#EXT-X-MAP:${attrs.join(",")}`);
       }
       lastMap = segment.map;
+    }
+    if (segment.key !== lastKey) {
+      if (segment.key) {
+        const attrs = [`METHOD=${segment.key.method}`];
+        if (segment.key.uri) {
+          attrs.push(`URI="${segment.key.uri}"`);
+        }
+        if (segment.key.iv) {
+          attrs.push(`IV=${byteSequenceToHex(segment.key.iv)}`);
+        }
+        if (segment.key.format) {
+          attrs.push(`KEYFORMAT="${segment.key.format}"`);
+        }
+        if (segment.key.formatVersion) {
+          attrs.push(`KEYFORMATVERSIONS="${segment.key.formatVersion}"`);
+        }
+        lines.push(`#EXT-X-KEY:${attrs.join(",")}`);
+      }
+      lastKey = segment.key;
     }
 
     if (segment.discontinuity) {

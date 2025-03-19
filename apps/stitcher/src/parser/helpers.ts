@@ -57,3 +57,32 @@ function splitByCommaWithPreservingQuotes(str: string) {
 
   return list;
 }
+
+export function hexToByteSequence(str: string): Uint8Array {
+  if (str.startsWith("0x") || str.startsWith("0X")) {
+    str = str.slice(2);
+  }
+  const numArray = new Uint8Array(str.length / 2);
+  for (let i = 0; i < str.length; i += 2) {
+    numArray[i / 2] = Number.parseInt(str.slice(i, i + 2), 16);
+  }
+  return numArray;
+}
+
+export function byteSequenceToHex(
+  sequence: Uint8Array,
+  start = 0,
+  end = sequence.byteLength,
+) {
+  if (end <= start) {
+    throw new Error("End must be larger than start");
+  }
+  const list: string[] = [];
+  for (let i = start; i < end; i++) {
+    const chunk = sequence[i];
+    if (chunk !== undefined) {
+      list.push(`0${(chunk & 0xff).toString(16).toUpperCase()}`.slice(-2));
+    }
+  }
+  return `0x${list.join("")}`;
+}

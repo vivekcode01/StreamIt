@@ -38,6 +38,7 @@ export interface Segment {
   duration: number;
   discontinuity?: boolean;
   map?: MediaInitializationSection;
+  key?: Key;
   programDateTime?: DateTime;
   spliceInfo?: SpliceInfo;
 }
@@ -48,6 +49,14 @@ export interface SpliceInfo {
 }
 
 export type PlaylistType = "EVENT" | "VOD";
+
+export interface Key {
+  method: string;
+  uri?: string;
+  iv?: Uint8Array;
+  format?: string;
+  formatVersion?: string;
+}
 
 export interface MediaPlaylist {
   independentSegments?: boolean;
