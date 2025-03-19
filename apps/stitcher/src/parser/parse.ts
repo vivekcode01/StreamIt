@@ -3,6 +3,7 @@ import { lexicalParse } from "./lexical-parse";
 import type { Tag } from "./lexical-parse";
 import type {
   DateRange,
+  Key,
   MasterPlaylist,
   MediaInitializationSection,
   MediaPlaylist,
@@ -92,11 +93,17 @@ function formatMediaPlaylist(tags: Tag[]): MediaPlaylist {
   let segmentStart = -1;
 
   let map: MediaInitializationSection | undefined;
+  let key: Key | undefined;
   tags.forEach(([name, value], index) => {
     if (name === "EXT-X-MAP") {
       // TODO: We might be better off passing on segments to |parseSegment| and look up
       // the last valid map.
       map = value;
+    }
+    if (name === "EXT-X-KEY") {
+      // TODO: We might be better off passing on segments to |parseSegment| and look up
+      // the last valid key.
+      key = value;
     }
 
     // TODO: When we have EXT-X-KEY support, we're better off passing a full list of segments
@@ -116,7 +123,7 @@ function formatMediaPlaylist(tags: Tag[]): MediaPlaylist {
       const segmentTags = tags.slice(segmentStart, index + 1);
       const uri = nextLiteral(segmentTags, segmentTags.length - 2);
 
-      const segment = parseSegment(segmentTags, uri, map);
+      const segment = parseSegment(segmentTags, uri, map, key);
       segments.push(segment);
 
       segmentStart = -1;
@@ -166,6 +173,7 @@ function isSegmentTag(name: Tag[0]) {
     case "EXT-X-MAP":
     case "EXT-X-CUE-OUT":
     case "EXT-X-CUE-IN":
+    case "EXT-X-KEY":
       return true;
   }
   return false;
@@ -175,6 +183,7 @@ function parseSegment(
   tags: Tag[],
   uri: string,
   map?: MediaInitializationSection,
+  key?: Key,
 ): Segment {
   let duration: number | undefined;
   let discontinuity: boolean | undefined;
@@ -206,6 +215,7 @@ function parseSegment(
     duration,
     discontinuity,
     map,
+    key,
     programDateTime,
     spliceInfo,
   };
