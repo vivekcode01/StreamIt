@@ -12,6 +12,7 @@ exports[`parse media should parse basic 1`] = `
     {
       "discontinuity": undefined,
       "duration": 10,
+      "key": undefined,
       "map": undefined,
       "programDateTime": undefined,
       "spliceInfo": undefined,
@@ -20,6 +21,7 @@ exports[`parse media should parse basic 1`] = `
     {
       "discontinuity": undefined,
       "duration": 10,
+      "key": undefined,
       "map": undefined,
       "programDateTime": undefined,
       "spliceInfo": undefined,
@@ -28,6 +30,7 @@ exports[`parse media should parse basic 1`] = `
     {
       "discontinuity": undefined,
       "duration": 4.5,
+      "key": undefined,
       "map": undefined,
       "programDateTime": undefined,
       "spliceInfo": undefined,
