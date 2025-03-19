@@ -96,7 +96,7 @@ export function filterMasterPlaylist(master: MasterPlaylist, filter: Filter) {
   }
   if (filter.disableAutoSelect) {
     master.renditions.forEach((rendition) => {
-      if (rendition.autoSelect) {
+      if (!rendition.default && rendition.autoSelect) {
         rendition.autoSelect = false;
       }
     });
