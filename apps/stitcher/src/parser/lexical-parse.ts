@@ -67,6 +67,7 @@ export interface Media {
   channels?: string;
   default?: boolean;
   autoSelect?: boolean;
+  characteristics?: string[];
 }
 
 export interface CueOut {
@@ -195,6 +196,9 @@ function parseLine(line: string): Tag | null {
           case "AUTOSELECT":
             attrs.autoSelect = value === "YES" ? true : false;
             break;
+          case "CHARACTERISTICS":
+            attrs.characteristics = value.split(",").map((char) => char.trim());
+            break;
         }
       });
 
@@ -213,6 +217,7 @@ function parseLine(line: string): Tag | null {
           channels: attrs.channels,
           default: attrs.default,
           autoSelect: attrs.autoSelect,
+          characteristics: attrs.characteristics,
         },
       ];
     }

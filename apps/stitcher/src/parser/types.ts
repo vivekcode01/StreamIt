@@ -14,6 +14,7 @@ export interface Rendition {
   channels?: string;
   default?: boolean;
   autoSelect?: boolean;
+  characteristics?: string[];
 }
 
 export interface Variant {

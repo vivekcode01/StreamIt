@@ -38,6 +38,7 @@ exports[`parse master should parse with groups 1`] = `
     {
       "autoSelect": true,
       "channels": undefined,
+      "characteristics": undefined,
       "default": true,
       "groupId": "aud1",
       "language": "eng",
@@ -48,6 +49,7 @@ exports[`parse master should parse with groups 1`] = `
     {
       "autoSelect": true,
       "channels": undefined,
+      "characteristics": undefined,
       "default": true,
       "groupId": "aud2",
       "language": "nld",
@@ -58,6 +60,7 @@ exports[`parse master should parse with groups 1`] = `
     {
       "autoSelect": true,
       "channels": undefined,
+      "characteristics": undefined,
       "default": true,
       "groupId": "sub1",
       "language": "eng",
@@ -100,6 +103,7 @@ exports[`parse master should parse with audio channels 1`] = `
     {
       "autoSelect": true,
       "channels": "6",
+      "characteristics": undefined,
       "default": true,
       "groupId": "aud1",
       "language": "eng",

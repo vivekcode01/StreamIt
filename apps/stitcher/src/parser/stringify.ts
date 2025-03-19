@@ -36,6 +36,9 @@ export function stringifyMasterPlaylist(playlist: MasterPlaylist) {
     if (rendition.channels) {
       attrs.push(`CHANNELS="${rendition.channels}"`);
     }
+    if (rendition.characteristics) {
+      attrs.push(`CHARACTERISTICS="${rendition.characteristics.join(",")}"`);
+    }
     lines.push(`#EXT-X-MEDIA:${attrs.join(",")}`);
   });
 
