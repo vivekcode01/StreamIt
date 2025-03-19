@@ -6,7 +6,7 @@
     "dev": "bun --watch --inspect=ws://localhost:6500/sprs-stitcher ./src/index.ts",
     "dev:wrangler": "wrangler dev ./src/index.ts",
     "build": "bun build ./src/index.ts --target=bun --outdir=./dist",
-    "deploy:wrangler": "wrangler deploy --minify ./src/index.ts",
+    "deploy:wrangler": "npx wrangler deploy --minify ./src/index.ts",
     "test": "bun test",
     "lint": "tsc && eslint"
   },

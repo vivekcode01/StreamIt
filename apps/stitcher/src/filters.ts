@@ -4,7 +4,7 @@ import type { MasterPlaylist } from "./parser";
 export interface Filter {
   resolution?: string;
   audioLanguage?: string;
-  autoSelect?: "none" | "disabled";
+  textAutoSelect?: "none" | "disabled";
 }
 
 export const filterQuerySchema = z
@@ -94,16 +94,19 @@ export function filterMasterPlaylist(master: MasterPlaylist, filter: Filter) {
       return true;
     });
   }
-  if (filter.autoSelect) {
-    master.renditions.forEach((rendition) => {
-      if (filter.autoSelect === "disabled") {
+  master.renditions.forEach((rendition) => {
+    if (filter.textAutoSelect && rendition.type === "SUBTITLES") {
+      if (filter.textAutoSelect === "disabled") {
         rendition.default = false;
       }
-      if (filter.autoSelect === "disabled" || filter.autoSelect === "none") {
+      if (
+        filter.textAutoSelect === "disabled" ||
+        filter.textAutoSelect === "none"
+      ) {
         if (!rendition.default && rendition.autoSelect) {
           rendition.autoSelect = false;
         }
       }
-    });
-  }
+    }
+  });
 }
