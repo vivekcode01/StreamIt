@@ -31,6 +31,8 @@ function formatMasterPlaylist(tags: Tag[]): MasterPlaylist {
         uri: value.uri,
         channels: value.channels,
         language: value.language,
+        default: value.default,
+        autoSelect: value.autoSelect,
       });
     }
     if (name === "EXT-X-STREAM-INF") {

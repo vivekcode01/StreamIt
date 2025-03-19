@@ -63,6 +63,8 @@ export interface Media {
   language?: string;
   uri?: string;
   channels?: string;
+  default?: boolean;
+  autoSelect?: boolean;
 }
 
 export interface CueOut {
@@ -184,6 +186,12 @@ function parseLine(line: string): Tag | null {
             break;
           case "CHANNELS":
             attrs.channels = value;
+            break;
+          case "DEFAULT":
+            attrs.default = value === "YES" ? true : false;
+            break;
+          case "AUTOSELECT":
+            attrs.autoSelect = value === "YES" ? true : false;
             break;
         }
       });

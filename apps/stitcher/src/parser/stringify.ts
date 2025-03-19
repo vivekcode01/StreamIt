@@ -22,6 +22,12 @@ export function stringifyMasterPlaylist(playlist: MasterPlaylist) {
     if (rendition.language) {
       attrs.push(`LANGUAGE="${rendition.language}"`);
     }
+    if (rendition.default !== undefined) {
+      attrs.push(`DEFAULT=${rendition.default ? "YES" : "NO"}`);
+    }
+    if (rendition.autoSelect !== undefined) {
+      attrs.push(`AUTOSELECT=${rendition.autoSelect ? "YES" : "NO"}`);
+    }
     if (rendition.uri) {
       attrs.push(`URI="${rendition.uri}"`);
     }
