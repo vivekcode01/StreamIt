@@ -211,6 +211,8 @@ function parseLine(line: string): Tag | null {
           name: attrs.name,
           uri: attrs.uri,
           channels: attrs.channels,
+          default: attrs.default,
+          autoSelect: attrs.autoSelect,
         },
       ];
     }
@@ -301,6 +303,18 @@ function parseLine(line: string): Tag | null {
     case "EXT-X-CUE-OUT": {
       assert(param, "EXT-X-CUE-OUT: no param");
 
+      // EXT-X-CUE-OUT can also contain only a number. Try to parse it,
+      // and assume its the duration.
+      const valueAsNumber = Number.parseFloat(param);
+      if (!Number.isNaN(valueAsNumber)) {
+        return [
+          name,
+          {
+            duration: valueAsNumber,
+          },
+        ];
+      }
+
       const attrs: Partial<CueOut> = {};
 
       mapAttributes(param, (key, value) => {
@@ -329,12 +343,17 @@ function parseLine(line: string): Tag | null {
       mapAttributes(param, (key, value) => {
         switch (key) {
           case "METHOD":
-          case "URI":
-          case "KEYFORMAT":
-          case "KEYFORMATVERSION":
             attrs.method = value;
             break;
-
+          case "URI":
+            attrs.uri = value;
+            break;
+          case "KEYFORMAT":
+            attrs.format = value;
+            break;
+          case "KEYFORMATVERSION":
+            attrs.formatVersion = value;
+            break;
           case "IV":
             attrs.iv = parseIV(value);
             break;
