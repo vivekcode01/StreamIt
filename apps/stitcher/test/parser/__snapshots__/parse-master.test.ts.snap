@@ -36,7 +36,9 @@ exports[`parse master should parse with groups 1`] = `
   "independentSegments": false,
   "renditions": [
     {
+      "autoSelect": undefined,
       "channels": undefined,
+      "default": undefined,
       "groupId": "aud1",
       "language": "eng",
       "name": "English",
@@ -44,7 +46,9 @@ exports[`parse master should parse with groups 1`] = `
       "uri": "a1.m3u8",
     },
     {
+      "autoSelect": undefined,
       "channels": undefined,
+      "default": undefined,
       "groupId": "aud2",
       "language": "nld",
       "name": "Nederlands",
@@ -52,7 +56,9 @@ exports[`parse master should parse with groups 1`] = `
       "uri": "a2.m3u8",
     },
     {
+      "autoSelect": undefined,
       "channels": undefined,
+      "default": undefined,
       "groupId": "sub1",
       "language": "eng",
       "name": "English",
@@ -92,7 +98,9 @@ exports[`parse master should parse with audio channels 1`] = `
   "independentSegments": false,
   "renditions": [
     {
+      "autoSelect": undefined,
       "channels": "6",
+      "default": undefined,
       "groupId": "aud1",
       "language": "eng",
       "name": "English",
