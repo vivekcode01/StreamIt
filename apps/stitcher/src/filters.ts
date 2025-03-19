@@ -4,6 +4,7 @@ import type { MasterPlaylist } from "./parser";
 export interface Filter {
   resolution?: string;
   audioLanguage?: string;
+  disableAutoSelect?: boolean;
 }
 
 export const filterQuerySchema = z
@@ -91,6 +92,13 @@ export function filterMasterPlaylist(master: MasterPlaylist, filter: Filter) {
         return false;
       }
       return true;
+    });
+  }
+  if (filter.disableAutoSelect) {
+    master.renditions.forEach((rendition) => {
+      if (rendition.autoSelect) {
+        rendition.autoSelect = false;
+      }
     });
   }
 }
