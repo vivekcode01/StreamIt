@@ -4,7 +4,7 @@ import type { MasterPlaylist } from "./parser";
 export interface Filter {
   resolution?: string;
   audioLanguage?: string;
-  disableAutoSelect?: boolean;
+  autoSelect?: "none" | "disabled";
 }
 
 export const filterQuerySchema = z
@@ -94,10 +94,15 @@ export function filterMasterPlaylist(master: MasterPlaylist, filter: Filter) {
       return true;
     });
   }
-  if (filter.disableAutoSelect) {
+  if (filter.autoSelect) {
     master.renditions.forEach((rendition) => {
-      if (!rendition.default && rendition.autoSelect) {
-        rendition.autoSelect = false;
+      if (filter.autoSelect === "disabled") {
+        rendition.default = false;
+      }
+      if (filter.autoSelect === "disabled" || filter.autoSelect === "none") {
+        if (!rendition.default && rendition.autoSelect) {
+          rendition.autoSelect = false;
+        }
       }
     });
   }

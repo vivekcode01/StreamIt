@@ -84,7 +84,7 @@ export const sessionsApp = new Hono()
           .object({
             resolution: z.string().optional(),
             audioLanguage: z.string().optional(),
-            disableAutoSelect: z.boolean().optional(),
+            autoSelect: z.enum(["none", "disabled"]).optional(),
           })
           .optional()
           .openapi({
