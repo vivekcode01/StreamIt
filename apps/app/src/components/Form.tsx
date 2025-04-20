@@ -3,7 +3,7 @@ import cn from "clsx";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Controller } from "react-hook-form";
-import type { InputProps } from "@heroui/input";
+import type { InputProps } from "@heroui/react";
 import type { Control } from "react-hook-form";
 
 interface FormProps<T extends FieldRecord> {

@@ -1,9 +1,4 @@
-import {
-  Drawer,
-  DrawerBody,
-  DrawerContent,
-  DrawerHeader,
-} from "@heroui/drawer";
+import { Drawer, DrawerBody, DrawerContent, DrawerHeader } from "@heroui/react";
 import { assetsPaginatedSchema, toParams } from "@superstreamer/api/client";
 import {
   createFileRoute,

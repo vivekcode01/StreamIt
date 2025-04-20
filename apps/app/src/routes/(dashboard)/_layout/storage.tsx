@@ -1,4 +1,4 @@
-import { BreadcrumbItem, Breadcrumbs } from "@heroui/breadcrumbs";
+import { BreadcrumbItem, Breadcrumbs } from "@heroui/react";
 import { toParams } from "@superstreamer/api/client";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";

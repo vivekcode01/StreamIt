@@ -1,8 +1,7 @@
 import Hls from "hls.js";
-import { assert } from "shared/assert";
 import { EventEmitter } from "tseep/lib/ee-safe";
 import { EventManager } from "./event-manager";
-import { getLangCode } from "./helpers";
+import { assert, getLangCode } from "./helpers";
 import { getState, State } from "./state";
 import { Events } from "./types";
 import type {

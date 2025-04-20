@@ -1,5 +1,4 @@
-import { assert } from "shared/assert";
-import { preciseFloat } from "./helpers";
+import { assert, preciseFloat } from "./helpers";
 import { Events } from "./types";
 import type {
   AudioTrack,
