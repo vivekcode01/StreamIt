@@ -7,7 +7,7 @@ import {
   waitForChildren,
 } from "bolt";
 import { by639_2T } from "iso-language-codes";
-import { assert } from "shared/assert";
+import { assert } from "../assert";
 import {
   getDefaultAudioBitrate,
   getDefaultVideoBitrate,

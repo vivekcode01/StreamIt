@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { DateTime } from "luxon";
-import { validator } from "shared/hono/middleware";
+import { validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { getAppContext } from "../app-context";
 import { filterQuerySchema } from "../filters";

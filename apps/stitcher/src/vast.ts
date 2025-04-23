@@ -1,5 +1,5 @@
 import { DOMParser } from "@xmldom/xmldom";
-import { assert } from "shared/assert";
+import { assert } from "./assert";
 import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
 import { replaceUrlParams, resolveUri } from "./lib/url";

@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
-import { resolver } from "hono-openapi/zod";
-import { validator } from "shared/hono/middleware";
+import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { auth } from "../middleware";
 import {

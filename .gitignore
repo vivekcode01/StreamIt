@@ -32,6 +32,6 @@ vite.config.ts.timestamp*
 
 .wrangler
 
-# Dev Folder
+# Docker
 docker/volume
 docker/sprs-localstack-data

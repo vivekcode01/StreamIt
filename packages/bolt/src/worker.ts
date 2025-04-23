@@ -1,5 +1,5 @@
 import { WaitingChildrenError, Worker } from "bullmq";
-import { assert } from "shared/assert";
+import { assert } from "./assert";
 import { env } from "./env";
 import { WorkerDir } from "./lib/worker-dir";
 import { WorkerProgressTracker } from "./lib/worker-progress-tracker";

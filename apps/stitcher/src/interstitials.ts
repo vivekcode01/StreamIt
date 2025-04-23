@@ -1,4 +1,4 @@
-import { assert } from "shared/assert";
+import { assert } from "./assert";
 import { createUrl } from "./lib/url";
 import { pushTimedEvent } from "./playlist";
 import { getAssetsFromVastParams } from "./vast";

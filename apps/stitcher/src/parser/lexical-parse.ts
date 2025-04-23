@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { assert } from "shared/assert";
+import { assert } from "../assert";
 import { hexToByteSequence, mapAttributes, partOf } from "./helpers";
 import type {
   DateRange,

@@ -1,4 +1,4 @@
-import { assert } from "shared/assert";
+import { assert } from "../assert";
 import { lexicalParse } from "./lexical-parse";
 import type { Tag } from "./lexical-parse";
 import type {

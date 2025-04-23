@@ -3,9 +3,9 @@
   "display": "Bun",
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "lib": ["ESNext"],
-    "target": "ESNext",
-    "module": "ESNext",
+    "lib": ["esnext"],
+    "target": "esnext",
+    "module": "esnext",
     "moduleDetection": "force",
     "jsx": "react-jsx",
     "allowJs": true,

@@ -1,7 +1,7 @@
 {
   "name": "@superstreamer/player",
   "version": "2.0.0",
-  "description": "Video player controls (React, Tailwind) and an HLS.js facade",
+  "description": "An HLS.js facade",
   "author": "Superstreamer",
   "homepage": "https://github.com/matvp91/superstreamer/tree/main/packages/player",
   "maintainers": [
@@ -27,10 +27,7 @@
   },
   "devDependencies": {
     "config": "workspace:*",
-    "eslint": "^9.25.0",
     "tsup": "^8.4.0",
-    "typedoc": "^0.26.11",
-    "typedoc-plugin-markdown": "^4.6.2",
     "typescript": "^5.8.3"
   },
   "repository": {

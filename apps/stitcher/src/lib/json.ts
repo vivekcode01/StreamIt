@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { assert } from "shared/assert";
+import { assert } from "../assert";
 import { parse, registerCustom, stringify } from "superjson";
 
 registerCustom<DateTime, string>(

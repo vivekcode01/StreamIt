@@ -5,7 +5,6 @@ export function useSwaggerSchema(url: string, endpoint: string) {
     const response = await fetch(url);
     return response.json();
   });
-
   return data?.paths[endpoint].post.requestBody.content["application/json"]
     .schema;
 }

@@ -11,8 +11,7 @@ import {
 } from "bolt";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
-import { resolver } from "hono-openapi/zod";
-import { validator } from "shared/hono/middleware";
+import { resolver, validator } from "hono-openapi/zod";
 import { apiError } from "../errors";
 import { auth } from "../middleware";
 import { getJob, getJobLogs, getJobs } from "../repositories/jobs";

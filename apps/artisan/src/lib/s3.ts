@@ -11,7 +11,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { ConfiguredRetryStrategy } from "@smithy/util-retry";
 import { Glob } from "bun";
 import { lookup } from "mime-types";
-import { assert } from "shared/assert";
+import { assert } from "../assert";
 import { env } from "../env";
 
 const retryStrategy = new ConfiguredRetryStrategy(

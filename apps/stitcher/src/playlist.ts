@@ -1,4 +1,4 @@
-import { assert } from "shared/assert";
+import { assert } from "./assert";
 import { filterMasterPlaylist, formatFilterToQueryParam } from "./filters";
 import { getAssets, getStaticDateRanges } from "./interstitials";
 import { createUrl, joinUrl, replaceUrlParams } from "./lib/url";

@@ -1,7 +1,7 @@
 import { env as getEnv, getRuntimeKey } from "hono/adapter";
 import { sign } from "hono/jwt";
 import * as secureEncrypt from "secure-encrypt";
-import { assert } from "shared/assert";
+import { assert } from "./assert";
 import { z } from "zod";
 import type { KVNamespace } from "@cloudflare/workers-types";
 import type { ApiClient } from "@superstreamer/api/client";
