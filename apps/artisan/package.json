@@ -7,7 +7,7 @@
     "build": "bun build ./src/index.ts --target=bun --outdir=./dist",
     "build:binary": "bun build ./src/index.ts --compile --outfile ./dist/artisan",
     "test": "bun test",
-    "lint": "biome lint --write ./src ./test",
+    "lint": "biome lint ./src ./test",
     "install-bin": "./scripts/install-bin.sh"
   },
   "dependencies": {

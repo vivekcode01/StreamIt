@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "bun --watch --inspect=ws://localhost:6499/sprs-api ./src/index.ts",
     "build": "bun build ./src/index.ts --target=bun --outdir=./dist && cp -r ./src/db/migrations ./dist",
-    "lint": "biome lint --write ./src ./client"
+    "lint": "biome lint ./src ./client"
   },
   "devDependencies": {
     "@types/bun": "latest",

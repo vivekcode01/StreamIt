@@ -5,7 +5,7 @@
   "type": "module",
   "main": "./src/index.ts",
   "scripts": {
-    "lint": "biome lint --write ./src"
+    "lint": "biome lint ./src"
   },
   "devDependencies": {
     "@types/bun": "latest",
