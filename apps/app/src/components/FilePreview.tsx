@@ -1,9 +1,9 @@
 import { Modal, ModalBody, ModalContent } from "@heroui/react";
 import { storageFileSchema } from "@superstreamer/api/client";
-import useSWR from "swr";
-import { DataView } from "./DataView";
-import { useApi } from "../api";
 import type { StorageFile } from "@superstreamer/api/client";
+import useSWR from "swr";
+import { useApi } from "../api";
+import { ObjView } from "./ObjView";
 
 interface FilePreviewProps {
   path: string | null;
@@ -49,16 +49,18 @@ export function FilePreview({ path, onClose }: FilePreviewProps) {
 
 function Preview({ file }: { file: StorageFile }) {
   if (file.mode === "payload") {
-    return <DataView data={file.payload} />;
+    return <ObjView data={file.payload} />;
   }
   if (file.mode === "url") {
     if (file.type === "video") {
       return (
+        // biome-ignore lint/a11y/useMediaCaption: No caption
         <video src={file.url} controls className="w-full max-w-lg mx-auto" />
       );
     }
     if (file.type === "audio") {
       return (
+        // biome-ignore lint/a11y/useMediaCaption: No caption
         <audio src={file.url} controls className="w-full max-w-lg mx-auto" />
       );
     }

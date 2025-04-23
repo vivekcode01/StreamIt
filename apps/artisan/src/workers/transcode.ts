@@ -6,14 +6,6 @@ import {
   outcomeQueue,
   waitForChildren,
 } from "bolt";
-import { by639_2T } from "iso-language-codes";
-import { assert } from "../assert";
-import {
-  getDefaultAudioBitrate,
-  getDefaultVideoBitrate,
-} from "../lib/default-values";
-import { s3UploadJson } from "../lib/s3";
-import type { MetaStruct } from "../lib/file-helpers";
 import type {
   FfmpegResult,
   FfprobeResult,
@@ -26,13 +18,21 @@ import type {
   WorkerCallback,
 } from "bolt";
 import type { Job } from "bullmq";
+import { by639_2T } from "iso-language-codes";
+import { assert } from "../assert";
+import {
+  getDefaultAudioBitrate,
+  getDefaultVideoBitrate,
+} from "../lib/default-values";
+import type { MetaStruct } from "../lib/file-helpers";
+import { s3UploadJson } from "../lib/s3";
 
 enum Step {
-  Initial,
-  Ffmpeg,
-  Meta,
-  Outcome,
-  Finish,
+  Initial = 0,
+  Ffmpeg = 1,
+  Meta = 2,
+  Outcome = 3,
+  Finish = 4,
 }
 
 export const transcodeCallback: WorkerCallback<
@@ -239,10 +239,10 @@ export function getMatches(
   inputs: Input[],
 ): Match[] {
   return partials.reduce<Match[]>((acc, partial) => {
-    inputs.forEach((input) => {
+    for (const input of inputs) {
       const stream = mergeStream(partial, input);
       if (!stream) {
-        return;
+        continue;
       }
 
       // We'll only have merge stream when types match, thus we know
@@ -250,11 +250,11 @@ export function getMatches(
       const match = [stream.type, stream, input] as Match;
 
       if (shouldSkipMatch(match)) {
-        return;
+        continue;
       }
 
       acc.push(match);
-    });
+    }
 
     return acc;
   }, []);
@@ -345,10 +345,7 @@ function defaultReason<T extends Stream["type"]>(
   type: T,
   prop: keyof Extract<Stream, { type: T }>,
 ) {
-  return (
-    `Could not extract a default value for "${type}" "${prop.toString()}", ` +
-    "You will have to provide it in the stream instead."
-  );
+  return `Could not extract a default value for "${type}" "${prop.toString()}", You will have to provide it in the stream instead.`;
 }
 
 function getLangCode(value?: string) {

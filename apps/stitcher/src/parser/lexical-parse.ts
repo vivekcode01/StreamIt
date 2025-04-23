@@ -106,7 +106,7 @@ function parseLine(line: string): Tag | null {
       return [
         name,
         {
-          duration: parseFloat(chunks[0]),
+          duration: Number.parseFloat(chunks[0]),
         },
       ];
     }
@@ -127,8 +127,8 @@ function parseLine(line: string): Tag | null {
             assert(chunks[0], "EXT-X-STREAM-INF DURATION: no width");
             assert(chunks[1], "EXT-X-STREAM-INF DURATION: no height");
             attrs.resolution = {
-              width: parseFloat(chunks[0]),
-              height: parseFloat(chunks[1]),
+              width: Number.parseFloat(chunks[0]),
+              height: Number.parseFloat(chunks[1]),
             };
             break;
           }
@@ -191,10 +191,10 @@ function parseLine(line: string): Tag | null {
             attrs.channels = value;
             break;
           case "DEFAULT":
-            attrs.default = value === "YES" ? true : false;
+            attrs.default = value === "YES";
             break;
           case "AUTOSELECT":
-            attrs.autoSelect = value === "YES" ? true : false;
+            attrs.autoSelect = value === "YES";
             break;
           case "CHARACTERISTICS":
             attrs.characteristics = value.split(",").map((char) => char.trim());

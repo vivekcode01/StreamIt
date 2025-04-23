@@ -1,5 +1,5 @@
 import { toParams } from "@superstreamer/api/client";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 import { z } from "zod";
 import { AutoRefresh } from "../../../../components/AutoRefresh";
@@ -71,13 +71,13 @@ function RouteComponent() {
         mapRow={(item) => ({
           key: item.id,
           cells: [
-            <JobState job={item} />,
-            <Link to={`/jobs/${item.id}`}>
+            <JobState key="1" job={item} />,
+            <Link key="2" to="/jobs/$id" params={{ id: item.id }}>
               <div className="font-medium">{item.name}</div>
               <Format className="text-xs" format="short-id" value={item.id} />
             </Link>,
-            <Format format="duration" value={item.duration} />,
-            <Format format="date" value={item.createdAt} />,
+            <Format key="3" format="duration" value={item.duration} />,
+            <Format key="4" format="date" value={item.createdAt} />,
           ],
         })}
       />

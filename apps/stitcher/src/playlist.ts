@@ -1,5 +1,8 @@
+import type { DateTime } from "luxon";
+import type { AppContext } from "./app-context";
 import { assert } from "./assert";
 import { filterMasterPlaylist, formatFilterToQueryParam } from "./filters";
+import type { Filter } from "./filters";
 import { getAssets, getStaticDateRanges } from "./interstitials";
 import { createUrl, joinUrl, replaceUrlParams } from "./lib/url";
 import {
@@ -8,15 +11,12 @@ import {
   stringifyMasterPlaylist,
   stringifyMediaPlaylist,
 } from "./parser";
-import { updateSession } from "./session";
-import { fetchVmap, toAdBreakTimeOffset } from "./vmap";
-import type { AppContext } from "./app-context";
-import type { Filter } from "./filters";
 import type { MasterPlaylist, MediaPlaylist } from "./parser";
+import { updateSession } from "./session";
 import type { Session } from "./session";
 import type { TimedEvent } from "./types";
+import { fetchVmap, toAdBreakTimeOffset } from "./vmap";
 import type { VmapAdBreak } from "./vmap";
-import type { DateTime } from "luxon";
 
 export async function formatMasterPlaylist(
   context: AppContext,
@@ -109,8 +109,7 @@ export async function fetchDuration(url: string) {
 
   const media = await fetchMediaPlaylist(joinUrl(url, variant.uri));
   return media.segments.reduce((acc, segment) => {
-    acc += segment.duration;
-    return acc;
+    return acc + segment.duration;
   }, 0);
 }
 
@@ -191,12 +190,12 @@ export function rewriteMediaPlaylistUrls(
   mediaUrl: string,
   media: MediaPlaylist,
 ) {
-  media.segments.forEach((segment) => {
+  for (const segment of media.segments) {
     if (segment.map?.uri === "init.mp4") {
       segment.map.uri = joinUrl(mediaUrl, segment.map.uri);
     }
     segment.uri = joinUrl(mediaUrl, segment.uri);
-  });
+  }
 }
 
 /**
@@ -204,12 +203,12 @@ export function rewriteMediaPlaylistUrls(
  * @param media
  */
 export function rewriteSpliceInfoSegments(media: MediaPlaylist) {
-  media.segments.forEach((segment) => {
+  for (const segment of media.segments) {
     if (segment.spliceInfo) {
-      delete segment.spliceInfo;
+      segment.spliceInfo = undefined;
       segment.discontinuity = true;
     }
-  });
+  }
 }
 
 async function initSessionOnMasterReq(context: AppContext, session: Session) {
@@ -224,12 +223,12 @@ async function initSessionOnMasterReq(context: AppContext, session: Session) {
     // across sessions later, we can do it here, such as tracking pixels.
     session.vmap.result = {};
 
-    vmap.adBreaks.forEach((adBreak) => {
+    for (const adBreak of vmap.adBreaks) {
       const timedEvent = mapAdBreakToTimedEvent(session.startTime, adBreak);
       if (timedEvent) {
         pushTimedEvent(session.timedEvents, timedEvent);
       }
-    });
+    }
 
     storeSession = true;
   }

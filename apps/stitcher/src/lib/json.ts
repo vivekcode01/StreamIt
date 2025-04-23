@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
-import { assert } from "../assert";
 import { parse, registerCustom, stringify } from "superjson";
+import { assert } from "../assert";
 
 registerCustom<DateTime, string>(
   {
@@ -15,7 +15,7 @@ registerCustom<DateTime, string>(
   "DateTime",
 );
 
-export const JSON = {
+export const SuperJSON = {
   parse,
   stringify,
 };

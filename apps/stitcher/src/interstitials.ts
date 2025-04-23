@@ -1,12 +1,12 @@
+import type { DateTime } from "luxon";
+import type { AppContext } from "./app-context";
 import { assert } from "./assert";
 import { createUrl } from "./lib/url";
-import { pushTimedEvent } from "./playlist";
-import { getAssetsFromVastParams } from "./vast";
-import type { AppContext } from "./app-context";
 import type { DateRange, Segment } from "./parser";
+import { pushTimedEvent } from "./playlist";
 import type { Session } from "./session";
 import type { Asset, TimedEvent } from "./types";
-import type { DateTime } from "luxon";
+import { getAssetsFromVastParams } from "./vast";
 
 /**
  * Create dateranges for a session.
@@ -29,7 +29,9 @@ export function getStaticDateRanges(
   // Check if segments have event info (such as splice info) and push them
   // to the list of events.
   const segmentTimedEvents = getTimedEventsFromSegments(segments);
-  segmentTimedEvents.forEach((event) => pushTimedEvent(timedEvents, event));
+  for (const event of segmentTimedEvents) {
+    pushTimedEvent(timedEvents, event);
+  }
 
   return timedEvents.map((timedEvent) => {
     const assetListUrl = createUrl(context, "out/asset-list.json", {

@@ -1,9 +1,9 @@
 import { Button, Input } from "@heroui/react";
+import type { InputProps } from "@heroui/react";
 import cn from "clsx";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Controller } from "react-hook-form";
-import type { InputProps } from "@heroui/react";
 import type { Control } from "react-hook-form";
 
 interface FormProps<T extends FieldRecord> {
@@ -46,11 +46,12 @@ export function Form<T extends FieldRecord>({
 
   useEffect(() => {
     const currentValues = getValues();
-    Object.entries(fields).forEach(([name, field]) => {
+    const entries = Object.entries(fields);
+    for (const [name, field] of entries) {
       if (currentValues[name] !== field.value) {
         setValue(name, field.value);
       }
-    });
+    }
   }, [fields]);
 
   return (
@@ -105,7 +106,7 @@ export function FormInput({
   ...props
 }: {
   name: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: USe any
   control: Control<any, any>;
 } & InputProps) {
   return (
@@ -123,6 +124,6 @@ export function FormInput({
           />
         );
       }}
-    ></Controller>
+    />
   );
 }

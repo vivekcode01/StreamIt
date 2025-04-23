@@ -1,11 +1,11 @@
-interface DataViewProps {
+interface ObjViewProps {
   data: object | string;
   redacted?: string[];
 }
 
 type Value = string | number | null | undefined | object;
 
-export function DataView({ data, redacted }: DataViewProps) {
+export function ObjView({ data, redacted }: ObjViewProps) {
   if (typeof data === "string") {
     if (data.trim().startsWith("{")) {
       data = JSON.parse(data);

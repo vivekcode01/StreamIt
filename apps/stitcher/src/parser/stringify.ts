@@ -15,7 +15,7 @@ export function stringifyMasterPlaylist(playlist: MasterPlaylist) {
     lines.push("#EXT-X-INDEPENDENT-SEGMENTS");
   }
 
-  playlist.renditions.forEach((rendition) => {
+  for (const rendition of playlist.renditions) {
     const attrs = [
       `TYPE=${rendition.type}`,
       `GROUP-ID="${rendition.groupId}"`,
@@ -40,9 +40,9 @@ export function stringifyMasterPlaylist(playlist: MasterPlaylist) {
       attrs.push(`CHARACTERISTICS="${rendition.characteristics.join(",")}"`);
     }
     lines.push(`#EXT-X-MEDIA:${attrs.join(",")}`);
-  });
+  }
 
-  playlist.variants.forEach((variant) => {
+  for (const variant of playlist.variants) {
     const attrs = [`BANDWIDTH=${variant.bandwidth}`];
     if (variant.codecs) {
       attrs.push(`CODECS="${variant.codecs}"`);
@@ -59,7 +59,7 @@ export function stringifyMasterPlaylist(playlist: MasterPlaylist) {
             rendition.type === "AUDIO" && rendition.groupId === variant.audio,
         )
       ) {
-        return;
+        continue;
       }
       attrs.push(`AUDIO="${variant.audio}"`);
     }
@@ -71,13 +71,13 @@ export function stringifyMasterPlaylist(playlist: MasterPlaylist) {
             rendition.groupId === variant.subtitles,
         )
       ) {
-        return;
+        continue;
       }
       attrs.push(`SUBTITLES="${variant.subtitles}"`);
     }
     lines.push(`#EXT-X-STREAM-INF:${attrs.join(",")}`);
     lines.push(variant.uri);
-  });
+  }
 
   return lines.join("\n");
 }
@@ -112,7 +112,7 @@ export function stringifyMediaPlaylist(playlist: MediaPlaylist) {
   let lastMap: MediaInitializationSection | undefined;
   let lastKey: Key | undefined;
 
-  playlist.segments.forEach((segment) => {
+  for (const segment of playlist.segments) {
     // See https://datatracker.ietf.org/doc/html/draft-pantos-hls-rfc8216bis-16#section-4.4.4.5
     // It applies to every Media Segment that appears after it in the Playlist until the next
     // EXT-X-MAP tag or until the end of the Playlist.
@@ -144,7 +144,7 @@ export function stringifyMediaPlaylist(playlist: MediaPlaylist) {
     }
 
     if (segment.discontinuity) {
-      lines.push(`#EXT-X-DISCONTINUITY`);
+      lines.push("#EXT-X-DISCONTINUITY");
     }
 
     if (segment.spliceInfo) {
@@ -166,13 +166,13 @@ export function stringifyMediaPlaylist(playlist: MediaPlaylist) {
     lines.push(`#EXTINF:${duration}`);
 
     lines.push(segment.uri);
-  });
-
-  if (playlist.endlist) {
-    lines.push(`#EXT-X-ENDLIST`);
   }
 
-  playlist.dateRanges.forEach((dateRange) => {
+  if (playlist.endlist) {
+    lines.push("#EXT-X-ENDLIST");
+  }
+
+  for (const dateRange of playlist.dateRanges) {
     const attrs = [
       `ID="${dateRange.id}"`,
       `CLASS="${dateRange.classId}"`,
@@ -199,7 +199,7 @@ export function stringifyMediaPlaylist(playlist: MediaPlaylist) {
     }
 
     lines.push(`#EXT-X-DATERANGE:${attrs.join(",")}`);
-  });
+  }
 
   return lines.join("\n");
 }

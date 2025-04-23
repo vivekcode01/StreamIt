@@ -7,9 +7,9 @@ import {
   transcodeQueue,
 } from "bolt";
 import { FlowProducer, Job as RawJob } from "bullmq";
+import type { JobNode, JobState, Queue } from "bullmq";
 import { env } from "../env";
 import { isRecordWithNumbers } from "../utils/type-guard";
-import type { JobNode, JobState, Queue } from "bullmq";
 
 const flowProducer = new FlowProducer({
   connection: {
@@ -36,7 +36,7 @@ function findQueueByName(name: string): Queue {
   if (!queue) {
     throw new Error("No queue found.");
   }
-  return queue;
+  return queue as unknown as Queue;
 }
 
 /**
@@ -199,7 +199,8 @@ async function getJobNode(
  * @param job
  * @returns
  */
-async function findRootJob(job?: RawJob): Promise<RawJob | null> {
+async function findRootJob(inputJob?: RawJob): Promise<RawJob | null> {
+  let job = inputJob;
   if (!job) {
     return null;
   }

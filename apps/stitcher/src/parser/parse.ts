@@ -1,3 +1,4 @@
+import type { DateTime } from "luxon";
 import { assert } from "../assert";
 import { lexicalParse } from "./lexical-parse";
 import type { Tag } from "./lexical-parse";
@@ -13,7 +14,6 @@ import type {
   SpliceInfo,
   Variant,
 } from "./types";
-import type { DateTime } from "luxon";
 
 function formatMasterPlaylist(tags: Tag[]): MasterPlaylist {
   let independentSegments = false;
@@ -66,7 +66,7 @@ function formatMediaPlaylist(tags: Tag[]): MediaPlaylist {
   let discontinuitySequenceBase: number | undefined;
   const dateRanges: DateRange[] = [];
 
-  tags.forEach(([name, value]) => {
+  for (const [name, value] of tags) {
     if (name === "EXT-X-TARGETDURATION") {
       targetDuration = value;
     }
@@ -88,7 +88,7 @@ function formatMediaPlaylist(tags: Tag[]): MediaPlaylist {
     if (name === "EXT-X-DATERANGE") {
       dateRanges.push(value);
     }
-  });
+  }
 
   const segments: Segment[] = [];
   let segmentStart = -1;
@@ -191,7 +191,7 @@ function parseSegment(
   let programDateTime: DateTime | undefined;
   let spliceInfo: SpliceInfo | undefined;
 
-  tags.forEach(([name, value]) => {
+  for (const [name, value] of tags) {
     if (name === "EXTINF") {
       duration = value.duration;
     }
@@ -207,7 +207,7 @@ function parseSegment(
     if (name === "EXT-X-CUE-OUT") {
       spliceInfo = { type: "OUT", duration: value.duration };
     }
-  });
+  }
 
   assert(duration, "parseSegment: duration not found");
 

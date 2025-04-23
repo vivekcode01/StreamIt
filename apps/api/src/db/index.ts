@@ -10,5 +10,5 @@ export const db = new Kysely<KyselyDatabase>({
 });
 
 types.setTypeParser(/* INT8_TYPE_ID= */ 20, (val) => {
-  return parseInt(val, 10);
+  return Number.parseInt(val, 10);
 });

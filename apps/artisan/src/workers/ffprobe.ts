@@ -1,6 +1,6 @@
+import type { FfprobeData, FfprobeResult, WorkerCallback } from "bolt";
 import { ffprobe } from "../lib/ffmpeg";
 import { mapInputToPublicUrl } from "../lib/file-helpers";
-import type { FfprobeData, FfprobeResult, WorkerCallback } from "bolt";
 
 export const ffprobeCallback: WorkerCallback<
   FfprobeData,

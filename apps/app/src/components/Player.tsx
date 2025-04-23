@@ -11,7 +11,10 @@ export function Player({ url }: PlayerProps) {
   const { player, setPlayer } = usePlayer();
 
   useEffect(() => {
-    const player = new HlsPlayer(ref.current!);
+    if (!ref.current) {
+      return;
+    }
+    const player = new HlsPlayer(ref.current);
     setPlayer(player);
 
     return () => {

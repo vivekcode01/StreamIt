@@ -3,6 +3,7 @@ export function mapAttributes(
   callback: (key: string, value: string) => void,
 ) {
   const items = splitByCommaWithPreservingQuotes(param);
+  // biome-ignore lint/complexity/noForEach: Use forEach
   items.forEach((item) => {
     const [key, value] = item.split(/=(.+)/);
     if (key === undefined || value === undefined) {
@@ -58,7 +59,8 @@ function splitByCommaWithPreservingQuotes(str: string) {
   return list;
 }
 
-export function hexToByteSequence(str: string): Uint8Array {
+export function hexToByteSequence(inputStr: string): Uint8Array {
+  let str = inputStr;
   if (str.startsWith("0x") || str.startsWith("0X")) {
     str = str.slice(2);
   }

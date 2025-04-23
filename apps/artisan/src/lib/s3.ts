@@ -3,8 +3,8 @@ import { dirname, join } from "node:path";
 import {
   DeleteObjectCommand,
   GetObjectCommand,
-  paginateListObjectsV2,
   S3,
+  paginateListObjectsV2,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -80,11 +80,12 @@ export async function s3DownloadFolder(
   const filePaths: string[] = [];
 
   for await (const data of paginatedListObjects) {
-    data.Contents?.forEach((content) => {
+    const contents = data.Contents ?? [];
+    for (const content of contents) {
       if (content.Key) {
         filePaths.push(content.Key);
       }
-    });
+    }
   }
 
   for (const filePath of filePaths) {
@@ -152,11 +153,12 @@ async function s3DeleteFolder(remotePath: string) {
   const filePaths: string[] = [];
 
   for await (const data of paginatedListObjects) {
-    data.Contents?.forEach((content) => {
+    const contents = data.Contents ?? [];
+    for (const content of contents) {
       if (content.Key) {
         filePaths.push(content.Key);
       }
-    });
+    }
   }
 
   for (const filePath of filePaths) {

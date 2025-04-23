@@ -1,8 +1,8 @@
 import { Card, CardBody, CardHeader } from "@heroui/react";
-import { DataView } from "./DataView";
+import type { Job } from "@superstreamer/api/client";
 import { Format } from "./Format";
 import { Logs } from "./Logs";
-import type { Job } from "@superstreamer/api/client";
+import { ObjView } from "./ObjView";
 
 interface JobPageProps {
   job: Job;
@@ -31,13 +31,13 @@ export function JobPage({ job, logs }: JobPageProps) {
             <Card className="p-0">
               <CardHeader className="p-4">Input</CardHeader>
               <CardBody className="p-4 pt-0">
-                <DataView data={job.inputData} />
+                <ObjView data={job.inputData} />
               </CardBody>
             </Card>
             <Card className="p-0">
               <CardHeader className="p-4">Output</CardHeader>
               <CardBody className="p-4 pt-0">
-                {job.outputData ? <DataView data={job.outputData} /> : null}
+                {job.outputData ? <ObjView data={job.outputData} /> : null}
               </CardBody>
             </Card>
           </div>

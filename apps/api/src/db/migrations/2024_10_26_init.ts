@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { sql } from "kysely";
 import type { Kysely } from "kysely";
 
+// biome-ignore lint/suspicious/noExplicitAny: Use any
 export async function up(db: Kysely<any>) {
   await db.schema
     .createTable("users")
@@ -49,6 +48,7 @@ export async function up(db: Kysely<any>) {
     .execute();
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: Use any
 export async function down(db: Kysely<any>) {
   await db.schema.dropTable("users").execute();
   await db.schema.dropTable("groups").execute();

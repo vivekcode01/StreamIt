@@ -10,7 +10,19 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "correctness": {
+        "useExhaustiveDependencies": "off"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "off"
+      },
+      "complexity": {
+        "useLiteralKeys": "off"
+      }
     }
+  },
+  "files": {
+    "ignore": ["routeTree.gen.ts"]
   }
 }

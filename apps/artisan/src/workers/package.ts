@@ -1,8 +1,4 @@
 import { addToQueue, outcomeQueue } from "bolt";
-import { execa } from "execa";
-import parseFilePath from "parse-filepath";
-import { getBinaryPath, getMetaStruct } from "../lib/file-helpers";
-import { s3DownloadFolder, s3UploadFolder } from "../lib/s3";
 import type {
   PackageData,
   PackageResult,
@@ -11,13 +7,17 @@ import type {
   WorkerDir,
 } from "bolt";
 import type { Job } from "bullmq";
+import { execa } from "execa";
+import parseFilePath from "parse-filepath";
+import { getBinaryPath, getMetaStruct } from "../lib/file-helpers";
+import { s3DownloadFolder, s3UploadFolder } from "../lib/s3";
 
 const packagerBin = await getBinaryPath("packager");
 
 enum Step {
-  Initial,
-  Outcome,
-  Finish,
+  Initial = 0,
+  Outcome = 1,
+  Finish = 2,
 }
 
 export const packageCallback: WorkerCallback<
@@ -75,7 +75,7 @@ async function handleStepInitial(job: Job<PackageData>, dir: WorkerDir) {
   const packagerParams: string[][] = [];
 
   const entries = Object.entries(meta.streams);
-  entries.forEach(([key, stream]) => {
+  for (const [key, stream] of entries) {
     const file = parseFilePath(key);
 
     if (stream.type === "video") {
@@ -120,7 +120,7 @@ async function handleStepInitial(job: Job<PackageData>, dir: WorkerDir) {
         `language=${stream.language}`,
       ]);
     }
-  });
+  }
 
   const packagerArgs = packagerParams.map((it) => `${it.join(",")}`);
 
@@ -182,7 +182,7 @@ function getGroupId(
     return `audio_${stream.codec}`;
   }
   if (stream.type === "text") {
-    return `text`;
+    return "text";
   }
 }
 

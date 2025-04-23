@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "bunx --bun vite",
-    "build": "bunx --bun vite build"
+    "build": "bunx --bun vite build",
+    "lint": "biome lint --write ./src"
   },
   "devDependencies": {
     "@types/javascript-time-ago": "^2.0.8",

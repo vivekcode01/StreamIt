@@ -1,8 +1,9 @@
 import { Drawer, DrawerBody, DrawerContent, DrawerHeader } from "@heroui/react";
 import { assetsPaginatedSchema, toParams } from "@superstreamer/api/client";
+import type { Asset, Group } from "@superstreamer/api/client";
 import {
-  createFileRoute,
   Link,
+  createFileRoute,
   useNavigate,
   useRouter,
 } from "@tanstack/react-router";
@@ -15,7 +16,6 @@ import { Form } from "../../../components/Form";
 import { Format } from "../../../components/Format";
 import { FullTable } from "../../../components/FullTable";
 import { Uniqolor } from "../../../components/Uniqolor";
-import type { Asset, Group } from "@superstreamer/api/client";
 
 export const Route = createFileRoute("/(dashboard)/_layout/assets")({
   component: RouteComponent,
@@ -90,12 +90,12 @@ function RouteComponent() {
         mapRow={(item) => ({
           key: item.id,
           cells: [
-            <Name asset={item} />,
-            <Playables asset={item} />,
-            <GroupTag groups={groups} asset={item} />,
-            <Format format="date" value={item.createdAt} />,
-            <div className="flex items-center">
-              <button onClick={() => setEditAsset(item)}>
+            <Name key="1" asset={item} />,
+            <Playables key="2" asset={item} />,
+            <GroupTag key="3" groups={groups} asset={item} />,
+            <Format key="4" format="date" value={item.createdAt} />,
+            <div key="5" className="flex items-center">
+              <button type="button" onClick={() => setEditAsset(item)}>
                 <SquarePen className="w-4 h-4" />
               </button>
             </div>,

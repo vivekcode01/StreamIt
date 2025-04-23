@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
 import type { HlsPlayer } from "@superstreamer/player";
+import { createContext, useContext, useEffect, useState } from "react";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 interface PlayerProviderProps {

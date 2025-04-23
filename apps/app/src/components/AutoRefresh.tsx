@@ -31,7 +31,7 @@ export function AutoRefresh({
     return () => {
       clearTimeout(timerId);
     };
-  }, [enabled, interval, time]);
+  }, [enabled, interval, time, router]);
 
   return (
     <div className="flex items-center gap-2">

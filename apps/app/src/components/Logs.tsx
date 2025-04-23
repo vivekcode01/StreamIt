@@ -25,7 +25,10 @@ function Line({ line, index }: { line: string; index: number }) {
 
   useLayoutEffect(() => {
     const onResize = () => {
-      setMore(ref.current!.clientHeight < ref.current!.scrollHeight);
+      if (!ref.current) {
+        return;
+      }
+      setMore(ref.current.clientHeight < ref.current.scrollHeight);
     };
     onResize();
     window.addEventListener("resize", onResize);
@@ -47,6 +50,7 @@ function Line({ line, index }: { line: string; index: number }) {
         </div>
         {more ? (
           <button
+            type="button"
             className="font-medium"
             onClick={() => setShow((old) => !old)}
           >

@@ -4,14 +4,14 @@ import { env } from "../env";
 
 export type StorageFolderItem =
   | {
-      type: "file";
-      path: string;
-      size: number;
-    }
+    type: "file";
+    path: string;
+    size: number;
+  }
   | {
-      type: "folder";
-      path: string;
-    };
+    type: "folder";
+    path: string;
+  };
 
 export interface StorageFolder {
   cursor?: string;
@@ -32,13 +32,12 @@ export async function getStorageFolder(
   take: number,
   cursor?: string,
 ): Promise<StorageFolder> {
-  path = path.substring(1);
-
+  const trimPath = path.substring(1);
   const response = await client.send(
     new ListObjectsCommand({
       Bucket: env.S3_BUCKET,
       Delimiter: "/",
-      Prefix: path,
+      Prefix: trimPath,
       MaxKeys: take,
       Marker: cursor,
     }),
@@ -46,19 +45,21 @@ export async function getStorageFolder(
 
   const items: StorageFolderItem[] = [];
 
-  response.CommonPrefixes?.forEach((prefix) => {
+  const commonPrefixes = response.CommonPrefixes ?? [];
+  for (const prefix of commonPrefixes) {
     if (!prefix.Prefix) {
-      return;
+      continue;
     }
     items.push({
       type: "folder",
       path: `/${prefix.Prefix}`,
     });
-  });
+  }
 
-  response.Contents?.forEach((content) => {
+  const contents = response.Contents ?? [];
+  for (const content of contents) {
     if (!content.Key || content.Key === path) {
-      return;
+      continue;
     }
 
     items.push({
@@ -66,7 +67,7 @@ export async function getStorageFolder(
       path: `/${content.Key}`,
       size: content.Size ?? 0,
     });
-  });
+  }
 
   return {
     cursor: response.IsTruncated ? response.NextMarker : undefined,
@@ -75,13 +76,11 @@ export async function getStorageFolder(
 }
 
 export async function getStorageFileUrl(path: string) {
-  path = path.substring(1);
+  const trimPath = path.substring(1);
   const command = new GetObjectCommand({
     Bucket: env.S3_BUCKET,
-    Key: path,
+    Key: trimPath,
   });
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore https://github.com/aws/aws-sdk-js-v3/issues/4451
   const url = await getSignedUrl(client, command, {
     expiresIn: 60 * 15,
   });
@@ -89,12 +88,15 @@ export async function getStorageFileUrl(path: string) {
 }
 
 export async function getStorageFilePayload(path: string) {
-  path = path.substring(1);
+  const trimPath = path.substring(1);
   const command = await client.send(
     new GetObjectCommand({
       Bucket: env.S3_BUCKET,
-      Key: path,
+      Key: trimPath,
     }),
   );
-  return await command.Body!.transformToString("utf-8");
+  if (!command.Body) {
+    throw new Error('Missing body');
+  }
+  return await command.Body.transformToString("utf-8");
 }

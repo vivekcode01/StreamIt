@@ -53,6 +53,7 @@ function RouteComponent() {
         </Select>
       </div>
       <iframe
+        title="API reference"
         className="grow"
         src={`https://superstreamer.xyz/scalar.html?params=${encodeURIComponent(JSON.stringify(params))}`}
       />

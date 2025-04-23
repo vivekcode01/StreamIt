@@ -24,13 +24,14 @@ async function migrateToLatest() {
 
   const { error, results } = await migrator.migrateToLatest();
 
-  results?.forEach((it) => {
+  const allResults = results ?? [];
+  for (const it of allResults) {
     if (it.status === "Success") {
       console.log(`Migration "${it.migrationName}" was executed successfully`);
     } else if (it.status === "Error") {
       console.error(`Failed to execute migration "${it.migrationName}"`);
     }
-  });
+  };
 
   if (error) {
     console.error("Failed to migrate");

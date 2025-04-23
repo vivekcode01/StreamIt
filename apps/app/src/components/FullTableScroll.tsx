@@ -7,8 +7,8 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/react";
-import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 import type { TableProps } from "@heroui/react";
+import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 import type { ReactNode } from "react";
 
 export interface FullTableScrollColumn {

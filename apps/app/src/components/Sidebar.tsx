@@ -56,7 +56,7 @@ export function Sidebar() {
 
   return (
     <div className="flex flex-col h-full">
-      <img src="/logo.png" className="w-8 mb-4" />
+      <img alt="Logo" src="/logo.png" className="w-8 mb-4" />
       <ul>
         {groups.map((group) => {
           return (

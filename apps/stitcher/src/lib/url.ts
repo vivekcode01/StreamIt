@@ -1,11 +1,12 @@
-import * as path from "path";
+import * as path from "node:path";
 import type { AppContext } from "../app-context";
 
 const uuidRegex = /^[a-z,0-9,-]{36,36}$/;
 
 const ASSET_PROTOCOL = "asset:";
 
-export function resolveUri(context: AppContext, uri: string) {
+export function resolveUri(context: AppContext, inputUri: string) {
+  let uri = inputUri;
   if (uri.startsWith("http://") || uri.startsWith("https://")) {
     return uri;
   }
@@ -68,21 +69,23 @@ export function createUrl(
 }
 
 export function replaceUrlParams(
-  url: string,
+  inputUrl: string,
   params?: Record<string, string | number | undefined>,
 ) {
+  let url = inputUrl;
   const allParams = {
     ...params,
     // Default params defined below.
     random: Math.floor(Math.random() * 10_000),
   };
 
-  Object.entries(allParams).forEach(([key, value]) => {
+  const entries = Object.entries(allParams);
+  for (const [key, value] of entries) {
     if (value === undefined) {
-      return;
+      continue;
     }
     url = url.replaceAll(`{${key}}`, value.toString());
-  });
+  }
 
   return url;
 }

@@ -13,18 +13,15 @@ export const filterQuerySchema = z
   .optional();
 
 export function formatFilterToQueryParam(filter?: Filter) {
-  if (!filter) {
-    filter = {};
-  }
-  return btoa(JSON.stringify(filter));
+  return btoa(JSON.stringify(filter ?? {}));
 }
 
 function parseRange(input: string): [number, number] | null {
   const match = input.match(/^(\d+)-(\d+)$/);
 
   if (match?.[1] && match[2]) {
-    const min = parseInt(match[1]);
-    const max = parseInt(match[2]);
+    const min = Number.parseInt(match[1]);
+    const max = Number.parseInt(match[2]);
     return [min, max];
   }
 
@@ -38,18 +35,20 @@ function parseOperatorToRange(input: string): [number, number] | null {
   }
 
   const operator = match[1];
-  const number = parseInt(match[2]);
+  const number = Number.parseInt(match[2]);
 
   if (operator === "<=") {
     return [0, number];
-  } else if (operator === "<") {
-    return [0, number - 1];
-  } else if (operator === ">=") {
-    return [number, Infinity];
-  } else if (operator === ">") {
-    return [number + 1, Infinity];
   }
-
+  if (operator === "<") {
+    return [0, number - 1];
+  }
+  if (operator === ">=") {
+    return [number, Number.POSITIVE_INFINITY];
+  }
+  if (operator === ">") {
+    return [number + 1, Number.POSITIVE_INFINITY];
+  }
   return null;
 }
 
@@ -94,7 +93,7 @@ export function filterMasterPlaylist(master: MasterPlaylist, filter: Filter) {
       return true;
     });
   }
-  master.renditions.forEach((rendition) => {
+  for (const rendition of master.renditions) {
     if (filter.textAutoSelect && rendition.type === "SUBTITLES") {
       if (filter.textAutoSelect === "disabled") {
         rendition.default = false;
@@ -108,5 +107,5 @@ export function filterMasterPlaylist(master: MasterPlaylist, filter: Filter) {
         }
       }
     }
-  });
+  }
 }

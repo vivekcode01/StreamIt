@@ -1,4 +1,5 @@
 import { hc } from "hono/client";
+import type { z } from "zod";
 import type { AppType } from "../src";
 import type { assetSchema, groupSchema } from "../src/schemas/assets";
 import type { jobSchema } from "../src/schemas/jobs";
@@ -7,7 +8,6 @@ import type {
   storageItemSchema,
 } from "../src/schemas/storage";
 import type { userSchema } from "../src/schemas/user";
-import type { z } from "zod";
 
 export type Asset = z.infer<typeof assetSchema>;
 
@@ -39,7 +39,7 @@ export function createClient(url: string, token: string | null = null) {
     headers: () => {
       const headers: Record<string, string> = {};
       if (token !== null) {
-        headers["Authorization"] = `Bearer ${token}`;
+        headers.Authorization = `Bearer ${token}`;
       }
       return headers;
     },

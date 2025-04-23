@@ -9,9 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/react";
-import { Form } from "./Form";
 import type { SortDescriptor } from "@heroui/react";
 import type { ReactNode } from "react";
+import { Form } from "./Form";
 
 export interface FullTableFilter {
   page: number;

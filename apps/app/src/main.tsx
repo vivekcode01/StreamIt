@@ -1,5 +1,5 @@
 import { HeroUIProvider } from "@heroui/react";
-import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { RouterProvider, createRouter } from "@tanstack/react-router";
 import ReactDOM from "react-dom/client";
 import { ApiProvider, useApi } from "./api";
 import { AuthProvider, useAuth } from "./auth";
@@ -12,8 +12,10 @@ const router = createRouter({
   defaultPreload: false,
   context: {
     // This will be set after we wrap the app in an AuthProvider
+    // biome-ignore lint/style/noNonNullAssertion: Null assert
     auth: undefined!,
     // This will be set after we wrap the app in an ApiProvider
+    // biome-ignore lint/style/noNonNullAssertion: Null assert
     api: undefined!,
   },
 });
@@ -24,7 +26,11 @@ declare module "@tanstack/react-router" {
   }
 }
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+const container = document.getElementById("root");
+if (!container) {
+  throw new Error("Missing container");
+}
+ReactDOM.createRoot(container).render(
   <HeroUIProvider>
     <AuthProvider>
       <ApiProvider>

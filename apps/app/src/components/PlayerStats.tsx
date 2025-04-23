@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { DataView } from "./DataView";
 import { usePlayer } from "../context/PlayerContext";
+import { ObjView } from "./ObjView";
 
 export function PlayerStats() {
   const { player } = usePlayer();
@@ -25,7 +25,7 @@ export function PlayerStats() {
   }, [player]);
 
   return (
-    <DataView
+    <ObjView
       redacted={[
         "subtitleTracks.*.track",
         "audioTracks.*.track",

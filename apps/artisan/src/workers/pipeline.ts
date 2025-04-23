@@ -8,10 +8,10 @@ import type { PipelineData, PipelineResult, WorkerCallback } from "bolt";
 import type { Job } from "bullmq";
 
 enum Step {
-  Initial,
-  Continue,
-  Wait,
-  Finish,
+  Initial = 0,
+  Continue = 1,
+  Wait = 2,
+  Finish = 3,
 }
 
 export const pipelineCallback: WorkerCallback<

@@ -1,6 +1,7 @@
 import { BreadcrumbItem, Breadcrumbs } from "@heroui/react";
 import { toParams } from "@superstreamer/api/client";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ApiClient, StorageItem } from "@superstreamer/api/client";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 import { File, Folder } from "lucide-react";
 import { useState } from "react";
@@ -10,7 +11,6 @@ import { FilePreview } from "../../../components/FilePreview";
 import { Format } from "../../../components/Format";
 import { FullTableScroll } from "../../../components/FullTableScroll";
 import { useInfinite } from "../../../hooks/useInfinite";
-import type { ApiClient, StorageItem } from "@superstreamer/api/client";
 
 export const Route = createFileRoute("/(dashboard)/_layout/storage")({
   component: RouteComponent,
@@ -82,9 +82,10 @@ function RouteComponent() {
         mapRow={(item) => ({
           key: item.path,
           cells: [
-            <Icon item={item} />,
-            <Item item={item} setPreviewPath={setPreviewPath} />,
+            <Icon key="1" item={item} />,
+            <Item key="2" item={item} setPreviewPath={setPreviewPath} />,
             <Format
+              key="3"
               format="size"
               value={item.type === "file" ? item.size : null}
             />,
@@ -120,9 +121,9 @@ function parseBreadcrumbs(path: string) {
   const paths = path.split("/").map((part) => {
     const result = {
       name: part,
-      path: prevPath + part + "/",
+      path: `${prevPath + part}/`,
     };
-    prevPath += part + "/";
+    prevPath += `${part}/`;
     return result;
   });
 
@@ -153,6 +154,7 @@ function Item({
     const name = chunks[chunks.length - 1];
     return (
       <button
+        type="button"
         onClick={() => {
           setPreviewPath(item.path);
         }}
