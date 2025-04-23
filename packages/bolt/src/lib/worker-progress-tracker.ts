@@ -22,9 +22,10 @@ export class WorkerProgressTracker {
     if (!Object.keys(this.values_).length) {
       return;
     }
-    Object.keys(this.values_).forEach((key) => {
+    const keys = Object.keys(this.values_);
+    for (const key of keys) {
       this.values_[key] = 100;
-    });
+    }
     await this.persist_();
   }
 
@@ -37,7 +38,8 @@ export class WorkerProgressTracker {
     this.updating_ = false;
   }
 
-  private update_(key: string | undefined, value: number) {
+  private update_(key: string | undefined, inputValue: number) {
+    let value = inputValue;
     if (key === undefined) {
       return;
     }

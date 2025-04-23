@@ -12,14 +12,11 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "dev": "tsup --watch 'src/**/*.(ts,tsx)'",
-    "build": "tsc && tsup",
-    "lint": "tsc && eslint",
-    "typedoc": "typedoc --tsconfig tsconfig.typedoc.json"
+    "build": "tsup",
+    "lint": "biome lint --write ./src"
   },
   "dependencies": {
     "hls.js": "^1.6.2",

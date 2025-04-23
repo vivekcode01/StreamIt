@@ -49,9 +49,9 @@ export class EventManager {
     }) as RemoveCallback<T>;
 
   removeAll() {
-    this.bindings_.forEach((binding) => {
+    for (const binding of this.bindings_) {
       binding.remove();
-    });
+    }
     this.bindings_.clear();
   }
 }
@@ -107,5 +107,5 @@ function createBinding(
 
 type Binding = ReturnType<typeof createBinding>;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: Use any
 type Handler = (...args: any) => any;

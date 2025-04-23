@@ -1,9 +1,9 @@
 import { WaitingChildrenError, Worker } from "bullmq";
+import type { ConnectionOptions, Job } from "bullmq";
 import { assert } from "./assert";
 import { env } from "./env";
 import { WorkerDir } from "./lib/worker-dir";
 import { WorkerProgressTracker } from "./lib/worker-progress-tracker";
-import type { ConnectionOptions, Job } from "bullmq";
 export type { WorkerDir } from "./lib/worker-dir";
 
 const connection: ConnectionOptions = {
@@ -50,13 +50,13 @@ export function runWorkers(
     .on("SIGINT", gracefulShutdown)
     .on("SIGTERM", gracefulShutdown);
 
-  workers.forEach((worker) => {
+  for (const worker of workers) {
     worker.run();
     console.log(`Started worker "${worker.name}"`);
-  });
+  }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: Use any
 export type WorkerCallback<T = any, R = any> = (params: {
   job: Job<T, R>;
   token: string | undefined;

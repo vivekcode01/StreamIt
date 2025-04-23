@@ -45,7 +45,7 @@ const noState: StateProperties = {
   started: false,
   seekableStart: 0,
   currentTime: 0,
-  duration: NaN,
+  duration: Number.NaN,
   qualities: [],
   autoQuality: false,
   audioTracks: [],
@@ -161,7 +161,7 @@ export class State implements StateProperties {
       this.interstitial = {
         ...interstitial,
         currentTime: 0,
-        duration: NaN,
+        duration: Number.NaN,
       };
     } else {
       this.interstitial = null;

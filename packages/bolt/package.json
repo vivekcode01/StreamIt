@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "main": "./src/index.ts",
+  "scripts": {
+    "lint": "biome lint --write ./src"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "config": "workspace:*",

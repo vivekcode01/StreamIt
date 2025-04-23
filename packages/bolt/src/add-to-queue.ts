@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 import type { Job, JobsOptions, Queue } from "bullmq";
 
 export const DEFAULT_SEGMENT_SIZE = 2.24;
