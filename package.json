@@ -3,7 +3,7 @@
   "scripts": {
     "dev": "NODE_ENV=development bun run ./scripts/dev.ts",
     "build": "NODE_ENV=production bun run ./scripts/build.ts",
-    "test": "bun run ./scripts/test.ts",
+    "test": "bun run --filter=\"@superstreamer/*\" test",
     "install-bin": "bun run --filter=\"@superstreamer/*\" install-bin"
   },
   "devDependencies": {
@@ -11,10 +11,5 @@
     "@changesets/cli": "^2.29.2",
     "check-dependency-version-consistency": "^5.0.0"
   },
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "extern/*"
-  ],
-  "packageManager": "pnpm@10.7.1+sha512.2d92c86b7928dc8284f53494fb4201f983da65f0fb4f0d40baafa5cf628fa31dae3e5968f12466f17df7e97310e30f343a648baea1b9b350685dafafffdf5808"
+  "workspaces": ["apps/*", "packages/*", "extern/*"]
 }
