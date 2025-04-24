@@ -1,6 +1,6 @@
 {
   "name": "@superstreamer/player",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "An HLS.js facade",
   "author": "Superstreamer",
   "homepage": "https://github.com/matvp91/superstreamer/tree/main/packages/player",
