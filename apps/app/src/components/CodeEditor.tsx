@@ -1,8 +1,8 @@
 import MonacoEditor from "@monaco-editor/react";
 import { useMonaco } from "@monaco-editor/react";
+import type { OnMount } from "@monaco-editor/react";
 import { useEffect } from "react";
 import useLocalStorageState from "use-local-storage-state";
-import type { OnMount } from "@monaco-editor/react";
 
 interface CodeEditorProps {
   schema?: object | null;

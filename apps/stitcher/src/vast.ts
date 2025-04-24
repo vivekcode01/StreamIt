@@ -1,11 +1,11 @@
 import { DOMParser } from "@xmldom/xmldom";
-import { assert } from "./assert";
 import * as uuid from "uuid";
 import { VASTClient } from "vast-client";
-import { replaceUrlParams, resolveUri } from "./lib/url";
-import type { AppContext } from "./app-context";
-import type { Asset, VastParams } from "./types";
 import type { VastAd, VastCreativeLinear, VastResponse } from "vast-client";
+import type { AppContext } from "./app-context";
+import { assert } from "./assert";
+import { replaceUrlParams, resolveUri } from "./lib/url";
+import type { Asset, VastParams } from "./types";
 
 const NAMESPACE_UUID_AD = "5b212a7e-d6a2-43bf-bd30-13b1ca1f9b13";
 

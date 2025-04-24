@@ -4,14 +4,14 @@ import { env } from "../env";
 
 export type StorageFolderItem =
   | {
-    type: "file";
-    path: string;
-    size: number;
-  }
+      type: "file";
+      path: string;
+      size: number;
+    }
   | {
-    type: "folder";
-    path: string;
-  };
+      type: "folder";
+      path: string;
+    };
 
 export interface StorageFolder {
   cursor?: string;
@@ -96,7 +96,7 @@ export async function getStorageFilePayload(path: string) {
     }),
   );
   if (!command.Body) {
-    throw new Error('Missing body');
+    throw new Error("Missing body");
   }
   return await command.Body.transformToString("utf-8");
 }

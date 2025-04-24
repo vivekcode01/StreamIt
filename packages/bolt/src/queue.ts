@@ -1,7 +1,7 @@
 import { Queue } from "bullmq";
+import type { ConnectionOptions } from "bullmq";
 import { env } from "./env";
 import type { Input, PartialInput, PartialStream, Stream } from "./types";
-import type { ConnectionOptions } from "bullmq";
 
 const connection: ConnectionOptions = {
   url: env.REDIS_URI,

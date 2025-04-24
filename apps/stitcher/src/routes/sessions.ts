@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
-import { validator, resolver } from "hono-openapi/zod";
+import { resolver, validator } from "hono-openapi/zod";
 import { getAppContext } from "../app-context";
 import { filterQuerySchema } from "../filters";
 import { createMasterUrl, createOpaqueMasterUrl } from "../playlist";

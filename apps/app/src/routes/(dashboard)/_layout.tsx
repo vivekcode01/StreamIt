@@ -1,5 +1,5 @@
 import { Navigate, redirect } from "@tanstack/react-router";
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "../../auth";
 import { Sidebar } from "../../components/Sidebar";
 

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { openAPISpecs } from "hono-openapi";
+import { cors } from "hono/cors";
 import { ApiError } from "./errors";
 import { assetsApp } from "./routes/assets";
 import { jobsApp } from "./routes/jobs";

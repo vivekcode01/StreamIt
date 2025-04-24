@@ -1,6 +1,6 @@
+import type { OutcomeData, WorkerCallback } from "bolt";
 import { createAsset } from "../repositories/assets";
 import { createPlayable, getOrCreateGroup } from "../repositories/assets";
-import type { OutcomeData, WorkerCallback } from "bolt";
 
 export const outcomeCallback: WorkerCallback<OutcomeData> = async ({ job }) => {
   switch (job.data.type) {

@@ -1,8 +1,8 @@
 import { createClient } from "@superstreamer/api/client";
-import { createContext, useContext, useMemo } from "react";
-import { useAuth } from "./auth";
 import type { ApiClient } from "@superstreamer/api/client";
+import { createContext, useContext, useMemo } from "react";
 import type { ReactNode } from "react";
+import { useAuth } from "./auth";
 
 export interface ApiContext {
   api: ApiClient;

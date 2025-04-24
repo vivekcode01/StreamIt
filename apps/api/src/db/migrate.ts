@@ -31,7 +31,7 @@ async function migrateToLatest() {
     } else if (it.status === "Error") {
       console.error(`Failed to execute migration "${it.migrationName}"`);
     }
-  };
+  }
 
   if (error) {
     console.error("Failed to migrate");

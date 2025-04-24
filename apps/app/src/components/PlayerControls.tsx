@@ -2,10 +2,10 @@ import { Button } from "@heroui/react";
 import { Events } from "@superstreamer/player";
 import cn from "clsx";
 import { useEffect, useRef, useState } from "react";
-import { Selection } from "./Selection";
+import type { ReactNode, RefObject } from "react";
 import { usePlayer, usePlayerSelector } from "../context/PlayerContext";
 import { useSeekbar } from "../hooks/useSeekbar";
-import type { ReactNode, RefObject } from "react";
+import { Selection } from "./Selection";
 
 export function PlayerControls() {
   const ready = usePlayerSelector((player) => player.ready);

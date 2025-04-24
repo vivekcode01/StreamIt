@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { sign } from "hono/jwt";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
+import { sign } from "hono/jwt";
 import { z } from "zod";
 import { env } from "../env";
 import { apiError } from "../errors";

@@ -1,3 +1,4 @@
+import type { Job } from "@superstreamer/api/client";
 import cn from "clsx";
 import {
   CircleCheck,
@@ -5,7 +6,6 @@ import {
   CircleDotDashed,
   CircleX,
 } from "lucide-react";
-import type { Job } from "@superstreamer/api/client";
 import type { ReactNode } from "react";
 
 interface JobStateProps {

@@ -1,9 +1,9 @@
 import { toParams } from "@superstreamer/api/client";
+import type { ApiClient, Job } from "@superstreamer/api/client";
 import { createFileRoute } from "@tanstack/react-router";
 import { AutoRefresh } from "../../../../components/AutoRefresh";
 import { JobPage } from "../../../../components/JobPage";
 import { JobTree } from "../../../../components/JobTree";
-import type { ApiClient, Job } from "@superstreamer/api/client";
 
 export const Route = createFileRoute("/(dashboard)/_layout/jobs/$id")({
   component: RouteComponent,

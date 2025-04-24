@@ -3,9 +3,9 @@ import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { apiError } from "../errors";
 import { auth } from "../middleware";
+import type { AuthVariables } from "../middleware";
 import { getUser } from "../repositories/users";
 import { userSchema } from "../schemas/user";
-import type { AuthVariables } from "../middleware";
 
 export const userApp = new Hono<{
   Variables: AuthVariables;

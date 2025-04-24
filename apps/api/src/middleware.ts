@@ -1,7 +1,7 @@
-import { verify } from "hono/jwt";
-import { env } from "./env";
 import type { Context, Next } from "hono";
+import { verify } from "hono/jwt";
 import type { JWTPayload } from "hono/utils/jwt/types";
+import { env } from "./env";
 
 export interface AuthVariables {
   user:

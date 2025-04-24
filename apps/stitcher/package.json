@@ -7,7 +7,7 @@
     "dev:wrangler": "wrangler dev ./src/index.ts",
     "build": "bun build ./src/index.ts --target=bun --outdir=./dist",
     "deploy:wrangler": "npx wrangler deploy --minify ./src/index.ts",
-    "lint": "biome lint ./src ./test",
+    "check": "biome check ./src ./test",
     "test": "bun test"
   },
   "devDependencies": {

@@ -1,8 +1,9 @@
 import Hls from "hls.js";
+import type { Level } from "hls.js";
 import { EventEmitter } from "tseep/lib/ee-safe";
 import { EventManager } from "./event-manager";
 import { assert, getLangCode } from "./helpers";
-import { getState, State } from "./state";
+import { State, getState } from "./state";
 import { Events } from "./types";
 import type {
   AudioTrack,
@@ -11,7 +12,6 @@ import type {
   SubtitleTrack,
   TimelineItem,
 } from "./types";
-import type { Level } from "hls.js";
 
 export class HlsPlayer {
   private media_: HTMLMediaElement;

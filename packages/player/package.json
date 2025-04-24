@@ -16,7 +16,7 @@
   "scripts": {
     "dev": "tsup --watch 'src/**/*.(ts,tsx)'",
     "build": "tsup",
-    "lint": "biome lint ./src"
+    "check": "biome check ./src"
   },
   "dependencies": {
     "hls.js": "^1.6.2",
